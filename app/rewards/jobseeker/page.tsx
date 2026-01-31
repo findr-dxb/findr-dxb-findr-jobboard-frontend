@@ -136,32 +136,7 @@ export default function JobSeekerRewardsPage() {
     return { percentage, points: availablePoints };
   };
 
-  // Determine experience level based on years of experience
-  const getExperienceLevel = (yearsExp: number): 'Blue' | 'Silver' | 'Gold' => {
-    if (yearsExp <= 1) return 'Blue';
-    else if (yearsExp >= 2 && yearsExp <= 5) return 'Silver';
-    else return 'Gold'; // 5+ years
-  };
-
-  // Get tier multiplier based on tier and experience level
-  const getTierMultiplier = (tier: string, experienceLevel: 'Blue' | 'Silver' | 'Gold'): number => {
-    const A = 1.0; // Base multiplier
-    
-    if (tier === 'Platinum') {
-      // Platinum multipliers based on experience level
-      if (experienceLevel === 'Blue') return 2.0; // Platinum Blue
-      else if (experienceLevel === 'Silver') return 3.0; // Platinum Silver
-      else return 4.0; // Platinum Gold
-    } else if (tier === 'Gold') {
-      return 2.0 * A; // 2.0x
-    } else if (tier === 'Silver') {
-      return 1.5 * A; // 1.5x
-    } else {
-      return 1.0 * A; // 1.0x (Blue)
-    }
-  };
-
-  // Determine user tier based on points and profile
+  // Determine user tier based on points and profile (for display purposes only)
   const determineUserTier = (profile: any, points: number) => {
     const yearsExp = profile?.professionalExperience?.[0]?.yearsOfExperience || 0;
     const isEmirati = profile?.nationality?.toLowerCase()?.includes("emirati");
@@ -246,27 +221,22 @@ export default function JobSeekerRewardsPage() {
         signupReferralPoints = 0;
       }
       
-      // Calculate base points (before multiplier)
+      // Calculate base points
       const basePoints = 50 + metrics.percentage * 2; // Base 50 + 2 points per percentage
       
-      // Determine tier and experience level
-      const yearsExp = data.data?.professionalExperience?.[0]?.yearsOfExperience || 0;
-      const experienceLevel = getExperienceLevel(yearsExp);
+      // Determine tier (for display purposes only, not used in calculation)
       const tier = determineUserTier(data.data, basePoints);
       
-      // Get tier multiplier
-      const multiplier = getTierMultiplier(tier, experienceLevel);
+      // Use base points directly without multiplier
+      const calculatedBasePoints = basePoints;
       
-      // Apply multiplier to base points
-      const multipliedBasePoints = basePoints * multiplier;
-      
-      // Add other points (applications, RM service, social media, referrals) without multiplier
+      // Add other points (applications, RM service, social media, referrals)
       const applicationPoints = data.data?.rewards?.applyForJobs || 0;
       const rmServicePoints = data.data?.rewards?.rmService || 0;
       const socialMediaBonus = data.data?.rewards?.socialMediaBonus || 0;
       
-      // Activity points = Multiplied Base Points + Applications + RM Service + Social Media + Signup Referrals
-      const activityRewardPoints = multipliedBasePoints + applicationPoints + rmServicePoints + socialMediaBonus + signupReferralPoints;
+      // Activity points = Base Points + Applications + RM Service + Social Media + Signup Referrals
+      const activityRewardPoints = calculatedBasePoints + applicationPoints + rmServicePoints + socialMediaBonus + signupReferralPoints;
       
       // Calculate total points: Activity Points + Placement Points - Deducted Points
       const totalPoints = Math.max(0, activityRewardPoints + placementPoints - deducted);

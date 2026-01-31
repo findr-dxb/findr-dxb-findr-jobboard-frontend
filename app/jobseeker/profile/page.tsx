@@ -557,24 +557,7 @@ export default function JobSeekerProfilePage() {
       const percentage = Math.min(Math.round((completed / totalFields) * 100), 100)
       setProfileCompletion(percentage)
 
-      // Helper functions for tier calculation
-      const getExperienceLevel = (yearsExp: number): 'Blue' | 'Silver' | 'Gold' => {
-        if (yearsExp <= 1) return 'Blue';
-        else if (yearsExp >= 2 && yearsExp <= 5) return 'Silver';
-        else return 'Gold'; // 5+ years
-      };
-
-      const getTierMultiplier = (tier: string, experienceLevel: 'Blue' | 'Silver' | 'Gold'): number => {
-        const A = 1.0;
-        if (tier === 'Platinum') {
-          if (experienceLevel === 'Blue') return 2.0;
-          else if (experienceLevel === 'Silver') return 3.0;
-          else return 4.0;
-        } else if (tier === 'Gold') return 2.0 * A;
-        else if (tier === 'Silver') return 1.5 * A;
-        else return 1.0 * A;
-      };
-
+      // Helper function for tier determination (for display purposes only)
       const determineUserTier = (basePoints: number, yearsExp: number, isEmirati: boolean) => {
         if (isEmirati) return "Platinum";
         else if (basePoints >= 500) return "Platinum";
@@ -583,10 +566,10 @@ export default function JobSeekerProfilePage() {
         else return "Blue";
       };
 
-      // Calculate base points (before multiplier)
+      // Calculate base points
       const basePoints = 50 + percentage * 2;
       
-      // Determine experience and tier
+      // Determine experience and tier (for display purposes only)
       let yearsExp = 0;
       const expStr = profileData.experience.experience;
       if (expStr === "0-1") yearsExp = 1;
@@ -596,19 +579,17 @@ export default function JobSeekerProfilePage() {
       else if (expStr === "10+") yearsExp = 11;
       
       const isEmirati = profileData.personalInfo.nationality?.toLowerCase().includes("emirati");
-      const experienceLevel = getExperienceLevel(yearsExp);
       const tier = determineUserTier(basePoints, yearsExp, isEmirati);
       
-      // Get tier multiplier and apply to base points
-      const multiplier = getTierMultiplier(tier, experienceLevel);
-      const multipliedBasePoints = basePoints * multiplier;
+      // Use base points directly without multiplier
+      const calculatedBasePoints = basePoints;
       
-      // Add other points without multiplier
+      // Add other points
       const applicationPoints = profileData?.rewards?.applyForJobs || 0;
       const rmServicePoints = profileData?.rewards?.rmService || 0;
       const deductedPoints = profileData.deductedPoints || 0;
       
-      const totalPoints = multipliedBasePoints + applicationPoints + rmServicePoints;
+      const totalPoints = calculatedBasePoints + applicationPoints + rmServicePoints;
       const availablePoints = Math.max(0, totalPoints - deductedPoints);
       
       setPoints(availablePoints);
