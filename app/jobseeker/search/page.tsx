@@ -19,7 +19,7 @@ interface Job {
   companyName: string;
   location: string;
   jobType: string[];
-  salary?: {
+  salary?: number | {
     min: number;
     max: number;
   };
@@ -255,7 +255,7 @@ export default function JobSearchPage() {
       const applicationData = {
         jobId: job._id,
         // Use profile data for automatic filling
-        expectedSalary: userProfile?.expectedSalary || `${job.salary?.min || 0}-${job.salary?.max || 0}`,
+        expectedSalary: userProfile?.expectedSalary || (typeof job.salary === 'number' ? job.salary.toString() : `${job.salary?.min || 0}-${job.salary?.max || 0}`),
         availability: userProfile?.availability || "Immediate",
         coverLetter: userProfile?.professionalSummary || 
           `I am interested in the ${job.title} position at ${job.companyName}. ` +
@@ -464,7 +464,7 @@ export default function JobSearchPage() {
                           {job.salary && (
                             <div className="flex items-center">
                               <DollarSign className="w-4 h-4 mr-1" />
-                              AED {job.salary.min} - {job.salary.max}
+                              AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}
                             </div>
                           )}
                           <div className="flex items-center">

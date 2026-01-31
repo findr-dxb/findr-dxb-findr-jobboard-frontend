@@ -297,7 +297,7 @@ export default function InterviewJobDetailPage({ params }: { params: Promise<{ j
                   {interviewData.jobDetails?.salary && (
                     <span className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-2" />
-                      AED {interviewData.jobDetails.salary.min?.toLocaleString()} - {interviewData.jobDetails.salary.max?.toLocaleString()}
+                      AED {typeof interviewData.jobDetails.salary === 'number' ? interviewData.jobDetails.salary.toLocaleString() : (interviewData.jobDetails.salary.min || interviewData.jobDetails.salary.max || 0).toLocaleString()}
                     </span>
                   )}
                   <span className="flex items-center">
@@ -390,7 +390,9 @@ export default function InterviewJobDetailPage({ params }: { params: Promise<{ j
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Expected Salary</p>
                   <p className="font-medium">
-                    AED {interviewData.expectedSalary.min?.toLocaleString()} - {interviewData.expectedSalary.max?.toLocaleString()}
+                    AED {interviewData.expectedSalary && typeof interviewData.expectedSalary === 'object' 
+                      ? (interviewData.expectedSalary.min || interviewData.expectedSalary.max || 0).toLocaleString()
+                      : (typeof interviewData.expectedSalary === 'number' ? interviewData.expectedSalary.toLocaleString() : 'Not specified')}
                   </p>
                 </div>
               )}

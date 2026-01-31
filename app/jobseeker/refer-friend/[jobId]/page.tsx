@@ -569,7 +569,7 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
                       {job.jobType?.join(', ') || 'Full-time'}
                     </Badge>
                     <Badge className="bg-green-100 text-green-800 border-green-200">
-                      AED {job.salary?.min?.toLocaleString()} - {job.salary?.max?.toLocaleString()}
+                      AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary?.min || job.salary?.max || 0).toLocaleString()}
                     </Badge>
                     <Badge variant="outline" className="bg-white text-blue-700 border-blue-300">
                       {job.experienceLevel}

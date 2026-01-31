@@ -251,31 +251,17 @@ export default function PostJobPage() {
                 <CardDescription>Salary range and benefits</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="salaryMin">Minimum Salary (AED) *</Label>
-                    <Input
-                      id="salaryMin"
-                      type="number"
-                      value={formData.salaryMin}
-                      onChange={(e) => handleChange("salaryMin", e.target.value)}
-                      placeholder="8000"
-                      className="h-11"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="salaryMax">Maximum Salary (AED) *</Label>
-                    <Input
-                      id="salaryMax"
-                      type="number"
-                      value={formData.salaryMax}
-                      onChange={(e) => handleChange("salaryMax", e.target.value)}
-                      placeholder="15000"
-                      className="h-11"
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="salary">Salary (AED) *</Label>
+                  <Input
+                    id="salary"
+                    type="number"
+                    value={formData.salary}
+                    onChange={(e) => handleChange("salary", e.target.value)}
+                    placeholder="e.g., 12000"
+                    className="h-11"
+                    required
+                  />
                 </div>
               </CardContent>
             </Card>

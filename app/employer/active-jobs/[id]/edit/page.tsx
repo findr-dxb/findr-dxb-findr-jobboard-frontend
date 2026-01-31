@@ -22,8 +22,7 @@ export default function EditJobPage() {
     company: "",
     location: "",
     jobType: "",
-    salaryMin: "",
-    salaryMax: "",
+    salary: "",
     experience: "",
     skills: "",
     description: "",
@@ -58,13 +57,28 @@ export default function EditJobPage() {
         })
 
         const job = response.data.data
+        // Handle salary: if min/max exists, use min (or average if both exist), otherwise use single value
+        let salaryValue = ""
+        if (job.salary) {
+          if (job.salary.min && job.salary.max) {
+            // If both min and max exist, use min (or you could use average: (min + max) / 2)
+            salaryValue = job.salary.min.toString()
+          } else if (job.salary.min) {
+            salaryValue = job.salary.min.toString()
+          } else if (job.salary.max) {
+            salaryValue = job.salary.max.toString()
+          } else if (job.salary.amount) {
+            salaryValue = job.salary.amount.toString()
+          } else if (typeof job.salary === 'number') {
+            salaryValue = job.salary.toString()
+          }
+        }
         setFormData({
           jobTitle: job.title || "",
           company: job.companyName || "",
           location: job.location || "",
           jobType: job.jobType?.[0] || "",
-          salaryMin: job.salary?.min?.toString() || "",
-          salaryMax: job.salary?.max?.toString() || "",
+          salary: salaryValue,
           experience: job.experienceLevel || "",
           skills: job.skills?.join(", ") || "",
           description: job.description || "",
@@ -104,14 +118,15 @@ export default function EditJobPage() {
         return
       }
 
+      const salaryAmount = parseFloat(formData.salary) || 0
       const response = await axios.put(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${jobId}`, {
         title: formData.jobTitle,
         companyName: formData.company,
         location: formData.location,
         jobType: [formData.jobType],
         salary: {
-          min: parseFloat(formData.salaryMin) || 0,
-          max: parseFloat(formData.salaryMax) || 0,
+          min: salaryAmount,
+          max: salaryAmount,
         },
         experienceLevel: formData.experience,
         skills: formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill),
@@ -297,31 +312,17 @@ export default function EditJobPage() {
                 <CardDescription>Salary range and benefits</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="salaryMin">Minimum Salary (AED) *</Label>
-                    <Input
-                      id="salaryMin"
-                      type="number"
-                      value={formData.salaryMin}
-                      onChange={(e) => handleChange("salaryMin", e.target.value)}
-                      placeholder="8000"
-                      className="h-11"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="salaryMax">Maximum Salary (AED) *</Label>
-                    <Input
-                      id="salaryMax"
-                      type="number"
-                      value={formData.salaryMax}
-                      onChange={(e) => handleChange("salaryMax", e.target.value)}
-                      placeholder="15000"
-                      className="h-11"
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="salary">Salary (AED) *</Label>
+                  <Input
+                    id="salary"
+                    type="number"
+                    value={formData.salary}
+                    onChange={(e) => handleChange("salary", e.target.value)}
+                    placeholder="e.g., 12000"
+                    className="h-11"
+                    required
+                  />
                 </div>
               </CardContent>
             </Card>

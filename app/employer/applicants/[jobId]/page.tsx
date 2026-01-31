@@ -44,7 +44,7 @@ interface Applicant {
   };
   status: string;
   appliedDate: string;
-  expectedSalary?: {
+  expectedSalary?: number | {
     min: number;
     max: number;
   };
@@ -507,7 +507,7 @@ export default function JobApplicantsPage() {
                         {applicant.expectedSalary && (
                           <div className="flex items-center gap-2 text-gray-700">
                             <DollarSign className="w-4 h-4 text-green-600" />
-                            <span>Expected: AED {applicant.expectedSalary.min} - {applicant.expectedSalary.max}</span>
+                            <span>Expected: AED {typeof applicant.expectedSalary === 'number' ? applicant.expectedSalary.toLocaleString() : (applicant.expectedSalary.min || applicant.expectedSalary.max || 0).toLocaleString()}</span>
                           </div>
                         )}
                         {applicant.availability && (

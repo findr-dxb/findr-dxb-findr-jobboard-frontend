@@ -656,7 +656,7 @@ export default function JobSeekerDashboard() {
                       <p className="text-xs text-gray-600 mb-1">{job.location}</p>
                       {job.salary && (
                         <p className="text-xs text-emerald-600 font-semibold">
-                          AED {job.salary.min?.toLocaleString()} - {job.salary.max?.toLocaleString()}
+                          AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}
                         </p>
                       )}
                       <div className="flex items-center mt-1 text-xs text-gray-500">

@@ -416,8 +416,12 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
 
 
   const formatSalary = (salary: any) => {
-    if (salary && salary.min && salary.max) {
-      return `AED ${salary.min.toLocaleString()} - ${salary.max.toLocaleString()}`;
+    if (!salary) return "Salary not specified";
+    if (typeof salary === 'number') {
+      return `AED ${salary.toLocaleString()}`;
+    }
+    if (salary.min || salary.max) {
+      return `AED ${(salary.min || salary.max || 0).toLocaleString()}`;
     }
     return "Salary not specified";
   };

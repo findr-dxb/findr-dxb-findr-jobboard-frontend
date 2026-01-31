@@ -448,7 +448,7 @@ export default function JobSeekerRewardsPage() {
             </div>
             <div className="flex items-center space-x-3">
               <FileText className="w-6 h-6 text-blue-600" />
-              <span>Apply for jobs</span>
+              <span>Applying on behalf of a friend</span>
               <Badge className="bg-blue-100 text-blue-800 ml-2">+20/job</Badge>
             </div>
             <div className="flex items-center space-x-3">

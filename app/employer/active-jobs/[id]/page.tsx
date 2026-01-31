@@ -263,7 +263,7 @@ export default function JobDetailPage() {
                     </div>
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-2 text-green-600" />
-                      AED {jobData.salary?.min} - {jobData.salary?.max}
+                      AED {typeof jobData.salary === 'number' ? jobData.salary.toLocaleString() : (jobData.salary?.min || jobData.salary?.max || 0).toLocaleString()}
                     </div>
                     <div className="flex items-center">
                       <Briefcase className="w-4 h-4 mr-2 text-purple-600" />

@@ -666,6 +666,7 @@ export default function PremiumServicesPage() {
                   className="w-full h-full object-cover bg-black"
                   style={{ minHeight: '200px', maxHeight: '350px' }}
                   preload="auto"
+                  controls
                 >
                   <source src="/premium.mp4" type="video/mp4" />
                   Sorry, your browser does not support embedded videos.

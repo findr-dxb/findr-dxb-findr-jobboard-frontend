@@ -37,7 +37,7 @@ interface Job {
   applications?: any[];
   applicationCount?: number;
   views?: number;
-  salary?: {
+  salary?: number | {
     min: number;
     max: number;
   };
@@ -416,7 +416,7 @@ export default function ActiveJobsPage() {
                         {job.salary && (
                           <div className="flex items-center gap-2 text-sm text-gray-700">
                             <DollarSign className="w-4 h-4 text-purple-600" />
-                            <span className="font-medium">AED {job.salary.min} - {job.salary.max}</span>
+                            <span className="font-medium">AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}</span>
                           </div>
                         )}
                         <div className="grid grid-cols-2 gap-4 text-sm pt-2">

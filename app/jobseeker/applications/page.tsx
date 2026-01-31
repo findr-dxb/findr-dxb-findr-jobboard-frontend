@@ -17,7 +17,7 @@ interface Application {
     title: string;
     companyName: string;
     location: string;
-    salary?: {
+    salary?: number | {
       min: number;
       max: number;
     };
@@ -302,7 +302,7 @@ export default function ApplicationsPage() {
                       {app.jobId?.salary && (
                         <div className="flex items-center text-sm text-gray-600">
                           <DollarSign className="w-4 h-4 mr-2" />
-                          AED {app.jobId.salary.min} - {app.jobId.salary.max}
+                          AED {typeof app.jobId.salary === 'number' ? app.jobId.salary.toLocaleString() : (app.jobId.salary.min || app.jobId.salary.max || 0).toLocaleString()}
                         </div>
                       )}
                       {app.jobId?.jobType && app.jobId.jobType.length > 0 && (

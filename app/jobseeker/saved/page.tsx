@@ -15,7 +15,7 @@ interface Job {
   companyName: string;
   location: string;
   jobType: string[];
-  salary: {
+  salary: number | {
     min: number;
     max: number;
   };
@@ -112,8 +112,11 @@ export default function SavedJobsPage() {
   }
 
   // Format salary display
-  const formatSalary = (salary: { min: number; max: number }) => {
-    return `AED ${salary.min.toLocaleString()} - ${salary.max.toLocaleString()}`
+  const formatSalary = (salary: number | { min: number; max: number }) => {
+    if (typeof salary === 'number') {
+      return `AED ${salary.toLocaleString()}`;
+    }
+    return `AED ${(salary.min || salary.max || 0).toLocaleString()}`;
   }
 
   // Format posted date

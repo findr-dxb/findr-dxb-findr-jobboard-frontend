@@ -7,8 +7,7 @@ export interface JobFormData {
   company: string
   location: string
   jobType: string
-  salaryMin: string
-  salaryMax: string
+  salary: string
   experience: string
   skills: string
   description: string
@@ -35,8 +34,7 @@ const initialState: JobPostingState = {
     company: "",
     location: "",
     jobType: "",
-    salaryMin: "",
-    salaryMax: "",
+    salary: "",
     experience: "",
     skills: "",
     description: "",
@@ -97,6 +95,7 @@ export const submitJobPosting = createAsyncThunk(
       }
 
       const mappedJobType = jobTypeMapping[formData.jobType] || 'Full Time'
+      const salaryAmount = parseFloat(formData.salary) || 0
 
       const response = await axios.post('https://findr-jobboard-backend-production.up.railway.app/api/v1/create/jobs', {
         title: formData.jobTitle,
@@ -104,8 +103,8 @@ export const submitJobPosting = createAsyncThunk(
         location: formData.location,
         jobType: [mappedJobType],
         salary: {
-          min: parseFloat(formData.salaryMin) || 0,
-          max: parseFloat(formData.salaryMax) || 0,
+          min: salaryAmount,
+          max: salaryAmount,
         },
         experienceLevel: formData.experience,
         skills: formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill),

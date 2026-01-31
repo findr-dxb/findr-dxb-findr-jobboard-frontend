@@ -1340,9 +1340,8 @@ export default function JobSeekerProfilePage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="0-1">0-1 years</SelectItem>
-                      <SelectItem value="2-3">2-3 years</SelectItem>
-                      <SelectItem value="4-6">4-6 years</SelectItem>
-                      <SelectItem value="7-10">7-10 years</SelectItem>
+                      <SelectItem value="2-3">1-5 years</SelectItem>
+                      <SelectItem value="4-6">5-10 years</SelectItem>
                       <SelectItem value="10+">10+ years</SelectItem>
                     </SelectContent>
                   </Select>

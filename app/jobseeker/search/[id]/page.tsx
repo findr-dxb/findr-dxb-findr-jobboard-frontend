@@ -20,7 +20,7 @@ interface Job {
   companyName: string;
   location: string;
   jobType: string[];
-  salary?: {
+  salary?: number | {
     min: number;
     max: number;
   };
@@ -243,7 +243,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
       // Prepare application data with user's profile information
       const applicationData = {
         jobId: job._id,
-        expectedSalary: userData?.expectedSalary || `${job.salary?.min || 0}-${job.salary?.max || 0}`,
+        expectedSalary: userData?.expectedSalary || (typeof job.salary === 'number' ? job.salary.toString() : `${job.salary?.min || 0}-${job.salary?.max || 0}`),
         availability: userData?.availability || "Immediate",
         coverLetter: userData?.professionalSummary || 
           `I am interested in the ${job.title} position at ${job.companyName}. ` +
@@ -370,7 +370,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                   {job.salary && (
                     <span className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-1" />
-                      AED {job.salary.min} - {job.salary.max}
+                      AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}
                     </span>
                   )}
                   <span className="flex items-center"><Clock className="w-4 h-4 mr-1" />{formatDate(job.createdAt)}</span>
