@@ -2,29 +2,222 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Menu, X, ChevronDown, User, Briefcase, ShoppingCart, Heart, Shield } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { Menu, X, ChevronDown, User, Briefcase, ShoppingCart, Heart, Shield, Search } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/contexts/auth-context"
 import { useCart } from "@/contexts/cart-context"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://findr-jobboard-backend-production.up.railway.app/api/v1"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchIdentifier, setSearchIdentifier] = useState("")
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+  const [searchResult, setSearchResult] = useState<{
+    exists: boolean
+    id?: string
+    name?: string
+    email?: string
+  } | null>(null)
+  const [showRequestAccessModal, setShowRequestAccessModal] = useState(false)
+  const [pendingProfileId, setPendingProfileId] = useState<string | null>(null)
+  const [requestAccessLoading, setRequestAccessLoading] = useState(false)
+
   const pathname = usePathname()
+  const router = useRouter()
   const { user, logout, isLoading } = useAuth()
   const { cart, clearCart } = useCart()
+  const { toast } = useToast()
 
-  
+  const resetSearchState = () => {
+    setSearchIdentifier("")
+    setSearchError(null)
+    setSearchResult(null)
+    setIsSearching(false)
+    setShowRequestAccessModal(false)
+    setPendingProfileId(null)
+  }
 
-  
+  const handleViewProfile = async () => {
+    const id = searchResult?.id
+    if (!id) return
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("findr_token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("token")
+        : null
+    if (!token) return
+    try {
+      const res = await fetch(`${API_BASE_URL}/referrals/joiners/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        setIsSearchOpen(false)
+        resetSearchState()
+        router.push(`/jobseeker/referrals/joiners/${id}`)
+        return
+      }
+      if (res.status === 404) {
+        setPendingProfileId(id)
+        setShowRequestAccessModal(true)
+      }
+    } catch {
+      setShowRequestAccessModal(true)
+      setPendingProfileId(id)
+    }
+  }
+
+  const handleRequestAccess = async () => {
+    if (!pendingProfileId) return
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("findr_token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("token")
+        : null
+    if (!token) return
+    setRequestAccessLoading(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/profile-access/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ targetUserId: pendingProfileId }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast({
+            title: "Request sent",
+            description: data.message || "Request sent to target user for approval.",
+        })
+        setShowRequestAccessModal(false)
+        setPendingProfileId(null)
+        setIsSearchOpen(false)
+        resetSearchState()
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to send request.",
+          variant: "destructive",
+        })
+      }
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to send request. Try again later.",
+        variant: "destructive",
+      })
+    } finally {
+      setRequestAccessLoading(false)
+    }
+  }
+
+  const handleSearchUser = async () => {
+    const trimmed = searchIdentifier.trim()
+    setSearchError(null)
+    setSearchResult(null)
+
+    if (!trimmed) {
+      setSearchError("Please enter an email or Emirates phone number.")
+      return
+    }
+
+    const isEmail = trimmed.includes("@")
+    if (isEmail) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailPattern.test(trimmed)) {
+        setSearchError("Please enter a valid email address.")
+        return
+      }
+    } else {
+      const phonePattern = /^[0-9+\-\s()]+$/
+      if (!phonePattern.test(trimmed)) {
+        setSearchError("Please enter a valid Emirates phone number.")
+        return
+      }
+    }
+
+    try {
+      setIsSearching(true)
+      setSearchError(null)
+      setSearchResult(null)
+
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("findr_token") ||
+            localStorage.getItem("authToken") ||
+            localStorage.getItem("token")
+          : null
+
+      if (!token) {
+        setSearchError("You must be logged in to search users.")
+        setIsSearching(false)
+        return
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/users/lookup?identifier=${encodeURIComponent(trimmed)}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok || data.success === false) {
+        setSearchError(
+          data.message || "Something went wrong while searching. Please try again."
+        )
+        setSearchResult(null)
+        return
+      }
+
+      if (data.exists) {
+        setSearchResult({
+          exists: true,
+          id: data.data?.id,
+          name: data.data?.name,
+          email: data.data?.email,
+        })
+      } else {
+        setSearchResult({ exists: false })
+      }
+    } catch (error) {
+      console.error("Error searching user:", error)
+      setSearchError("Unable to search right now. Please try again later.")
+      setSearchResult(null)
+    } finally {
+      setIsSearching(false)
+    }
+  }
   const handleLogout = async () => {
     try {
       clearCart() 
       logout()
-      // Force a re-render by updating the mobile menu state
       setIsOpen(false)
     } catch (error) {
       console.error('Error during logout:', error)
@@ -66,7 +259,16 @@ export function Navbar() {
   const navItems = getNavItems()
 
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-50" key={user?.id || 'anonymous'}>
+    <Dialog
+      open={isSearchOpen}
+      onOpenChange={(open) => {
+        setIsSearchOpen(open)
+        if (!open) {
+          resetSearchState()
+        }
+      }}
+    >
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50" key={user?.id || 'anonymous'}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -168,6 +370,16 @@ export function Navbar() {
                     </Badge>
                   )}
                 </Link>
+                {user.type === "jobseeker" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSearchOpen(true)}
+                    className="mr-2 flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors"
+                    aria-label="Search user in portal"
+                  >
+                    <Search className="w-5 h-5 text-gray-700" strokeWidth={1.5} />
+                  </button>
+                )}
                 {/* Saved Jobs Heart Icon (Jobseeker only) */}
                 {user.type === "jobseeker" && (
                   <Link href="/jobseeker/saved" className="mr-2 flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors">
@@ -374,6 +586,113 @@ export function Navbar() {
           </div>
         )}
       </div>
-    </nav>
+      </nav>
+
+      {/* User Search Dialog */}
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Search User in Portal</DialogTitle>
+          <DialogDescription>
+            Search for another job seeker by their email or Emirates phone number to check
+            if they already exist in the Findr portal.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="user-search-identifier">Email or Emirates phone number</Label>
+            <Input
+              id="user-search-identifier"
+              placeholder="e.g. user@example.com or +9715xxxxxxx"
+              value={searchIdentifier}
+              onChange={(e) => setSearchIdentifier(e.target.value)}
+              disabled={isSearching}
+              autoComplete="off"
+            />
+            <p className="text-xs text-gray-500">
+              We will only tell you whether the user exists in the portal.
+            </p>
+          </div>
+
+          {searchError && (
+            <p className="text-sm text-red-600">
+              {searchError}
+            </p>
+          )}
+
+          {searchResult && (
+            <div
+              className={`rounded-md border px-3 py-3 text-sm ${
+                searchResult.exists
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-red-200 bg-red-50 text-red-800"
+              }`}
+            >
+              <p className="font-medium">
+                {searchResult.exists ? "User exists in the portal." : "User does not exist in the portal."}
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setIsSearchOpen(false)}
+              disabled={isSearching}
+            >
+              Close
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSearchUser}
+              disabled={isSearching}
+              className="gradient-bg text-white"
+            >
+              {isSearching ? "Searching..." : "Search"}
+            </Button>
+            {searchResult?.exists && searchResult?.id && (
+              <Button
+                variant="outline"
+                type="button"
+                onClick={handleViewProfile}
+              >
+                View Profile
+              </Button>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+
+      {/* Request access modal (when user is not referred by you) */}
+      <Dialog open={showRequestAccessModal} onOpenChange={setShowRequestAccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request access to view profile</DialogTitle>
+            <DialogDescription>
+              This user was not referred by you. You can request access to view their profile. We will send an approval email to the target user. Once they click the link in that email, access will be granted.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setShowRequestAccessModal(false)}
+              disabled={requestAccessLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleRequestAccess}
+              disabled={requestAccessLoading}
+              className="gradient-bg text-white"
+            >
+              {requestAccessLoading ? "Sending..." : "Request access"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </Dialog>
   )
 }

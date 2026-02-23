@@ -555,10 +555,10 @@ export default function ReferralHistoryPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/jobseeker/search" className="flex-1">
+                <Link href="/jobseeker/referrals/joiners" className="flex-1">
                   <Button className="w-full gradient-bg text-white cursor-pointer hover:opacity-90">
                     <UserPlus className="w-4 h-4 mr-2" />
-                    Refer New Friend
+                    Referred Users
                   </Button>
                 </Link>
                 <Link href="/rewards/jobseeker" className="flex-1">
