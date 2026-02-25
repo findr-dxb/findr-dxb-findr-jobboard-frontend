@@ -21,152 +21,30 @@ export default function EmployerDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Clear any pending redirect since we've reached the dashboard
     localStorage.removeItem('pendingRedirect');
-    
+
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
-        console.log('Employer Dashboard: Token found:', !!token);
-        
-        if (!token) {
-          console.log('Employer Dashboard: No token, redirecting to login');
-          router.push('/login');
-          return;
-        }
+        if (!token) { router.push('/login'); return; }
 
-        // Fetch employer profile
-        const profileResponse = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/details', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+        const res = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/dashboard', {
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         });
 
-        if (!profileResponse.ok) {
-          console.log('Employer Dashboard: Profile API failed with status:', profileResponse.status);
-          throw new Error('Failed to fetch profile');
-        }
+        if (!res.ok) { router.push('/login'); return; }
 
-        const profileData = await profileResponse.json();
-        console.log('Employer Dashboard: Profile data received:', profileData);
-        setUserProfile(profileData.data);
+        const { data } = await res.json();
 
-        // Fetch dashboard statistics
-        const statsResponse = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/dashboard/stats', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+        setUserProfile({ name: data.employer.name, companyLogo: data.employer.companyLogo });
+        setDashboardStats({
+          jobStats: data.jobStats,
+          applicationStats: data.appStats,
+          recentApplications: data.recentApplications,
+          topPerformingJobs: data.activeJobs,
         });
-
-        let statsData: any = {
-          jobStats: { total: 0, active: 0, draft: 0, paused: 0, closed: 0 },
-          applicationStats: { total: 0, pending: 0, shortlisted: 0, interviewScheduled: 0, hired: 0, rejected: 0 },
-          recentApplications: [],
-          topPerformingJobs: []
-        };
-
-        if (statsResponse.ok) {
-          const stats = await statsResponse.json();
-          console.log('Employer Dashboard: Stats data received:', stats);
-          statsData = stats.data;
-        } else {
-          console.log('Employer Dashboard: Stats API failed, proceeding with default values');
-        }
-
-        // Always try to fetch recent applications with proper population from jobs endpoint
-        console.log('Employer Dashboard: Fetching recent applications from employer jobs');
-        try {
-          const allApplications: any[] = [];
-          
-          // First, get all employer jobs
-          const jobsForAppsResponse = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/jobs', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          
-          if (jobsForAppsResponse.ok) {
-            const jobsData = await jobsForAppsResponse.json();
-            console.log('Employer Dashboard: Jobs data for applications:', jobsData);
-            
-            // For each job, fetch its applications
-            if (jobsData.data?.jobs && jobsData.data.jobs.length > 0) {
-              for (const job of jobsData.data.jobs.slice(0, 5)) { // Limit to first 5 jobs for performance
-                try {
-                  const jobAppsResponse = await fetch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/job/${job._id}`, {
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
-                  });
-                  
-                  if (jobAppsResponse.ok) {
-                    const jobAppsData = await jobAppsResponse.json();
-                    if (jobAppsData.data && jobAppsData.data.length > 0) {
-                      jobAppsData.data.forEach((app: any) => {
-                        allApplications.push({
-                          ...app,
-                          jobDetails: {
-                            title: job.title,
-                            companyName: job.companyName
-                          }
-                        });
-                      });
-                    }
-                  }
-                } catch (jobError) {
-                  console.error(`Error fetching applications for job ${job._id}:`, jobError);
-                }
-              }
-              
-              // Sort by application date and take recent ones
-              allApplications.sort((a: any, b: any) => {
-                const dateA = new Date(b.appliedDate || b.createdAt).getTime();
-                const dateB = new Date(a.appliedDate || a.createdAt).getTime();
-                return dateA - dateB;
-              });
-              if (allApplications.length > 0) {
-                statsData.recentApplications = allApplications.slice(0, 10);
-                console.log('Employer Dashboard: Successfully fetched recent applications:', statsData.recentApplications.length);
-                console.log('Employer Dashboard: Application IDs:', statsData.recentApplications.map((app: any) => app._id));
-              } else {
-                console.log('Employer Dashboard: No applications found');
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Employer Dashboard: Error fetching recent applications:', error);
-        }
-
-        // Fetch active jobs from the jobs API
-        const jobsResponse = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/jobs', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (jobsResponse.ok) {
-          const jobsData = await jobsResponse.json();
-          console.log('Employer Dashboard: Jobs data received:', jobsData);
-          statsData.topPerformingJobs = jobsData.data.jobs;
-        } else {
-          console.log('Employer Dashboard: Jobs API failed, using empty jobs array');
-          statsData.topPerformingJobs = [];
-        }
-
-        setDashboardStats(statsData);
       } catch (error) {
-        console.error('Employer Dashboard: Error fetching data:', error);
-        // If token is invalid, redirect to login
-        console.log('Employer Dashboard: Redirecting to login due to error');
+        console.error('Employer Dashboard error:', error);
         router.push('/login');
       } finally {
         setLoading(false);
@@ -594,10 +472,10 @@ export default function EmployerDashboard() {
                       <div key={app._id} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg gap-3">
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-sm mb-1">
-                            {app.applicantDetails?.name || app.candidateName || 'Unknown Applicant'}
+                            {app.applicantName || 'Unknown Applicant'}
                           </h4>
                           <p className="text-xs text-gray-600 mb-1">
-                            Applied for {app.jobDetails?.title || app.jobTitle || 'Unknown Position'}
+                            Applied for {app.jobTitle || 'Unknown Position'}
                           </p>
                           <p className="text-xs text-gray-500">
                             {formatDate(app.appliedDate || app.createdAt)}

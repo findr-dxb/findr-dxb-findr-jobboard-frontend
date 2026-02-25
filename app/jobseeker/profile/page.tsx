@@ -33,6 +33,8 @@ import { FileUpload } from "@/components/file-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { FollowUs } from "@/components/follow-us"
 import { normalizeUAE } from "@/lib/utils"
+import { ImageCropModal } from "@/components/image-crop-modal"
+import { UploadAPI } from "@/lib/upload-api"
 
 const API_BASE_URL = "https://findr-jobboard-backend-production.up.railway.app"
 
@@ -175,6 +177,8 @@ export default function JobSeekerProfilePage() {
   const [tier, setTier] = useState("Blue")
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [photoUploading, setPhotoUploading] = useState(false)
   const { toast } = useToast()
   const { refreshAuth } = useAuth()
 
@@ -1043,14 +1047,14 @@ export default function JobSeekerProfilePage() {
               <CardDescription>Upload a professional profile photo to make your profile stand out</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex flex-col md:flex-row gap-6 items-center">
                 {/* Current Photo Display */}
                 <div className="flex-shrink-0">
                   <div className="w-32 h-32 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
                     {profileData.profilePicture ? (
-                      <img 
-                        src={profileData.profilePicture} 
-                        alt="Profile" 
+                      <img
+                        src={profileData.profilePicture}
+                        alt="Profile"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -1058,71 +1062,71 @@ export default function JobSeekerProfilePage() {
                     )}
                   </div>
                 </div>
-                
-                {/* Upload Section */}
-                <div className="flex-1">
-                  <FileUpload
-                    onUploadSuccess={async (fileData) => {
-                      const photoUrl = fileData.secure_url || fileData.url;
-                      setProfileData(prev => ({
-                        ...prev,
-                        profilePicture: photoUrl
-                      }));
-                      
-                      // Auto-save profile data with new photo
-                      try {
-                        const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
-                        if (token) {
-                          const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
-                            method: 'PUT',
-                            headers: {
-                              'Authorization': `Bearer ${token}`,
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              profilePicture: photoUrl
-                            }),
-                          });
-                          
-                          if (response.ok) {
-                            // Refresh auth context to update navbar
-                            refreshAuth();
-                            toast({
-                              title: "Profile Photo Updated",
-                              description: "Your profile photo has been saved successfully.",
-                            });
-                          } else {
-                            throw new Error('Failed to save profile photo');
-                          }
-                        }
-                      } catch (error) {
-                        console.error('Error saving profile photo:', error);
-                        toast({
-                          title: "Photo Uploaded",
-                          description: "Photo uploaded but not saved. Please click 'Save Profile' to persist changes.",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    onUploadError={(error) => {
-                      console.error("Profile photo upload error:", error);
-                      toast({
-                        title: "Upload Failed",
-                        description: error,
-                        variant: "destructive",
-                      });
-                    }}
-                    accept=".jpg,.jpeg,.png,.webp"
-                    maxSize={2}
-                    allowedTypes={['image']}
-                    placeholder="Upload Profile Photo"
-                    currentFile={profileData.profilePicture ? "Profile photo uploaded" : null}
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    Recommended: Square image, at least 400x400px. Max size: 2MB.
+
+                {/* Upload trigger */}
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() => setCropModalOpen(true)}
+                    disabled={photoUploading}
+                  >
+                    <Upload className="w-4 h-4" />
+                    {profileData.profilePicture ? "Change Photo" : "Upload Photo"}
+                  </Button>
+                  <p className="text-xs text-gray-500">
+                    JPG, PNG or WEBP · Max 5 MB · Circular crop like WhatsApp
                   </p>
                 </div>
               </div>
+
+              {/* Crop Modal */}
+              <ImageCropModal
+                open={cropModalOpen}
+                uploading={photoUploading}
+                onClose={() => setCropModalOpen(false)}
+                onCropComplete={async (blob) => {
+                  setPhotoUploading(true)
+                  try {
+                    const file = new File([blob], "profile-photo.jpg", { type: "image/jpeg" })
+                    const fileData = await UploadAPI.uploadFile(file, { resourceType: 'image' })
+                    const photoUrl = fileData.secure_url || fileData.url
+
+                    setProfileData(prev => ({ ...prev, profilePicture: photoUrl }))
+                    setCropModalOpen(false)
+
+                    const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
+                    if (token) {
+                      const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+                        method: 'PUT',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ profilePicture: photoUrl }),
+                      })
+                      if (response.ok) {
+                        // Persist new photo into stored user so navbar updates immediately
+                        const stored = localStorage.getItem('findr_user')
+                        if (stored) {
+                          const parsed = JSON.parse(stored)
+                          parsed.profileImage = photoUrl
+                          localStorage.setItem('findr_user', JSON.stringify(parsed))
+                        }
+                        refreshAuth()
+                        toast({ title: "Profile Photo Updated", description: "Your profile photo has been saved successfully." })
+                      } else {
+                        throw new Error('Failed to save profile photo')
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error uploading profile photo:', error)
+                    toast({ title: "Upload Failed", description: "Could not upload photo. Please try again.", variant: "destructive" })
+                  } finally {
+                    setPhotoUploading(false)
+                  }
+                }}
+              />
             </CardContent>
           </Card>
 

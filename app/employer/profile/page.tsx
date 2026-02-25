@@ -900,6 +900,8 @@ import { FollowUs } from "@/components/follow-us"
 import { FileUpload } from "@/components/file-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
+import { ImageCropModal } from "@/components/image-crop-modal"
+import { UploadAPI } from "@/lib/upload-api"
 
 interface EmployerProfileData {
   companyInfo: {
@@ -1034,6 +1036,8 @@ export default function EmployerProfilePage() {
   const [postedJobsCount, setPostedJobsCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [logoUploading, setLogoUploading] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -1193,6 +1197,12 @@ export default function EmployerProfilePage() {
         });
         
         if (response.ok) {
+          const stored = localStorage.getItem('findr_user')
+          if (stored) {
+            const parsed = JSON.parse(stored)
+            parsed.profileImage = logoUrl
+            localStorage.setItem('findr_user', JSON.stringify(parsed))
+          }
           refreshAuth();
           toast({
             title: "Company Logo Uploaded",
@@ -1792,53 +1802,86 @@ export default function EmployerProfilePage() {
               <CardDescription>Upload your company logo to enhance your profile</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-6 items-center">
                 {/* Current Logo Display */}
-                {profileData.companyLogo && (
-                  <div className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border-2 border-gray-200 flex items-center justify-center">
-                          <img 
-                            src={profileData.companyLogo} 
-                            alt="Company Logo" 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">Company Logo Uploaded</p>
-                          <p className="text-sm text-gray-500">Logo saved and displayed in profile</p>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(profileData.companyLogo, '_blank')}
-                          className="h-8 px-3"
-                        >
-                          View
-                        </Button>
-                      </div>
-                    </div>
+                <div className="flex-shrink-0">
+                  <div className="w-32 h-32 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                    {profileData.companyLogo ? (
+                      <img
+                        src={profileData.companyLogo}
+                        alt="Company Logo"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Building className="w-16 h-16 text-gray-400" />
+                    )}
                   </div>
-                )}
+                </div>
 
-                {/* Logo Upload */}
-                <FileUpload
-                  onUploadSuccess={handleCompanyLogoUpload}
-                  onUploadError={(error) => {
-                    toast({
-                      title: "Upload Failed",
-                      description: error,
-                      variant: "destructive",
-                    });
-                  }}
-                  allowedTypes={['image']}
-                  maxSize={5}
-                  multiple={false}
-                />
+                {/* Upload trigger */}
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() => setCropModalOpen(true)}
+                    disabled={logoUploading}
+                  >
+                    <Upload className="w-4 h-4" />
+                    {profileData.companyLogo ? "Change Logo" : "Upload Logo"}
+                  </Button>
+                  <p className="text-xs text-gray-500">
+                    JPG, PNG or WEBP · Max 5 MB · Circular crop
+                  </p>
+                </div>
               </div>
+
+              {/* Crop Modal */}
+              <ImageCropModal
+                open={cropModalOpen}
+                uploading={logoUploading}
+                onClose={() => setCropModalOpen(false)}
+                onCropComplete={async (blob) => {
+                  setLogoUploading(true)
+                  try {
+                    const file = new File([blob], "company-logo.jpg", { type: "image/jpeg" })
+                    const fileData = await UploadAPI.uploadFile(file, { resourceType: 'image' })
+                    const logoUrl = fileData.secure_url || fileData.url
+
+                    setProfileData(prev => ({ ...prev, companyLogo: logoUrl }))
+                    setCropModalOpen(false)
+
+                    const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
+                    if (token) {
+                      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app'}/api/v1/employer/update`, {
+                        method: 'PUT',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ companyLogo: logoUrl }),
+                      })
+                      if (response.ok) {
+                        // Persist new logo into stored user so navbar updates immediately
+                        const stored = localStorage.getItem('findr_user')
+                        if (stored) {
+                          const parsed = JSON.parse(stored)
+                          parsed.profileImage = logoUrl
+                          localStorage.setItem('findr_user', JSON.stringify(parsed))
+                        }
+                        refreshAuth()
+                        toast({ title: "Company Logo Updated", description: "Your company logo has been saved successfully." })
+                      } else {
+                        throw new Error('Failed to save company logo')
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error uploading company logo:', error)
+                    toast({ title: "Upload Failed", description: "Could not upload logo. Please try again.", variant: "destructive" })
+                  } finally {
+                    setLogoUploading(false)
+                  }
+                }}
+              />
             </CardContent>
           </Card>
           <FollowUs 

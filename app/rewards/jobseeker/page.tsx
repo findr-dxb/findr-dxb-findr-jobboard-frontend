@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Label } from "@/components/ui/label"
 import { Gift, UserCheck, FileText, Star, ArrowRight, Award, Trophy, RefreshCw, Copy, Check, Share2 } from "lucide-react"
 import Link from "next/link"
@@ -319,11 +318,7 @@ export default function JobSeekerRewardsPage() {
   }, []);
 
   // Calculate tier and progress
-  const currentTier = membershipTiers.find((t) => t.name === userTier) || membershipTiers[0];
   const nextTier = membershipTiers.find((t) => t.minPoints > userPoints);
-  const progressToNext = nextTier
-    ? ((userPoints - currentTier.minPoints) / (nextTier.minPoints - currentTier.minPoints)) * 100
-    : 100;
 
   if (loading) {
     return (
@@ -380,21 +375,6 @@ export default function JobSeekerRewardsPage() {
                   <span className="text-2xl mr-4">📝</span>
                   <span className="font-medium text-emerald-900 text-base flex-1">Activity Points</span>
                   <span className="font-bold text-emerald-800 text-lg ml-2">{activityPoints}</span>
-                </div>
-              </div>
-            </div>
-            {/* Right Section: Progress Bar */}
-            <div className="flex flex-col justify-center items-center md:items-end w-full md:w-2/5 px-8 py-8 md:py-10">
-              <div className="w-full max-w-xs md:max-w-sm">
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>{currentTier.name}</span>
-                  <span>{nextTier ? nextTier.name : "Max"}</span>
-                </div>
-                <div className="w-full h-3 bg-white rounded-full relative overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-green-500 transition-all duration-500"
-                    style={{ width: `${progressToNext}%` }}
-                  ></div>
                 </div>
               </div>
             </div>

@@ -464,12 +464,12 @@ export function Navbar() {
                       Employer
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  {/* <DropdownMenuItem asChild>
                     <Link href="/login/admin" className="flex items-center">
                       <Shield className="w-4 h-4 mr-2" />
                       Admin
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}

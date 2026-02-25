@@ -106,30 +106,6 @@ export default function ContactPage() {
               <CardContent className="space-y-6">
                 <div className="flex items-start space-x-4">
                   <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Office Address</h3>
-                    <p className="text-gray-600 text-sm">
-                      Office R40.10/2-22, Burjuman Metro Stn,
-                      <br />
-                      Al Hamriya, Bur Dubai, Dubai
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Phone</h3>
-                    <p className="text-gray-600 text-sm">+971 54 551 5125</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center flex-shrink-0">
                     <Mail className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -137,47 +113,10 @@ export default function ContactPage() {
                     <p className="text-gray-600 text-sm">contact@findr.ae</p>
                   </div>
                 </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Business Hours</h3>
-                    <p className="text-gray-600 text-sm">
-                      Sunday - Thursday: 9:00 AM - 6:00 PM
-                      <br />
-                      Friday - Saturday: Closed
-                    </p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
-            {/* Quick Links */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Quick Links</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-sm">Job Seeker Support</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-sm">Employer Services</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-sm">Technical Support</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-sm">Partnership Inquiries</span>
-                </div>
-              </CardContent>
-            </Card>
+            
           </div>
 
           {/* Contact Form */}

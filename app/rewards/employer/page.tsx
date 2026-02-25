@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Trophy, Star, Award, Crown, Users, Briefcase, Gift, ArrowRight, RefreshCw, Share2, Copy, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { TOP_200_COMPANIES } from "@/lib/utils"
@@ -320,17 +319,12 @@ export default function EmployerRewardsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Calculate tier and progress
   const currentTier = employerTiers.find((t) => t.name === userTier) || employerTiers[0];
-  // Only show progress for Platinum tier (since other tiers are based on team size only)
-  const nextTier = currentTier.name === "Platinum" 
-    ? null // Platinum is the highest tier
-    : currentTier.name === "Gold" 
+  const nextTier = currentTier.name === "Platinum"
+    ? null
+    : currentTier.name === "Gold"
     ? employerTiers.find((t) => t.name === "Platinum")
     : employerTiers.find((t) => t.pointsRequired && t.minPoints > userPoints);
-  const progressToNext = nextTier && nextTier.pointsRequired
-    ? Math.min(100, ((userPoints / nextTier.minPoints) * 100))
-    : userTier === "Platinum" ? 100 : 0;
 
   if (loading) {
     return (
@@ -371,13 +365,6 @@ export default function EmployerRewardsPage() {
                     ? `Upgrade company size to reach ${nextTier.name} tier`
                     : "Maximum tier reached!"}
                 </div>
-              </div>
-            </div>
-            <div className="w-full md:w-1/2">
-              <Progress value={progressToNext} className="h-3" />
-              <div className="flex justify-between text-xs text-gray-600 mt-1">
-                <span>{currentTier.name}</span>
-                <span>{nextTier ? nextTier.name : (userTier === "Platinum" ? "Max" : "Based on team size")}</span>
               </div>
             </div>
           </CardContent>

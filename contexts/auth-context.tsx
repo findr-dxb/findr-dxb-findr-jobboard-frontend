@@ -34,7 +34,7 @@ interface AuthContextType {
   isLoading: boolean
   error: string | null
   updateProfile: (data: any) => Promise<boolean>
-  refreshAuth: () => void
+  refreshAuth: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -144,7 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: response.user._id,
         email: response.user.email,
         type: response.user.role as UserType,
-        name: response.user.name || response.user.fullName || response.user.companyName,
+        name: response.user.role === 'employer'
+          ? (response.user.companyName || response.user.name || response.user.fullName)
+          : (response.user.name || response.user.fullName || response.user.companyName),
         profileImage: response.user.role === 'employer' 
           ? (response.user.companyLogo || `/images/${type}-hero.png`)
           : (response.user.profilePicture || `/images/${type}-hero.png`),
@@ -188,7 +190,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: response.user._id,
         email: response.user.email,
         type: response.user.role as UserType,
-        name: response.user.name || response.user.fullName || response.user.companyName,
+        name: response.user.role === 'employer'
+          ? (response.user.companyName || response.user.name || response.user.fullName)
+          : (response.user.name || response.user.fullName || response.user.companyName),
         profileImage: response.user.role === 'employer' 
           ? (response.user.companyLogo || `/images/${data.role}-hero.png`)
           : (response.user.profilePicture || `/images/${data.role}-hero.png`),
@@ -282,18 +286,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 100)
   }
 
-  const refreshAuth = () => {
-    console.log('AuthContext: Manual refresh triggered');
-    const storedUser = localStorage.getItem("findr_user")
+  const refreshAuth = async () => {
     const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
-    
-    if (storedUser && token) {
+    const storedUser = localStorage.getItem("findr_user")
+    if (!token || !storedUser) return
+
+    try {
+      const parsedUser: User = JSON.parse(storedUser)
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app/api/v1'
+      const endpoint = parsedUser.type === 'employer'
+        ? `${apiBase}/employer/details`
+        : `${apiBase}/profile/details`
+
+      const res = await fetch(endpoint, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+
+      if (res.ok) {
+        const { data } = await res.json()
+        const updatedUser: User = {
+          ...parsedUser,
+          name: parsedUser.type === 'employer'
+            ? (data.companyName || data.name || data.fullName || parsedUser.name)
+            : (data.name || data.fullName || data.companyName || parsedUser.name),
+          profileImage: parsedUser.type === 'employer'
+            ? (data.companyLogo || parsedUser.profileImage)
+            : (data.profilePicture || parsedUser.profileImage),
+        }
+        localStorage.setItem("findr_user", JSON.stringify(updatedUser))
+        setUser(updatedUser)
+      } else {
+        // API failed — fall back to what's in localStorage
+        setUser(parsedUser)
+      }
+    } catch (error) {
+      console.error('AuthContext: refreshAuth error:', error)
       try {
-        const parsedUser = JSON.parse(storedUser);
-        console.log('AuthContext: Refreshing with user:', parsedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error('AuthContext: Error parsing stored user during refresh:', error);
+        const parsedUser = JSON.parse(localStorage.getItem("findr_user") || '{}')
+        if (parsedUser.id) setUser(parsedUser)
+      } catch (_) {
         logout()
       }
     }
