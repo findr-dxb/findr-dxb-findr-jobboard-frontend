@@ -404,7 +404,7 @@ export default function JobSeekerRewardsPage() {
             <div className="flex items-center space-x-3">
               <Gift className="w-6 h-6 text-pink-600" />
               <span>Invite a friend</span>
-              <Badge className="bg-pink-100 text-pink-800 ml-2">+50</Badge>
+              <Badge className="bg-pink-100 text-pink-800 ml-2">+100</Badge>
             </div>
             <div className="flex items-center space-x-3">
               <ArrowRight className="w-6 h-6 text-purple-600" />

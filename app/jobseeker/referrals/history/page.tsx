@@ -522,7 +522,7 @@ export default function ReferralHistoryPage() {
                 <Link href="/jobseeker/referrals/joiners" className="flex-1">
                   <Button className="w-full gradient-bg text-white cursor-pointer hover:opacity-90">
                     <UserPlus className="w-4 h-4 mr-2" />
-                    Referred Users
+                    Your Network
                   </Button>
                 </Link>
                 <Link href="/rewards/jobseeker" className="flex-1">

@@ -315,8 +315,9 @@ export default function JobSearchPage() {
     }
   }
 
-  const handleReferFriend = (jobId: string, jobTitle: string) => {
-    router.push(`/jobseeker/refer-friend/${jobId}`)
+  const handleReferFriend = () => {
+    // Go to Your Network where you can pick a person, then choose a job from the instant referral dialog.
+    router.push("/jobseeker/referrals/joiners")
   }
 
   const formatDate = (dateString: string) => {
@@ -525,8 +526,8 @@ export default function JobSearchPage() {
                             "Apply Now"
                           )}
                         </Button>
-                        <Button 
-                          onClick={() => handleReferFriend(job._id, job.title)} 
+                        <Button
+                          onClick={handleReferFriend}
                           variant="outline"
                         >
                           <UserPlus className="w-4 h-4 mr-1" />

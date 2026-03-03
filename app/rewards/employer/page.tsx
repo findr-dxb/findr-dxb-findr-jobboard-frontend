@@ -160,7 +160,7 @@ export default function EmployerRewardsPage() {
 
   // Determine employer tier based on team size (points only for Platinum)
   const determineEmployerTier = (profile: any, points: number) => {
-    const teamSize = profile?.teamSize || "0-10";
+    const teamSize = profile?.teamSize || "0-50";
     let teamSizeNum = 0;
     
     // Handle different team size formats
@@ -168,7 +168,6 @@ export default function EmployerRewardsPage() {
       // Handle "1000+" format
       teamSizeNum = parseInt(teamSize.replace('+', '')) || 0;
     } else if (teamSize.includes('-')) {
-      // Handle "1-10", "11-50", etc.
       teamSizeNum = parseInt(teamSize.split('-')[0]) || 0;
     } else {
       teamSizeNum = parseInt(teamSize) || 0;

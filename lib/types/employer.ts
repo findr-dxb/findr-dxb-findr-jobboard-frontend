@@ -51,7 +51,7 @@ export interface EmployerProfile {
   companyEmail: string;
   companyLogo: string;
   industry: string;
-  teamSize: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
+  teamSize: '0-50' | '51-250' | '251-500' | '500+';
   foundedYear: number;
   aboutCompany: string;
   

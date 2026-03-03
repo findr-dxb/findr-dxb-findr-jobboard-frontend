@@ -151,7 +151,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1001',
     website: 'https://techcorp.com',
     industry: 'Technology',
-    teamSize: '500-1000',
+    teamSize: '500+',
     foundedYear: 2010,
     profileUrl: '/employer/profile/EMP001',
     status: 'active'
@@ -163,7 +163,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1002',
     website: 'https://innovatelabs.com',
     industry: 'Technology',
-    teamSize: '50-100',
+    teamSize: '0-50',
     foundedYear: 2018,
     profileUrl: '/employer/profile/EMP002',
     status: 'active'
@@ -175,7 +175,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1003',
     website: 'https://globaldynamics.com',
     industry: 'Consulting',
-    teamSize: '200-500',
+    teamSize: '251-500',
     foundedYear: 2005,
     profileUrl: '/employer/profile/EMP003',
     status: 'blocked'
@@ -187,7 +187,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1004',
     website: 'https://startuphub.com',
     industry: 'Technology',
-    teamSize: '10-50',
+    teamSize: '0-50',
     foundedYear: 2020,
     profileUrl: '/employer/profile/EMP004',
     status: 'active'
@@ -199,7 +199,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1005',
     website: 'https://enterprisesys.com',
     industry: 'Technology',
-    teamSize: '1000+',
+    teamSize: '500+',
     foundedYear: 1995,
     profileUrl: '/employer/profile/EMP005',
     status: 'active'
@@ -211,7 +211,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1006',
     website: 'https://digitalinnovations.com',
     industry: 'Technology',
-    teamSize: '100-200',
+    teamSize: '51-250',
     foundedYear: 2015,
     profileUrl: '/employer/profile/EMP006',
     status: 'active'
@@ -223,7 +223,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1007',
     website: 'https://futuretech.com',
     industry: 'Technology',
-    teamSize: '50-100',
+    teamSize: '0-50',
     foundedYear: 2019,
     profileUrl: '/employer/profile/EMP007',
     status: 'active'
@@ -235,7 +235,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1008',
     website: 'https://cloudfirst.com',
     industry: 'Cloud Services',
-    teamSize: '200-500',
+    teamSize: '251-500',
     foundedYear: 2012,
     profileUrl: '/employer/profile/EMP008',
     status: 'active'
@@ -247,7 +247,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1009',
     website: 'https://datadriven.com',
     industry: 'Data Analytics',
-    teamSize: '100-200',
+    teamSize: '51-250',
     foundedYear: 2016,
     profileUrl: '/employer/profile/EMP009',
     status: 'active'
@@ -259,7 +259,7 @@ export const mockEmployers: Employer[] = [
     phoneNumber: '+1-555-1010',
     website: 'https://nextgen.com',
     industry: 'Technology',
-    teamSize: '50-100',
+    teamSize: '0-50',
     foundedYear: 2021,
     profileUrl: '/employer/profile/EMP010',
     status: 'active'
