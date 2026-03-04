@@ -53,7 +53,7 @@ const membershipTiers = [
 export default function JobSeekerRewardsPage() {
   const router = useRouter()
   const { toast } = useToast()
-  
+
   // State for user data
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -110,12 +110,12 @@ export default function JobSeekerRewardsPage() {
     if (profile?.certifications && profile.certifications.length > 0) completed++;
     // Check resume in multiple possible locations (matching backend logic)
     const hasResume = !!(profile?.resumeDocument && profile.resumeDocument.trim() !== '') ||
-                     !!(profile?.resumeUrl && profile.resumeUrl.trim() !== '') ||
-                     !!(profile?.resume && (typeof profile.resume === 'string' ? profile.resume.trim() !== '' : profile.resume)) ||
-                     !!(profile?.jobPreferences?.resumeAndDocs && profile.jobPreferences.resumeAndDocs.length > 0) ||
-                     !!(profile?.documents && profile.documents.length > 0 && profile.documents.some((doc: any) => 
-                       doc.type === 'resume' || doc.name?.toLowerCase().includes('resume') || doc.name?.toLowerCase().includes('cv')
-                     ));
+      !!(profile?.resumeUrl && profile.resumeUrl.trim() !== '') ||
+      !!(profile?.resume && (typeof profile.resume === 'string' ? profile.resume.trim() !== '' : profile.resume)) ||
+      !!(profile?.jobPreferences?.resumeAndDocs && profile.jobPreferences.resumeAndDocs.length > 0) ||
+      !!(profile?.documents && profile.documents.length > 0 && profile.documents.some((doc: any) =>
+        doc.type === 'resume' || doc.name?.toLowerCase().includes('resume') || doc.name?.toLowerCase().includes('cv')
+      ));
     if (hasResume) completed++;
 
     // Social Links (3 fields) - check both uppercase and lowercase versions
@@ -154,7 +154,7 @@ export default function JobSeekerRewardsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
-      
+
       if (!token) {
         router.push('/login');
         return;
@@ -179,17 +179,17 @@ export default function JobSeekerRewardsPage() {
 
       const data = await response.json();
       setUserProfile(data.data);
-      
+
       const deducted = data.data?.deductedPoints || 0;
       const metrics = calculateProfileMetrics(data.data);
       setProfileCompletion(metrics.percentage);
-      
+
       // Calculate activity points from individual components
       // First, fetch referral history to get hired count for placement points calculation
       let placementPoints = 0;
       let signupReferralPoints = 0;
       const totalReferralRewardPoints = data.data.referralRewardPoints || 0;
-      
+
       try {
         // Fetch referral history to count hired referrals (job placements)
         const referralHistoryResponse = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/referrals/history', {
@@ -199,7 +199,7 @@ export default function JobSeekerRewardsPage() {
             'Content-Type': 'application/json',
           },
         });
-        
+
         if (referralHistoryResponse.ok) {
           const referralHistoryData = await referralHistoryResponse.json();
           const hiredCount = referralHistoryData?.stats?.hired || 0;
@@ -219,41 +219,41 @@ export default function JobSeekerRewardsPage() {
         placementPoints = totalReferralRewardPoints;
         signupReferralPoints = 0;
       }
-      
+
       // Calculate base points
       const basePoints = 50 + metrics.percentage * 2; // Base 50 + 2 points per percentage
-      
+
       // Determine tier (for display purposes only, not used in calculation)
       const tier = determineUserTier(data.data, basePoints);
-      
+
       // Use base points directly without multiplier
       const calculatedBasePoints = basePoints;
-      
+
       // Add other points (applications, RM service, social media, referrals)
       const applicationPoints = data.data?.rewards?.applyForJobs || 0;
       const rmServicePoints = data.data?.rewards?.rmService || 0;
       const socialMediaBonus = data.data?.rewards?.socialMediaBonus || 0;
-      
+
       // Activity points = Base Points + Applications + RM Service + Social Media + Signup Referrals
       const activityRewardPoints = calculatedBasePoints + applicationPoints + rmServicePoints + socialMediaBonus + signupReferralPoints;
-      
+
       // Calculate total points: Activity Points + Placement Points - Deducted Points
       const totalPoints = Math.max(0, activityRewardPoints + placementPoints - deducted);
-      
+
       setReferralPoints(placementPoints);
       setActivityPoints(activityRewardPoints);
       setUserPoints(totalPoints);
-      
-        const referralCode = data.data?.referralCode || "";
-        if (referralCode) {
-          const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://findrtechnosis.netlify.app';
-          const link = `${baseUrl}/signup?ref=${referralCode}`;
-          setReferralLink(link);
+
+      const referralCode = data.data?.referralCode || "";
+      if (referralCode) {
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://findrtechnosis.netlify.app';
+        const link = `${baseUrl}/signup?ref=${referralCode}`;
+        setReferralLink(link);
       } else {
         setReferralLink("");
       }
       setUserTier(tier);
-      
+
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
@@ -274,7 +274,7 @@ export default function JobSeekerRewardsPage() {
   // Copy referral link to clipboard
   const copyReferralLink = async () => {
     if (!referralLink) return;
-    
+
     try {
       await navigator.clipboard.writeText(referralLink);
       setCopied(true);
@@ -295,7 +295,7 @@ export default function JobSeekerRewardsPage() {
   // Share referral link
   const shareReferralLink = async () => {
     if (!referralLink) return;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -335,7 +335,7 @@ export default function JobSeekerRewardsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-hidden">
       <Navbar />
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
         {/* Header: Points & Tier - Improved Responsive Layout */}
@@ -353,17 +353,38 @@ export default function JobSeekerRewardsPage() {
                 </div>
                 {/* Main Info Stack */}
                 <div className="flex flex-col items-start justify-center">
-                  <h1 className="font-extrabold mb-1 text-4xl md:text-5xl text-blue-900 leading-tight">{userPoints} Points</h1>
-                  <span className="mb-1 bg-white text-blue-900 font-semibold rounded-full px-6 py-2 text-base shadow-sm" style={{marginBottom:4}}>
+                  <h1 className="font-extrabold mb-1 text-4xl md:text-5xl text-blue-900 leading-tight">
+                    {userPoints} Points
+                  </h1>
+                  <span
+                    className="mb-1 bg-white text-blue-900 font-semibold rounded-full px-6 py-2 text-base shadow-sm"
+                    style={{ marginBottom: 4 }}
+                  >
                     {userTier} Member
                   </span>
-                  <div className="text-gray-500 text-sm mb-1">
-                    {nextTier ? `${nextTier.minPoints - userPoints} points to ${nextTier.name}` : "Maximum tier reached!"}
-                  </div>
+
                 </div>
               </div>
-              {/* Bottom Card Row: Referral + Activity */}
-              <div className="flex flex-row gap-4 mt-2 w-full max-w-md">
+
+              <div className="flex flex-col gap-3 mt-3 w-full max-w-md md:hidden">
+                <div className="flex items-center justify-between bg-blue-50 rounded-xl shadow-md px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎁</span>
+                    <span className="font-medium text-blue-900 text-sm">Placement Points</span>
+                  </div>
+                  <span className="font-bold text-blue-800 text-base">{referralPoints}</span>
+                </div>
+                <div className="flex items-center justify-between bg-emerald-50 rounded-xl shadow-md px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📝</span>
+                    <span className="font-medium text-emerald-900 text-sm">Activity Points</span>
+                  </div>
+                  <span className="font-bold text-emerald-800 text-base">{activityPoints}</span>
+                </div>
+              </div>
+
+              {/* Desktop layout (unchanged) */}
+              <div className="hidden md:flex flex-row gap-4 mt-2 w-full max-w-md">
                 {/* Referral Points Card */}
                 <div className="flex-1 bg-blue-50 rounded-xl shadow-md flex items-center px-5 py-4 min-w-0">
                   <span className="text-2xl mr-4">🎁</span>
@@ -390,26 +411,34 @@ export default function JobSeekerRewardsPage() {
             </CardTitle>
             <CardDescription>Boost your points by being active on the platform</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-6">
-            <div className="flex items-center space-x-3">
-              <UserCheck className="w-6 h-6 text-emerald-600" />
-              <span>Complete your profile</span>
-              <Badge className="bg-emerald-100 text-emerald-800 ml-2">+250</Badge>
+          <CardContent className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <UserCheck className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
+                <span className="text-sm md:text-base">Complete your profile</span>
+              </div>
+              <Badge className="bg-emerald-100 text-emerald-800 text-xs md:text-sm px-3 py-1">+250</Badge>
             </div>
-            <div className="flex items-center space-x-3">
-              <FileText className="w-6 h-6 text-blue-600" />
-              <span>Applying on behalf of a friend</span>
-              <Badge className="bg-blue-100 text-blue-800 ml-2">+20/job</Badge>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+                <span className="text-sm md:text-base">Applying on behalf of a friend</span>
+              </div>
+              <Badge className="bg-blue-100 text-blue-800 text-xs md:text-sm px-3 py-1">+20/job</Badge>
             </div>
-            <div className="flex items-center space-x-3">
-              <Gift className="w-6 h-6 text-pink-600" />
-              <span>Invite a friend</span>
-              <Badge className="bg-pink-100 text-pink-800 ml-2">+100</Badge>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Gift className="w-5 h-5 md:w-6 md:h-6 text-pink-600" />
+                <span className="text-sm md:text-base">Invite a friend</span>
+              </div>
+              <Badge className="bg-pink-100 text-pink-800 text-xs md:text-sm px-3 py-1">+100</Badge>
             </div>
-            <div className="flex items-center space-x-3">
-              <ArrowRight className="w-6 h-6 text-purple-600" />
-              <span>Purchase premium services</span>
-              <Badge className="bg-purple-100 text-purple-800 ml-2">+variable</Badge>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+                <span className="text-sm md:text-base">Purchase premium services</span>
+              </div>
+              <Badge className="bg-purple-100 text-purple-800 text-xs md:text-sm px-3 py-1">+variable</Badge>
             </div>
           </CardContent>
         </Card>
@@ -429,7 +458,7 @@ export default function JobSeekerRewardsPage() {
           </CardContent>
         </Card>
 
-       
+
 
         {/* Membership Tiers */}
         <Card className="card-shadow border-0">
@@ -472,46 +501,48 @@ export default function JobSeekerRewardsPage() {
           <CardContent className="space-y-4">
             <div className="bg-white rounded-lg p-4 border-2 border-emerald-200">
               <Label className="text-sm font-medium text-gray-700 mb-2 block">Your Referral Link</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex-1 bg-gray-50 rounded-md p-3 border border-gray-200 overflow-hidden">
-                  <p className="text-sm text-gray-800 break-all font-mono">
+                  <p className="text-xs sm:text-sm text-gray-800 break-all font-mono leading-snug max-h-16 overflow-y-auto">
                     {loading ? "Loading..." : referralLink || (userProfile?.referralCode ? "Generating link..." : "No referral code available")}
                   </p>
                 </div>
-                <Button
-                  onClick={copyReferralLink}
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0"
-                  disabled={!referralLink}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy
-                    </>
-                  )}
-                </Button>
-                {typeof navigator !== "undefined" && (navigator as any).share && (
+                <div className="flex sm:flex-col md:flex-row gap-2 sm:gap-2">
                   <Button
-                    onClick={shareReferralLink}
+                    onClick={copyReferralLink}
                     variant="outline"
                     size="sm"
                     className="shrink-0"
                     disabled={!referralLink}
                   >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy
+                      </>
+                    )}
                   </Button>
-                )}
+                  {typeof navigator !== "undefined" && (navigator as any).share && (
+                    <Button
+                      onClick={shareReferralLink}
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      disabled={!referralLink}
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-            
+
             {userProfile?.referralCode && (
               <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
                 <Label className="text-sm font-medium text-gray-700 mb-2 block">Your Referral Code</Label>
@@ -560,13 +591,13 @@ export default function JobSeekerRewardsPage() {
               </ul>
             </div>
 
-            <div className="flex gap-3">
-              <Link href="/jobseeker/referrals/history" className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Link href="/jobseeker/referrals/history" className="sm:flex-1">
                 <Button variant="outline" className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50">
                   View Referral History
                 </Button>
               </Link>
-              <Link href="/rewards/jobseeker/earn-money" className="flex-1">
+              <Link href="/rewards/jobseeker/earn-money" className="sm:flex-1">
                 <Button className="w-full gradient-bg text-white">
                   Learn More About Rewards
                 </Button>

@@ -240,7 +240,7 @@ export function Navbar() {
   const jobSeekerNavItems: NavItem[] = [
     { href: "/jobseeker/dashboard", label: "Dashboard" },
     { href: "/jobseeker/search", label: "Search Jobs" },
-    { href: "/jobseeker/rewards/jobseeker", label: "Rewards" },
+    { href: "/rewards/jobseeker", label: "Rewards" },
     { href: "/jobseeker/premium", label: "Premium Services" },
   ];
 
@@ -570,12 +570,6 @@ export function Navbar() {
                       <Button className="w-full justify-start gradient-bg text-white">
                         <Briefcase className="w-4 h-4 mr-2" />
                         Login as Employer
-                      </Button>
-                    </Link>
-                    <Link href="/login/admin" onClick={() => setIsOpen(false)}>
-                      <Button variant="destructive" className="w-full justify-start">
-                        <Shield className="w-4 h-4 mr-2" />
-                        Login as Admin
                       </Button>
                     </Link>
                   </div>

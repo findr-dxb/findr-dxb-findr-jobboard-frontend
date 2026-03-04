@@ -29,7 +29,7 @@ const employerTiers: EmployerTier[] = [
   {
     name: "Blue",
     label: "Starter Tier",
-    employees: "0 – 100",
+    employees: "0 – 50",
     icon: Star,
     color: "text-blue-600",
     bg: "bg-blue-50",
@@ -41,7 +41,7 @@ const employerTiers: EmployerTier[] = [
   {
     name: "Silver",
     label: "Growing Tier",
-    employees: "101 – 500",
+    employees: "51 – 250",
     icon: Trophy,
     color: "text-gray-600",
     bg: "bg-gray-50",
@@ -53,7 +53,7 @@ const employerTiers: EmployerTier[] = [
   {
     name: "Gold",
     label: "Advanced Tier",
-    employees: "501 – 1000+",
+    employees: "251+",
     icon: Award,
     color: "text-yellow-600",
     bg: "bg-yellow-50",
@@ -65,7 +65,7 @@ const employerTiers: EmployerTier[] = [
   {
     name: "Platinum",
     label: "Elite Tier",
-    employees: "1000+",
+    employees: "Any size (500+ points)",
     icon: Crown,
     color: "text-emerald-700",
     bg: "bg-emerald-50",
@@ -80,7 +80,7 @@ const howToEarn = [
   {
     icon: Briefcase,
     label: "Post a job",
-    badge: "+30/job",
+    badge: "+100/job",
     color: "bg-blue-100 text-blue-800",
   },
   {
@@ -158,43 +158,26 @@ export default function EmployerRewardsPage() {
     return points;
   };
 
-  // Determine employer tier based on team size (points only for Platinum)
   const determineEmployerTier = (profile: any, points: number) => {
-    const teamSize = profile?.teamSize || "0-50";
-    let teamSizeNum = 0;
-    
-    // Handle different team size formats
-    if (teamSize.includes('+')) {
-      // Handle "1000+" format
-      teamSizeNum = parseInt(teamSize.replace('+', '')) || 0;
-    } else if (teamSize.includes('-')) {
-      teamSizeNum = parseInt(teamSize.split('-')[0]) || 0;
-    } else {
-      teamSizeNum = parseInt(teamSize) || 0;
-    }
-    
-    const companyName = profile?.companyName || "";
-    
-    // Check if company is in TOP_200_COMPANIES
+    const teamSize: string = profile?.teamSize || "0-50";
+    const companyName = profile?.companyName || "";// Check if company is in TOP_200_COMPANIES
     const isTopCompany = TOP_200_COMPANIES.some(
       (company) => company.toLowerCase() === companyName.toLowerCase()
     );
-    
-    // Platinum tier: requires 500+ points
-    if (points >= 500) return "Platinum";
-    
-    // All other tiers based ONLY on team size (no point requirements)
-    // If company size is 0-100, it should be Blue tier
-    if (teamSizeNum <= 100) return "Blue";
-    
-    // If company size is 101-500, it should be Silver tier
-    if (teamSizeNum >= 101 && teamSizeNum <= 500) return "Silver";
-    
-    // If company size is 501-1000 or TOP_200_COMPANIES, it should be Gold tier
-    if ((teamSizeNum >= 501 && teamSizeNum <= 1000) || isTopCompany) return "Gold";
-    
-    // Default fallback
-    return "Blue";
+    if (points >= 500) {
+      return "Platinum";
+    }
+    switch (teamSize) {
+      case "0-50":
+        return "Blue";
+      case "51-250":
+        return "Silver";
+      case "251-500":
+      case "500+":
+        return "Gold";
+      default:
+        return isTopCompany ? "Gold" : "Blue";
+    }
   };
 
   // Fetch employer profile data
@@ -215,7 +198,6 @@ export default function EmployerRewardsPage() {
           'Content-Type': 'application/json',
         },
       }).catch((networkError) => {
-        // Handle network errors (CORS, connection refused, etc.)
         console.error('Network error:', networkError);
         throw new Error('Network error: Unable to connect to server. Please check your connection.');
       });
@@ -340,7 +322,7 @@ export default function EmployerRewardsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50 overflow-x-hidden">
       <Navbar />
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
         {/* Header: Points & Tier */}
@@ -355,15 +337,7 @@ export default function EmployerRewardsPage() {
                 <Badge className="border text-base px-4 py-2 mt-2" variant="secondary">
                   {userTier} Member
                 </Badge>
-                <div className="mt-2 text-gray-600 text-sm">
-                  {userTier === "Platinum" 
-                    ? "Maximum tier reached!" 
-                    : nextTier && nextTier.pointsRequired
-                    ? `${nextTier.minPoints - userPoints} points to ${nextTier.name}`
-                    : nextTier
-                    ? `Upgrade company size to reach ${nextTier.name} tier`
-                    : "Maximum tier reached!"}
-                </div>
+                
               </div>
             </div>
           </CardContent>
@@ -378,12 +352,14 @@ export default function EmployerRewardsPage() {
             </CardTitle>
             <CardDescription>Boost your points by being active as an employer on Findr</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
             {howToEarn.map((item, idx) => (
-              <div className="flex items-center space-x-3" key={idx}>
-                <item.icon className="w-6 h-6 text-emerald-600" />
-                <span>{item.label}</span>
-                <Badge className={item.color + " ml-2"}>{item.badge}</Badge>
+              <div className="flex items-center justify-between gap-3" key={idx}>
+                <div className="flex items-center gap-3">
+                  <item.icon className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
+                  <span className="text-sm md:text-base">{item.label}</span>
+                </div>
+                <Badge className={`${item.color} text-xs md:text-sm px-3 py-1`}>{item.badge}</Badge>
               </div>
             ))}
           </CardContent>
@@ -478,43 +454,45 @@ export default function EmployerRewardsPage() {
           <CardContent className="space-y-4">
             <div className="bg-white rounded-lg p-4 border-2 border-emerald-200">
               <Label className="text-sm font-medium text-gray-700 mb-2 block">Your Referral Link</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex-1 bg-gray-50 rounded-md p-3 border border-gray-200 overflow-hidden">
-                  <p className="text-sm text-gray-800 break-all font-mono">
+                  <p className="text-xs sm:text-sm text-gray-800 break-all font-mono leading-snug max-h-16 overflow-y-auto">
                     {loading ? "Loading..." : referralLink || (employerProfile?.referralCode ? "Generating link..." : "No referral code available")}
                   </p>
                 </div>
-                <Button
-                  onClick={copyReferralLink}
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0"
-                  disabled={!referralLink}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy
-                    </>
-                  )}
-                </Button>
-                {typeof navigator !== "undefined" && (navigator as any).share && (
+                <div className="flex sm:flex-col md:flex-row gap-2 sm:gap-2">
                   <Button
-                    onClick={shareReferralLink}
+                    onClick={copyReferralLink}
                     variant="outline"
                     size="sm"
                     className="shrink-0"
                     disabled={!referralLink}
                   >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy
+                      </>
+                    )}
                   </Button>
-                )}
+                  {typeof navigator !== "undefined" && (navigator as any).share && (
+                    <Button
+                      onClick={shareReferralLink}
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      disabled={!referralLink}
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
             
@@ -566,13 +544,13 @@ export default function EmployerRewardsPage() {
               </ul>
             </div>
 
-            <div className="flex gap-3">
-              <Link href="/employer/applicants" className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Link href="/employer/applicants" className="sm:flex-1">
                 <Button variant="outline" className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50">
                   View Applicants
                 </Button>
               </Link>
-              <Link href="/rewards/employer" className="flex-1">
+              <Link href="/rewards/employer" className="sm:flex-1">
                 <Button className="w-full gradient-bg text-white">
                   Learn More About Rewards
                 </Button>
