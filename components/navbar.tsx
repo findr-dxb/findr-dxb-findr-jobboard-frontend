@@ -637,17 +637,19 @@ export function Navbar() {
             >
               Close
             </Button>
-            <Button
-              type="button"
-              onClick={handleSearchUser}
-              disabled={isSearching}
-              className="gradient-bg text-white"
-            >
-              {isSearching ? "Searching..." : "Search"}
-            </Button>
+            {!searchResult?.exists && (
+              <Button
+                type="button"
+                onClick={handleSearchUser}
+                disabled={isSearching}
+                className="gradient-bg text-white"
+              >
+                {isSearching ? "Searching..." : "Search"}
+              </Button>
+            )}
             {searchResult?.exists && searchResult?.id && (
               <Button
-                variant="outline"
+                className="gradient-bg text-white"
                 type="button"
                 onClick={handleViewProfile}
               >

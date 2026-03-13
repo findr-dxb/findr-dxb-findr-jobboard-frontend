@@ -114,6 +114,7 @@ interface Job {
   location: string
   jobType?: string[]
   salary?: number | { min?: number; max?: number }
+  alreadyReferred?: boolean
 }
 
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
@@ -176,8 +177,16 @@ function JobPickerModal({
   const fetchJobs = useCallback(async (searchQuery: string, pageNum: number) => {
     setSearching(true)
     try {
+      const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+      const params: Record<string, string | number> = {
+        search: searchQuery,
+        page: pageNum,
+        limit: JOBS_PER_PAGE,
+      }
+      if (profile?.email) params.candidateEmail = profile.email
       const res = await axios.get(`${API_BASE_URL}/jobs/picker`, {
-        params: { search: searchQuery, page: pageNum, limit: JOBS_PER_PAGE },
+        params,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       const d = res.data?.data
       setJobs(d?.jobs ?? [])
@@ -198,6 +207,8 @@ function JobPickerModal({
   }, [query, page, fetchJobs])
 
   const handleApply = async (job: Job) => {
+    if (job.alreadyReferred) return
+
     const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
     if (!token) return
 
@@ -225,15 +236,33 @@ function JobPickerModal({
 
       toast({
         title: "Referral Submitted",
-        description: `${displayName} has been referred for "${job.title}" at ${job.companyName}.`,
+        description: `${displayName} has been referred for "${job.title}" at ${job.companyName}. A referral approval link has been sent to the candidate.`,
       })
-      onClose()
+
+      // Mark this job as referred in the local list so the button becomes disabled
+      setJobs((prev) =>
+        prev.map((j) => (j._id === job._id ? { ...j, alreadyReferred: true } : j)),
+      )
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.response?.data?.message || "Failed to submit referral.",
-        variant: "destructive",
-      })
+      const message: string =
+        err?.response?.data?.message || "Failed to submit referral."
+
+      // If backend says this candidate is already referred for this job, reflect that in UI
+      if (message.toLowerCase().includes("already referred")) {
+        setJobs((prev) =>
+          prev.map((j) => (j._id === job._id ? { ...j, alreadyReferred: true } : j)),
+        )
+        toast({
+          title: "Already referred",
+          description: message,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: message,
+          variant: "destructive",
+        })
+      }
     } finally {
       setApplying(null)
     }
@@ -339,11 +368,20 @@ function JobPickerModal({
                       <TableCell className="py-5 px-6">
                         <Button
                           size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9 px-5 rounded-lg flex items-center gap-1.5"
-                          disabled={applying === job._id}
+                          className={`text-xs h-9 px-5 rounded-lg flex items-center gap-1.5 ${
+                            job.alreadyReferred
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                          }`}
+                          disabled={job.alreadyReferred || applying === job._id}
                           onClick={() => handleApply(job)}
                         >
-                          {applying === job._id ? (
+                          {job.alreadyReferred ? (
+                            <>
+                              <CheckCircle className="w-4 h-4" />
+                              Referred
+                            </>
+                          ) : applying === job._id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
                             <>
