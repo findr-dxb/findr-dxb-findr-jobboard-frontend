@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Heart, ExternalLink } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { formatSalary } from "@/lib/formatters"
 import axios from "axios"
 
 interface Job {
@@ -111,13 +112,6 @@ export default function SavedJobsPage() {
     })
   }
 
-  // Format salary display
-  const formatSalary = (salary: number | { min: number; max: number }) => {
-    if (typeof salary === 'number') {
-      return `AED ${salary.toLocaleString()}`;
-    }
-    return `AED ${(salary.min || salary.max || 0).toLocaleString()}`;
-  }
 
   // Format posted date
   const formatPostedDate = (createdAt: string) => {

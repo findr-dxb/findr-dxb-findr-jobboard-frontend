@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/hooks/use-toast"
+import { formatSalary } from "@/lib/formatters"
 import {
   ArrowLeft,
   Loader2,
@@ -142,18 +143,6 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
       </div>
     </div>
   )
-}
-
-function formatSalary(salary?: number | { min?: number; max?: number }): string {
-  if (!salary) return "—"
-  if (typeof salary === "number") {
-    return `AED ${salary.toLocaleString()}`
-  }
-  const { min, max } = salary
-  if (min && max) return `AED ${min.toLocaleString()} – ${max.toLocaleString()}`
-  if (min) return `AED ${min.toLocaleString()}+`
-  if (max) return `Up to AED ${max.toLocaleString()}`
-  return "—"
 }
 
 function JobPickerModal({

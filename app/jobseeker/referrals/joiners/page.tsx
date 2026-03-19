@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
 import { Navbar } from "@/components/navbar";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -24,10 +25,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Loader2, Users, User, Eye } from "lucide-react";
+import { ArrowLeft, Loader2, Users, User, Eye, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://findr-jobboard-backend-production.up.railway.app/api/v1";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://findr-jobboard-backend-production.up.railway.app/api/v1";
+const NETWORK_PER_PAGE = 20;
+const SEARCH_DEBOUNCE_MS = 300;
 
 interface NetworkPerson {
   id: string;
@@ -63,12 +68,15 @@ const getTypeBadge = (type: "invited" | "referred" | "searched") => {
 export default function MyNetworkPage() {
   const [people, setPeople] = useState<NetworkPerson[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pagination, setPagination] = useState({ total: 0, pages: 1 });
 
   const router = useRouter();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchNetwork = async () => {
+  const fetchNetwork = useCallback(
+    async (pageNum: number, search: string) => {
       try {
         const token =
           localStorage.getItem("findr_token") ||
@@ -80,6 +88,7 @@ export default function MyNetworkPage() {
           return;
         }
 
+        setLoading(true);
         const response = await axios.get(
           `${API_BASE_URL}/referrals/my-network`,
           {
@@ -87,12 +96,17 @@ export default function MyNetworkPage() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
+            params: {
+              page: pageNum,
+              limit: NETWORK_PER_PAGE,
+              search: search.trim() || undefined,
+            },
           },
         );
 
         if (response.data?.success) {
-          const { invited, referred, searched } = response.data.data;
-          setPeople([...invited, ...referred, ...searched]);
+          setPeople(response.data.data || []);
+          setPagination(response.data.pagination || { total: 0, pages: 1 });
         } else {
           throw new Error(response.data?.message || "Failed to load network");
         }
@@ -105,10 +119,21 @@ export default function MyNetworkPage() {
       } finally {
         setLoading(false);
       }
-    };
+    },
+    [router, toast],
+  );
 
-    fetchNetwork();
-  }, [router, toast]);
+  useEffect(() => {
+    const timer = setTimeout(
+      () => fetchNetwork(page, searchQuery),
+      searchQuery ? SEARCH_DEBOUNCE_MS : 0,
+    );
+    return () => clearTimeout(timer);
+  }, [page, searchQuery, fetchNetwork]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
 
   if (loading) {
     return (
@@ -164,6 +189,19 @@ export default function MyNetworkPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Search */}
+              <div className="mb-4">
+                <div className="relative max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by name, status, or role…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                    aria-label="Search network members"
+                  />
+                </div>
+              </div>
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
                 <Table className="min-w-full">
@@ -276,8 +314,46 @@ export default function MyNetworkPage() {
                 ))}
               </div>
 
+              {/* Pagination */}
+              {pagination.pages > 1 && (
+                <div className="flex items-center justify-between mt-4 pt-4 border-t" role="navigation" aria-label="Pagination">
+                  <p className="text-sm text-gray-600">
+                    Showing{" "}
+                    <span className="font-semibold">
+                      {(page - 1) * NETWORK_PER_PAGE + 1}–
+                      {Math.min(page * NETWORK_PER_PAGE, pagination.total)}
+                    </span>{" "}
+                    of <span className="font-semibold">{pagination.total}</span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-gray-600 min-w-[80px] text-center">
+                      Page {page} of {pagination.pages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
+                      disabled={page === pagination.pages}
+                      aria-label="Next page"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
               {/* Empty State */}
-              {people.length === 0 && (
+              {people.length === 0 && !loading && (
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">

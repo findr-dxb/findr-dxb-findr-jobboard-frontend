@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Briefcase, DollarSign, Clock, Calendar, Building, User, FileText, CheckCircle, AlertCircle, Download, Trash2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { formatSalary } from "@/lib/formatters";
 import axios from "axios";
 
 interface ApplicationData {
@@ -415,16 +416,8 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
   }
 
 
-  const formatSalary = (salary: any) => {
-    if (!salary) return "Salary not specified";
-    if (typeof salary === 'number') {
-      return `AED ${salary.toLocaleString()}`;
-    }
-    if (salary.min || salary.max) {
-      return `AED ${(salary.min || salary.max || 0).toLocaleString()}`;
-    }
-    return "Salary not specified";
-  };
+  const formatSalaryDisplay = (salary: any) =>
+    formatSalary(salary, "Salary not specified");
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -487,7 +480,7 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
                 <div className="flex flex-wrap items-center gap-4 text-gray-600 text-sm mb-4">
                   <span className="flex items-center">
                     <DollarSign className="w-4 h-4 mr-2" />
-                    {formatSalary(applicationData.jobId?.salary)}
+                    {formatSalaryDisplay(applicationData.jobId?.salary)}
                   </span>
                   <span className="flex items-center">
                     <Clock className="w-4 h-4 mr-2" />
@@ -625,7 +618,7 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
                 {applicationData.expectedSalary && (
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Expected Salary</p>
-                    <p className="font-medium">{formatSalary(applicationData.expectedSalary)}</p>
+                    <p className="font-medium">{formatSalaryDisplay(applicationData.expectedSalary)}</p>
                   </div>
                 )}
                 {applicationData.availability && (

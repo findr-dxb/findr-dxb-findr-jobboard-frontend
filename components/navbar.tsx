@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Menu, X, ChevronDown, User, Briefcase, ShoppingCart, Heart, Shield, Search } from "lucide-react"
+import { Menu, X, ChevronDown, User, Briefcase, ShoppingCart, Heart, Shield, Search, Loader2 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +20,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { useAppDispatch } from "@/lib/hooks"
+import { checkEmployerEligibility } from "@/lib/features/jobPosting/jobPostingSlice"
+import { EmployerProfileCompletionDialog } from "@/components/ui/employer-profile-completion-dialog"
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -40,12 +43,57 @@ export function Navbar() {
   const [showRequestAccessModal, setShowRequestAccessModal] = useState(false)
   const [pendingProfileId, setPendingProfileId] = useState<string | null>(null)
   const [requestAccessLoading, setRequestAccessLoading] = useState(false)
+  const [showPostJobProfileDialog, setShowPostJobProfileDialog] = useState(false)
+  const [postJobProfileResult, setPostJobProfileResult] = useState<{
+    percentage: number
+    canPostJob: boolean
+    missingFields: string[]
+    companyName?: string
+  } | null>(null)
+  const [isCheckingPostJobEligibility, setIsCheckingPostJobEligibility] = useState(false)
 
   const pathname = usePathname()
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const { user, logout, isLoading } = useAuth()
   const { cart, clearCart } = useCart()
   const { toast } = useToast()
+
+  const handlePostJobClick = async () => {
+    if (user?.type !== "employer") return
+    setIsCheckingPostJobEligibility(true)
+    try {
+      const result = await dispatch(checkEmployerEligibility())
+      if (checkEmployerEligibility.fulfilled.match(result)) {
+        const { canPostJob, profileCompletion, companyInfo } = result.payload
+        if (!canPostJob) {
+          setPostJobProfileResult({
+            percentage: profileCompletion.percentage,
+            canPostJob,
+            missingFields: profileCompletion.missingFields,
+            companyName: companyInfo?.companyName,
+          })
+          setShowPostJobProfileDialog(true)
+        } else {
+          router.push("/employer/post-job")
+        }
+      } else {
+        toast({
+          title: "Profile Check Error",
+          description: "Unable to check your company profile eligibility. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to check eligibility. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCheckingPostJobEligibility(false)
+    }
+  }
 
   const resetSearchState = () => {
     setSearchIdentifier("")
@@ -315,6 +363,25 @@ export function Navbar() {
                   </Link>
                 )
               }
+              // Handle Post a Job for employer - validation before navigation
+              if (item.label === "Post a Job" && user?.type === "employer") {
+                return (
+                  <button
+                    key="post-job-employer"
+                    type="button"
+                    onClick={handlePostJobClick}
+                    disabled={isCheckingPostJobEligibility}
+                    className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-emerald-600 ${
+                      pathname === "/employer/post-job" ? "text-emerald-600 underline" : "text-gray-700"
+                    }`}
+                  >
+                    {isCheckingPostJobEligibility ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : null}
+                    {item.label}
+                  </button>
+                )
+              }
               // Handle Rewards for public navigation (not logged in)
               if (item.label === "Rewards" && !user) {
                 return (
@@ -487,20 +554,43 @@ export function Navbar() {
         {isOpen && (
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-emerald-600 ${
-                    pathname === item.href ? "text-emerald-600 underline" : "text-gray-700"
-                  }`}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.icon && <item.icon className="w-4 h-4 mr-1" />}
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                if (item.label === "Post a Job" && user?.type === "employer") {
+                  return (
+                    <button
+                      key="post-job-mobile"
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false)
+                        handlePostJobClick()
+                      }}
+                      disabled={isCheckingPostJobEligibility}
+                      className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-emerald-600 ${
+                        pathname === "/employer/post-job" ? "text-emerald-600" : "text-gray-700"
+                      }`}
+                    >
+                      {isCheckingPostJobEligibility ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                      ) : null}
+                      {item.label}
+                    </button>
+                  )
+                }
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-emerald-600 ${
+                      pathname === item.href ? "text-emerald-600 underline" : "text-gray-700"
+                    }`}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.icon && <item.icon className="w-4 h-4 mr-1" />}
+                    {item.label}
+                  </Link>
+                )
+              })}
               {isLoading ? (
                 <div className="pt-4 border-t">
                   <div className="flex items-center space-x-2 mb-4">
@@ -689,6 +779,19 @@ export function Navbar() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <EmployerProfileCompletionDialog
+        open={showPostJobProfileDialog}
+        onOpenChange={setShowPostJobProfileDialog}
+        completionPercentage={postJobProfileResult?.percentage ?? 0}
+        canPostJob={postJobProfileResult?.canPostJob ?? false}
+        missingFields={postJobProfileResult?.missingFields ?? []}
+        companyName={postJobProfileResult?.companyName}
+        onCompleteProfile={() => {
+          setShowPostJobProfileDialog(false)
+          router.push("/employer/profile")
+        }}
+      />
     </Dialog>
   )
 }

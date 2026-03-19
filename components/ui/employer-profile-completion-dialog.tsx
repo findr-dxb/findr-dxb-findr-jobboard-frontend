@@ -3,8 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { AlertCircle, Building2, FileText, Settings, ExternalLink, AlertTriangle, Users } from "lucide-react"
-import Link from "next/link"
+import { Building2, FileText, ExternalLink, AlertTriangle } from "lucide-react"
 
 interface EmployerProfileCompletionDialogProps {
   open: boolean
@@ -21,19 +20,12 @@ export function EmployerProfileCompletionDialog({
   onOpenChange,
   completionPercentage,
   canPostJob,
-  missingFields,
   companyName,
-  onCompleteProfile
+  onCompleteProfile,
+  missingFields: _missingFields, // Kept for API compatibility, not displayed
 }: EmployerProfileCompletionDialogProps) {
   const remainingPercentage = 80 - completionPercentage
   const profileComplete = completionPercentage >= 80
-
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 80) return "bg-green-500"
-    if (percentage >= 60) return "bg-yellow-500"
-    if (percentage >= 40) return "bg-orange-500"
-    return "bg-red-500"
-  }
 
   const getRequirementStatus = () => {
     if (canPostJob) {
@@ -54,38 +46,6 @@ export function EmployerProfileCompletionDialog({
   }
 
   const status = getRequirementStatus()
-
-  // Group missing fields by category for better display
-  const categorizeFields = (fields: string[]) => {
-    const categories = {
-      basic: [] as string[],
-      company: [] as string[],
-      location: [] as string[],
-      contact: [] as string[],
-      social: [] as string[]
-    }
-
-    fields.forEach(field => {
-      const fieldLower = field.toLowerCase()
-      if (fieldLower.includes('name') || fieldLower.includes('email') || fieldLower.includes('phone')) {
-        categories.basic.push(field)
-      } else if (fieldLower.includes('company') || fieldLower.includes('industry') || fieldLower.includes('team') || fieldLower.includes('founded') || fieldLower.includes('about') || fieldLower.includes('logo') || fieldLower.includes('website')) {
-        categories.company.push(field)
-      } else if (fieldLower.includes('location') || fieldLower.includes('city') || fieldLower.includes('country')) {
-        categories.location.push(field)
-      } else if (fieldLower.includes('contact')) {
-        categories.contact.push(field)
-      } else if (fieldLower.includes('linkedin') || fieldLower.includes('facebook') || fieldLower.includes('twitter')) {
-        categories.social.push(field)
-      } else {
-        categories.basic.push(field)
-      }
-    })
-
-    return categories
-  }
-
-  const categorizedFields = categorizeFields(missingFields)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -158,78 +118,6 @@ export function EmployerProfileCompletionDialog({
               </div>
             </div>
           </div>
-
-          {/* Missing Fields Display */}
-          {!canPostJob && missingFields.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="font-medium text-sm">Missing Information:</h4>
-              
-              {categorizedFields.basic.length > 0 && (
-                <div className="space-y-1">
-                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Basic Information</h5>
-                  <div className="flex flex-wrap gap-1">
-                    {categorizedFields.basic.map((field, index) => (
-                      <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                        {field}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {categorizedFields.company.length > 0 && (
-                <div className="space-y-1">
-                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company Details</h5>
-                  <div className="flex flex-wrap gap-1">
-                    {categorizedFields.company.map((field, index) => (
-                      <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                        {field}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {categorizedFields.location.length > 0 && (
-                <div className="space-y-1">
-                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</h5>
-                  <div className="flex flex-wrap gap-1">
-                    {categorizedFields.location.map((field, index) => (
-                      <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                        {field}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {categorizedFields.contact.length > 0 && (
-                <div className="space-y-1">
-                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact Information</h5>
-                  <div className="flex flex-wrap gap-1">
-                    {categorizedFields.contact.map((field, index) => (
-                      <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                        {field}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {categorizedFields.social.length > 0 && (
-                <div className="space-y-1">
-                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Social Links</h5>
-                  <div className="flex flex-wrap gap-1">
-                    {categorizedFields.social.map((field, index) => (
-                      <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                        {field}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         <DialogFooter className="gap-2">

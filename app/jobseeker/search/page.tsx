@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import axios from "axios"
 import { ProfileCompletionDialog } from "@/components/ui/profile-completion-dialog"
+import { ReferFriendModal } from "@/components/refer-friend-modal"
 
 interface Job {
   _id: string;
@@ -67,6 +68,7 @@ export default function JobSearchPage() {
     return [];
   });
   const [applyingJobId, setApplyingJobId] = useState<string | null>(null)
+  const [referFriendJob, setReferFriendJob] = useState<Job | null>(null)
 
   // Fetch jobs from API
   const fetchJobs = async () => {
@@ -315,9 +317,8 @@ export default function JobSearchPage() {
     }
   }
 
-  const handleReferFriend = () => {
-    // Go to Your Network where you can pick a person, then choose a job from the instant referral dialog.
-    router.push("/jobseeker/referrals/joiners")
+  const handleReferFriend = (job: Job) => {
+    setReferFriendJob(job)
   }
 
   const formatDate = (dateString: string) => {
@@ -527,7 +528,7 @@ export default function JobSearchPage() {
                           )}
                         </Button>
                         <Button
-                          onClick={handleReferFriend}
+                          onClick={() => handleReferFriend(job)}
                           variant="outline"
                         >
                           <UserPlus className="w-4 h-4 mr-1" />
@@ -558,6 +559,14 @@ export default function JobSearchPage() {
           </div>
         )}
       </div>
+
+      {/* Refer Friend Modal */}
+      {referFriendJob && (
+        <ReferFriendModal
+          job={referFriendJob}
+          onClose={() => setReferFriendJob(null)}
+        />
+      )}
 
       {/* Profile Completion Dialog */}
       <ProfileCompletionDialog
