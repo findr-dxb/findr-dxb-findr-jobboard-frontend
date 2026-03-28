@@ -6,7 +6,7 @@ export function formatSalary(
   salary?: number | { min?: number; max?: number } | null,
   emptyFallback = "—"
 ): string {
-  if (salary == null || salary === "") return emptyFallback;
+  if (salary == null) return emptyFallback;
   if (typeof salary === "number") {
     return `AED ${salary.toLocaleString()}`;
   }
@@ -19,4 +19,12 @@ export function formatSalary(
     if (max != null) return `Up to AED ${max.toLocaleString()}`;
   }
   return emptyFallback;
+}
+
+/** Display jobseeker salary expectation string from profile (may already include "AED"). */
+export function formatSalaryExpectation(value?: string | null, emptyFallback = "—"): string {
+  if (value == null || String(value).trim() === "") return emptyFallback;
+  const t = String(value).trim();
+  if (/^aed\s/i.test(t)) return t;
+  return `AED ${t}`;
 }

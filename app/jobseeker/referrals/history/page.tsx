@@ -11,6 +11,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import axios from "axios"
+import { formatSalaryExpectation } from "@/lib/formatters"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://findr-jobboard-backend-production.up.railway.app/api/v1"
 
@@ -18,6 +19,10 @@ interface ReferralHistoryItem {
   id: string;
   referredUser: string;
   referredUserEmail: string;
+  /** Referred user's employer from profile (first professional experience) */
+  currentCompany?: string | null;
+  /** Referred user's salary expectation from job preferences */
+  salaryExpectation?: string | null;
   jobTitle: string;
   company: string;
   date: string;
@@ -322,10 +327,12 @@ export default function ReferralHistoryPage() {
                   <TableHeader>
                     <TableRow className="border-b border-gray-200">
                       <TableHead className="font-semibold text-gray-700">Referred User</TableHead>
+                      <TableHead className="font-semibold text-gray-700">Contact No</TableHead>
+                      <TableHead className="font-semibold text-gray-700">Current Company</TableHead>
                       <TableHead className="font-semibold text-gray-700">Job & Company</TableHead>
+                      <TableHead className="font-semibold text-gray-700">Salary</TableHead>
                       <TableHead className="font-semibold text-gray-700">Date Applied</TableHead>
                       <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                      <TableHead className="font-semibold text-gray-700">Contact No</TableHead>
                       <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -343,13 +350,32 @@ export default function ReferralHistoryPage() {
                           </div>
                         </TableCell>
                         <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Phone className="w-3 h-3 text-gray-400" />
+                            <span className="text-sm text-gray-700">{referral.contactNo || "—"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Building className="w-3 h-3 text-gray-400 shrink-0" />
+                            <span className="text-sm text-gray-700">
+                              {referral.currentCompany?.trim() || "—"}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           <div>
-                            <p className="font-medium text-sm hover:text-emerald-600 transition-colors">{referral.jobTitle}</p>
-                            <div className="flex items-center space-x-1">
+                            <p className="font-medium text-sm text-gray-900">{referral.jobTitle}</p>
+                            <div className="flex items-center space-x-1 mt-0.5">
                               <Building className="w-3 h-3 text-gray-400" />
                               <p className="text-xs text-gray-600">{referral.company}</p>
                             </div>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-gray-700">
+                            {formatSalaryExpectation(referral.salaryExpectation)}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-1">
@@ -363,12 +389,6 @@ export default function ReferralHistoryPage() {
                             <div className="cursor-pointer hover:shadow-sm transition-shadow">
                               {getStatusBadge(referral.status)}
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-1">
-                            <Phone className="w-3 h-3 text-gray-400" />
-                            <span className="text-sm text-gray-700">{referral.contactNo || '—'}</span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -423,7 +443,14 @@ export default function ReferralHistoryPage() {
                         </div>
                         <div>
                           <p className="font-medium text-sm hover:text-emerald-600 transition-colors">{referral.referredUser}</p>
-                          <p className="text-xs text-gray-600">{referral.jobTitle}</p>
+                          <p className="text-xs text-gray-600 flex items-center gap-1">
+                            <Building className="w-3 h-3 shrink-0" />
+                            {referral.currentCompany?.trim() || "—"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {formatSalaryExpectation(referral.salaryExpectation)}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">{referral.jobTitle} · {referral.company}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">

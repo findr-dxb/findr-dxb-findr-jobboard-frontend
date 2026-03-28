@@ -1470,7 +1470,7 @@ export default function JobSeekerProfilePage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="salaryExpectation">Salary Expectation (AED)</Label>
+                  <Label htmlFor="salaryExpectation">Current Salary (AED)</Label>
                   <Input
                     id="salaryExpectation"
                     value={profileData.preferences.salaryExpectation}

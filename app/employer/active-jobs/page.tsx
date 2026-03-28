@@ -51,6 +51,7 @@ const statusOptions = [
   { label: "Active", value: "active" },
   { label: "Paused", value: "paused" },
   { label: "Closed", value: "closed" },
+  { label: "Expired", value: "expired" },
 ];
 
 const statusColor = (status: string) => {
@@ -61,6 +62,8 @@ const statusColor = (status: string) => {
       return "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-md";
     case "closed":
       return "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md";
+    case "expired":
+      return "bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-md";
     default:
       return "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-md";
   }
@@ -82,6 +85,8 @@ const getCardGradient = (index: number, status?: string) => {
     return "from-yellow-50 via-orange-50 to-yellow-100";
   } else if (status === 'closed') {
     return "from-red-50 via-pink-50 to-red-100";
+  } else if (status === "expired") {
+    return "from-slate-50 via-gray-50 to-slate-100";
   }
   
   return gradients[index % gradients.length];
@@ -170,6 +175,16 @@ export default function ActiveJobsPage() {
 
   // Toggle job status (pause/resume/reactivate)
   const handleToggleStatus = async (jobId: string, currentStatus: string) => {
+    if (currentStatus === "expired") {
+      toast({
+        title: "Update application deadline",
+        description:
+          "This job expired because the deadline passed. Set a new application deadline, then change status to Active and save.",
+      })
+      router.push(`/employer/active-jobs/${jobId}/edit`)
+      return
+    }
+
     try {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       // If active, pause it. If paused or closed, activate it.
@@ -184,7 +199,12 @@ export default function ActiveJobsPage() {
         }
       );
 
-      const actionMessage = currentStatus === 'closed' ? 'reactivated' : (newStatus === 'active' ? 'resumed' : 'paused');
+      const actionMessage =
+        currentStatus === "closed"
+          ? "reactivated"
+          : newStatus === "active"
+            ? "resumed"
+            : "paused";
       toast({
         title: "Success",
         description: `Job ${actionMessage} successfully.`,
@@ -453,11 +473,11 @@ export default function ActiveJobsPage() {
                             Edit
                           </Button>
                         </div>
-                        <div className={job.status === 'closed' ? "" : (job.status === 'active' || job.status === 'paused' ? "grid grid-cols-2 gap-2" : "")}>
-                          {(job.status === 'active' || job.status === 'paused' || job.status === 'closed') && (
+                        <div className={job.status === 'closed' || job.status === 'expired' ? "" : (job.status === 'active' || job.status === 'paused' ? "grid grid-cols-2 gap-2" : "")}>
+                          {(job.status === 'active' || job.status === 'paused' || job.status === 'closed' || job.status === 'expired') && (
                             <Button
                               size="sm"
-                              className={`bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-md ${job.status === 'closed' ? 'w-full' : ''}`}
+                              className={`bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-md ${job.status === 'closed' || job.status === 'expired' ? 'w-full' : ''}`}
                               onClick={() => handleToggleStatus(job._id, job.status)}
                             >
                               {job.status === 'active' ? (
@@ -473,7 +493,7 @@ export default function ActiveJobsPage() {
                               )}
                             </Button>
                           )}
-                          {job.status !== 'closed' && (
+                          {job.status !== 'closed' && job.status !== 'expired' && (
                             <Button
                               size="sm"
                               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"

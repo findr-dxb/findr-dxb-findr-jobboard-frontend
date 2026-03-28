@@ -29,7 +29,7 @@ const employerTiers: EmployerTier[] = [
   {
     name: "Blue",
     label: "Starter Tier",
-    employees: "0 – 50",
+    employees: "0 – 10",
     icon: Star,
     color: "text-blue-600",
     bg: "bg-blue-50",
@@ -41,7 +41,7 @@ const employerTiers: EmployerTier[] = [
   {
     name: "Silver",
     label: "Growing Tier",
-    employees: "51 – 250",
+    employees: "11 – 25",
     icon: Trophy,
     color: "text-gray-600",
     bg: "bg-gray-50",
@@ -53,7 +53,7 @@ const employerTiers: EmployerTier[] = [
   {
     name: "Gold",
     label: "Advanced Tier",
-    employees: "251+",
+    employees: "26-50",
     icon: Award,
     color: "text-yellow-600",
     bg: "bg-yellow-50",
@@ -62,16 +62,28 @@ const employerTiers: EmployerTier[] = [
     pointsRequired: false,
     
   },
+  // {
+  //   name: "Platinum",
+  //   label: "Elite Tier",
+  //   employees: "50+",
+  //   icon: Crown,
+  //   color: "text-emerald-700",
+  //   bg: "bg-emerald-50",
+  //   border: "border-emerald-200",
+  //   minPoints: 50,
+  //   pointsRequired: true,
+    
+  // },
   {
     name: "Platinum",
-    label: "Elite Tier",
-    employees: "Any size (500+ points)",
+    label: "Advanced Tier",
+    employees: "50+",
     icon: Crown,
     color: "text-emerald-700",
     bg: "bg-emerald-50",
     border: "border-emerald-200",
-    minPoints: 500,
-    pointsRequired: true,
+    minPoints: 0,
+    pointsRequired: false,
     
   },
 ]
@@ -383,7 +395,7 @@ export default function EmployerRewardsPage() {
                     <h3 className="text-xl font-bold mb-1">{tier.name}</h3>
                     <Badge className="mb-2 gradient-bg text-white">{tier.label}</Badge>
                     {!tier.pointsRequired && (
-                      <p className="text-xs text-gray-600 mb-2">Employees: {tier.employees}</p>
+                      <p className="text-xs text-gray-600 mb-2">Job Posts: {tier.employees}</p>
                     )}
                     {tier.pointsRequired && (
                       <p className="text-xs font-semibold text-emerald-700 mb-2">

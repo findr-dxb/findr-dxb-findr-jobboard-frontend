@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { formatSalary } from "@/lib/formatters"
+import { formatSalaryExpectation } from "@/lib/formatters"
 import { User, X, Loader2, SendHorizonal, Users, ChevronLeft, ChevronRight, MapPin, Building2, Search } from "lucide-react"
 
 const USERS_PER_PAGE = 10
@@ -38,6 +38,12 @@ interface NetworkPerson {
   role: string
   type: "invited" | "referred" | "searched"
   status: string
+  /** From member profile — not the job being referred */
+  currentJobTitle?: string
+  currentCompany?: string
+  location?: string
+  preferredJobType?: string
+  salaryExpectation?: string
 }
 
 interface Job {
@@ -369,23 +375,23 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
                         </TableCell>
                         <TableCell className="py-4">
                           <p className="font-medium text-gray-900 text-sm">
-                            {job.title}
+                            {person.currentJobTitle?.trim() || "—"}
                           </p>
                         </TableCell>
                         <TableCell className="py-4">
                           <div className="flex items-center gap-2">
                             <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
                             <span className="text-sm text-gray-700">
-                              {job.companyName}
+                              {person.currentCompany?.trim() || "—"}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="py-4">
-                          {job.location ? (
+                          {person.location?.trim() ? (
                             <div className="flex items-center gap-1.5">
                               <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
                               <span className="text-sm text-gray-600">
-                                {job.location}
+                                {person.location}
                               </span>
                             </div>
                           ) : (
@@ -393,9 +399,9 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
                           )}
                         </TableCell>
                         <TableCell className="py-4">
-                          {job.jobType?.[0] ? (
+                          {person.preferredJobType?.trim() ? (
                             <Badge className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full capitalize">
-                              {job.jobType[0]}
+                              {person.preferredJobType}
                             </Badge>
                           ) : (
                             <span className="text-sm text-gray-400">—</span>
@@ -403,7 +409,7 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
                         </TableCell>
                         <TableCell className="py-4">
                           <span className="text-sm text-gray-700">
-                            {formatSalary(job.salary)}
+                            {formatSalaryExpectation(person.salaryExpectation)}
                           </span>
                         </TableCell>
                         <TableCell className="py-4 text-right">

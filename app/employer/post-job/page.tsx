@@ -1,28 +1,116 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import axios from "axios"
-import { Loader2 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PlusCircle, MapPin, DollarSign, Calendar, Briefcase } from "lucide-react"
+import {
+  Briefcase,
+  Calendar,
+  DollarSign,
+  Loader2,
+  MapPin,
+  PlusCircle,
+  X,
+} from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useJobPosting } from "@/lib/features/jobPosting/useJobPosting"
 import { useAppDispatch } from "@/lib/hooks"
 import { updateFormField, checkEmployerEligibility } from "@/lib/features/jobPosting/jobPostingSlice"
 import { useAuth } from "@/contexts/auth-context"
+import { cn } from "@/lib/utils"
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   "https://findr-jobboard-backend-production.up.railway.app/api/v1"
+
+const SUGGESTED_SKILLS = [
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Node.js",
+  "Vue.js",
+  "Angular",
+  "Express",
+  "Python",
+  "Django",
+  "Flask",
+  "Java",
+  "Spring Boot",
+  "C#",
+  ".NET",
+  "Go",
+  "Ruby",
+  "PHP",
+  "Laravel",
+  "SQL",
+  "MongoDB",
+  "PostgreSQL",
+  "Redis",
+  "AWS",
+  "Azure",
+  "GCP",
+  "Docker",
+  "Kubernetes",
+  "Git",
+  "REST API",
+  "GraphQL",
+  "UI/UX",
+  "Figma",
+  "Adobe Photoshop",
+  "Project Management",
+  "Agile",
+  "Scrum",
+  "Communication",
+  "Sales",
+  "Marketing",
+  "Data Analysis",
+  "Excel",
+  "Microsoft Word",
+  "Power BI",
+  "Tableau",
+  "Machine Learning",
+  "Deep Learning",
+  "SAP",
+  "Salesforce",
+  "Customer Service",
+  "Negotiation",
+  "Leadership",
+  "Accounting",
+  "HR",
+] as const
+
+function parseSkillsCsv(csv: string): string[] {
+  return csv
+    .split(/[,;\n]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+function mergeSkillsUnique(existing: string[], additions: string[]): string[] {
+  const lower = new Set(existing.map((s) => s.toLowerCase()))
+  const out = [...existing]
+  for (const a of additions) {
+    const t = a.trim()
+    if (!t) continue
+    const lk = t.toLowerCase()
+    if (!lower.has(lk)) {
+      lower.add(lk)
+      out.push(t)
+    }
+  }
+  return out
+}
 
 export default function PostJobPage() {
   const { toast } = useToast()
@@ -31,6 +119,10 @@ export default function PostJobPage() {
   const [isLoadingCompany, setIsLoadingCompany] = useState(true)
   const [companyFetchFailed, setCompanyFetchFailed] = useState(false)
   const [isEligibilityChecked, setIsEligibilityChecked] = useState(false)
+  /** Naukri-style skills: current typing in the single input (comma-separated stored in formData.skills). */
+  const [skillDraft, setSkillDraft] = useState("")
+  const [skillsSuggestionsOpen, setSkillsSuggestionsOpen] = useState(false)
+  const skillsComboRef = useRef<HTMLDivElement>(null)
 
   // Redux state and actions
   const dispatch = useAppDispatch()
@@ -47,6 +139,45 @@ export default function PostJobPage() {
   // Handle form field changes
   const handleChange = (field: keyof typeof formData, value: string) => {
     updateField(field, value)
+  }
+
+  const skillsParsed = useMemo(
+    () => parseSkillsCsv(formData.skills),
+    [formData.skills]
+  )
+
+  const filteredSkillSuggestions = useMemo(() => {
+    const q = skillDraft.trim().toLowerCase()
+    return SUGGESTED_SKILLS.filter(
+      (s) =>
+        !skillsParsed.some((x) => x.toLowerCase() === s.toLowerCase()) &&
+        (!q || s.toLowerCase().includes(q))
+    )
+  }, [skillDraft, skillsParsed])
+
+  useEffect(() => {
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (
+        skillsComboRef.current &&
+        !skillsComboRef.current.contains(e.target as Node)
+      ) {
+        setSkillsSuggestionsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", onDocMouseDown)
+    return () => document.removeEventListener("mousedown", onDocMouseDown)
+  }, [])
+
+  const addSkillToken = (token: string) => {
+    const t = token.trim()
+    if (!t) return
+    handleChange("skills", mergeSkillsUnique(skillsParsed, [t]).join(", "))
+    setSkillDraft("")
+  }
+
+  const removeSkillAt = (index: number) => {
+    const next = skillsParsed.filter((_, i) => i !== index)
+    handleChange("skills", next.join(", "))
   }
 
   // Get today's date in YYYY-MM-DD format for date input min attribute
@@ -359,15 +490,111 @@ export default function PostJobPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="skills">Required Skills</Label>
-                  <Input
-                    id="skills"
-                    value={formData.skills}
-                    onChange={(e) => handleChange("skills", e.target.value)}
-                    placeholder="e.g., React, Node.js, Project Management (comma-separated)"
-                    className="h-11"
-                  />
+                <div className="space-y-2 relative z-20">
+                  <Label htmlFor="skills-combo-input">Required Skills</Label>
+                  <div
+                    ref={skillsComboRef}
+                    className="rounded-md border border-input bg-background"
+                  >
+                    {skillsParsed.length > 0 && (
+                      <div className="flex flex-wrap gap-2 p-2 border-b border-border">
+                        {skillsParsed.map((s, i) => (
+                          <Badge
+                            key={`${s}-${i}`}
+                            variant="secondary"
+                            className="pl-2 pr-1 py-0.5 gap-1 font-normal"
+                          >
+                            {s}
+                            <button
+                              type="button"
+                              className="rounded-full p-0.5 hover:bg-muted"
+                              onClick={() => removeSkillAt(i)}
+                              aria-label={`Remove ${s}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <div className="relative isolate">
+                      <Input
+                        id="skills-combo-input"
+                        autoComplete="off"
+                        value={skillDraft}
+                        onChange={(e) => {
+                          setSkillDraft(e.target.value)
+                          setSkillsSuggestionsOpen(true)
+                        }}
+                        onFocus={() => setSkillsSuggestionsOpen(true)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addSkillToken(skillDraft)
+                            setSkillsSuggestionsOpen(false)
+                            return
+                          }
+                          if (e.key === ",") {
+                            e.preventDefault()
+                            addSkillToken(skillDraft)
+                            return
+                          }
+                          if (
+                            e.key === "Backspace" &&
+                            !skillDraft &&
+                            skillsParsed.length > 0
+                          ) {
+                            removeSkillAt(skillsParsed.length - 1)
+                          }
+                        }}
+                        placeholder="Type a skill, pick from suggestions, or press Enter to add"
+                        className={cn(
+                          "h-11 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none",
+                          skillsParsed.length > 0
+                            ? "rounded-none rounded-b-md"
+                            : "rounded-md"
+                        )}
+                      />
+                      {skillsSuggestionsOpen &&
+                        (filteredSkillSuggestions.length > 0 ||
+                          skillDraft.trim().length > 0) && (
+                          <ul
+                            className="absolute left-0 right-0 top-full z-[200] mt-0.5 max-h-52 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-lg ring-1 ring-black/5"
+                            role="listbox"
+                          >
+                            {filteredSkillSuggestions.map((s) => (
+                              <li key={s} role="option">
+                                <button
+                                  type="button"
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                                  onMouseDown={(ev) => ev.preventDefault()}
+                                  onClick={() => {
+                                    addSkillToken(s)
+                                    setSkillsSuggestionsOpen(false)
+                                  }}
+                                >
+                                  {s}
+                                </button>
+                              </li>
+                            ))}
+                            {filteredSkillSuggestions.length === 0 &&
+                              skillDraft.trim().length > 0 && (
+                                <li className="px-3 py-2 text-sm text-muted-foreground">
+                                  No suggestion match — press{" "}
+                                  <kbd className="px-1 rounded border bg-muted text-[10px]">
+                                    Enter
+                                  </kbd>{" "}
+                                  to add &quot;{skillDraft.trim()}&quot;
+                                </li>
+                              )}
+                          </ul>
+                        )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    One field: suggestions open as you type; click a row or press Enter / comma to add.
+                    If nothing matches, Enter still adds what you typed.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
