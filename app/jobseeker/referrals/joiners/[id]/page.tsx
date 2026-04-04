@@ -612,7 +612,7 @@ export default function ReferralJoinerProfilePage() {
                   <InfoRow icon={<CheckCircle className="w-3.5 h-3.5" />} label="Employment Visa" value={js.employmentVisa} />
                   <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="Preferred Location" value={js.jobPreferences?.preferredLocation} />
                   <InfoRow icon={<Briefcase className="w-3.5 h-3.5" />} label="Availability" value={js.jobPreferences?.availability} />
-                  <InfoRow icon={<Award className="w-3.5 h-3.5" />} label="Salary Expectation" value={js.jobPreferences?.salaryExpectation} />
+                  <InfoRow icon={<Award className="w-3.5 h-3.5" />} label="Current Salary" value={js.jobPreferences?.salaryExpectation} />
                 </div>
                 {js.jobPreferences?.preferredJobType && js.jobPreferences.preferredJobType.length > 0 && (
                   <div className="mt-3">

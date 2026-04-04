@@ -731,7 +731,7 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="expectedSalary">Expected Salary (AED) *</Label>
+                    <Label htmlFor="expectedSalary">Current Salary (AED) *</Label>
                     <Input
                       id="expectedSalary"
                       type="number"
