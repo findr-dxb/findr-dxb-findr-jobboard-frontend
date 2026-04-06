@@ -23,10 +23,7 @@ interface Job {
   companyName: string;
   location: string;
   jobType: string[];
-  salary: {
-    min: number;
-    max: number;
-  };
+  salary: number | { min?: number; max?: number };
   requirements: string[];
   skills: string[];
   description: string;
@@ -288,7 +285,12 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
               dateOfBirth: applicant?.dateOfBirth ? new Date(applicant.dateOfBirth).toISOString().split('T')[0] : "",
               nationality: mappedNationality,
               currentCompany: applicant?.professionalExperience?.[0]?.company || "",
-              expectedSalary: appData.expectedSalary?.min ? appData.expectedSalary.min.toString() : (typeof appData.expectedSalary === 'string' ? appData.expectedSalary : ""),
+              expectedSalary:
+                applicant?.jobPreferences?.salaryExpectation != null
+                  ? String(applicant.jobPreferences.salaryExpectation)
+                  : appData?.expectedSalary?.min != null && appData?.expectedSalary?.max != null
+                    ? String(Math.round((appData.expectedSalary.min + appData.expectedSalary.max) / 2))
+                    : String(appData?.expectedSalary?.min ?? appData?.expectedSalary?.max ?? ""),
               location: applicant?.location || "",
               education: mappedEducation,
               skills: applicant?.skills?.join(', ') || "",
