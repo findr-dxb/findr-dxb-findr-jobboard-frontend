@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,7 @@ interface FollowUsProps {
   onPointsEarned?: (platform: string, points: number) => void
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export function FollowUs({ onPointsEarned }: FollowUsProps) {
   const [followedPlatforms, setFollowedPlatforms] = useState<Set<string>>(new Set())

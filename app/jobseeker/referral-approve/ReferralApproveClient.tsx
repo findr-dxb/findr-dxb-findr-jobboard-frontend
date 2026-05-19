@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
@@ -10,7 +10,7 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react"
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://findr-jobboard-backend-production.up.railway.app/api/v1"
+  process.env.NEXT_PUBLIC_API_URL
 
 type ReferralApproveClientProps = {
   token: string | null

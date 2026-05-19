@@ -1,4 +1,4 @@
-import { Jobseeker, Employer } from './admin-types';
+﻿import { Jobseeker, Employer } from './admin-types';
 
 // Auth headers helper - Note: Admin routes don't use authentication (following existing pattern)
 const getAuthHeaders = () => {
@@ -57,7 +57,7 @@ export interface UsersApiParams {
 }
 
 // API Base URL - adjust according to your backend setup
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Users API Functions
 export const getJobseekers = async (params: UsersApiParams = {}): Promise<UsersApiResponse> => {

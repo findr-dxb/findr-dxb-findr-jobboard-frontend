@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { ShoppingCart, X, BadgePercent } from "lucide-react"
@@ -54,7 +54,7 @@ export default function EmployerCartPage() {
       // Send one quote request per selected service (aligns with single-service API)
       const results = await Promise.allSettled(
         cart.map(async (item) => {
-          const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/quotes', {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,

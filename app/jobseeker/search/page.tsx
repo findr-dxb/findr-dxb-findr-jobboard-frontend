@@ -81,7 +81,7 @@ export default function JobSearchPage() {
       if (jobType) params.jobType = jobType
       if (experienceLevel) params.experienceLevel = experienceLevel
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
         params
       })
 
@@ -129,7 +129,7 @@ export default function JobSearchPage() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
       if (!token) return
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/user', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -185,10 +185,10 @@ export default function JobSearchPage() {
     
     try {
       // Use the new dedicated endpoint for profile eligibility check
-      console.log('🌐 Making API call to: https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/eligibility');
+      console.log('🌐 Making API call to:', `${process.env.NEXT_PUBLIC_API_URL}/profile/eligibility`);
       console.log('🔑 Using token:', token ? 'Token exists' : 'No token');
       
-      const eligibilityResponse = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/eligibility', {
+      const eligibilityResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/eligibility`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -235,7 +235,7 @@ export default function JobSearchPage() {
       }
       
       // Get user profile data for application submission
-      const profileResponse = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/details', {
+      const profileResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -275,7 +275,7 @@ export default function JobSearchPage() {
         location: userProfile?.location || ""
       }
       
-      const response = await axios.post('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications', applicationData, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/applications`, applicationData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

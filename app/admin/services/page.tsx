@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -58,7 +58,7 @@ export default function AdminServicesPage() {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app/api/v1';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
       const buyerType = mapTabToBuyerType(activeTab)
       const response = await fetch(`${API_BASE_URL}/admin/services?page=${currentPage}&limit=${pageSize}&buyerType=${buyerType}`, {
         headers: {
@@ -120,7 +120,7 @@ export default function AdminServicesPage() {
   // Update service status
   const updateServiceStatus = async (serviceId: string, newStatus: string) => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app/api/v1';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${API_BASE_URL}/admin/services/${serviceId}`, {
         method: 'PUT',
         headers: {

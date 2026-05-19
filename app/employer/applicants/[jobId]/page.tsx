@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -173,7 +173,7 @@ export default function JobApplicantsPage() {
       }
 
       // Fetch job details
-      const jobResponse = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${jobId}`, {
+      const jobResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -181,7 +181,7 @@ export default function JobApplicantsPage() {
       setJobDetails(jobResponse.data.data);
 
       // Fetch applicants
-      const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/job/${jobId}`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/job/${jobId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -239,7 +239,7 @@ export default function JobApplicantsPage() {
         });
       }
       
-      await axios.patch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${applicationId}/status`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/status`, {
         status: newStatus,
         notes
       }, {
@@ -339,7 +339,7 @@ export default function JobApplicantsPage() {
         }));
       }
       
-      await axios.patch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${selectedApplicant._id}/status`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${selectedApplicant._id}/status`, {
         status: "interview_scheduled",
         notes: interviewDetails.notes,
         interviewDate: interviewDateTimeStr,

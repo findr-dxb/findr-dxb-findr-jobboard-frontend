@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -117,7 +117,7 @@ export default function ActiveJobsPage() {
         return;
       }
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/jobs', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/employer/jobs`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -190,7 +190,7 @@ export default function ActiveJobsPage() {
       // If active, pause it. If paused or closed, activate it.
       const newStatus = currentStatus === 'active' ? 'paused' : 'active';
       
-      await axios.put(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${jobId}`, 
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`, 
         { status: newStatus },
         {
           headers: {
@@ -228,7 +228,7 @@ export default function ActiveJobsPage() {
     try {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       
-      await axios.put(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${closeJobId}/close`, {}, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${closeJobId}/close`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }

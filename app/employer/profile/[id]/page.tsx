@@ -1,11 +1,11 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { CompanyProfileView } from "@/components/company-profile"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
-const API_BASE_URL = 'https://findr-jobboard-backend-production.up.railway.app/api/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function PublicCompanyProfilePage() {
   const { id } = useParams() as { id: string }

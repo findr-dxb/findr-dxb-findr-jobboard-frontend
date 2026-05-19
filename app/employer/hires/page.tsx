@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +79,7 @@ export default function HiresPage() {
         return;
       }
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/employer', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/employer`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -28,7 +28,7 @@ export default function EmployerDashboard() {
         const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
         if (!token) { router.push('/login'); return; }
 
-        const res = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/dashboard', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employer/dashboard`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         });
 

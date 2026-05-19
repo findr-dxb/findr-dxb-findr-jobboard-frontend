@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { Navbar } from "@/components/navbar"
@@ -88,7 +88,7 @@ export default function HRServicesPage() {
       }
 
       // Save quote request to database
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/quotes', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

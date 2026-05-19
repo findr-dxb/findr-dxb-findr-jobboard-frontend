@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import React, { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
@@ -55,7 +55,7 @@ export default function PremiumServicesPage() {
           return
         }
 
-        const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/details', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -121,7 +121,7 @@ export default function PremiumServicesPage() {
         return
       }
 
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/orders', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -253,7 +253,7 @@ export default function PremiumServicesPage() {
       }
 
       // Call Stripe checkout endpoint for AED payment
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/rm-service/checkout', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rm-service/checkout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -321,7 +321,7 @@ export default function PremiumServicesPage() {
       }
 
       // Use regular checkout endpoint with hybrid payment data
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/rm-service/checkout', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rm-service/checkout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

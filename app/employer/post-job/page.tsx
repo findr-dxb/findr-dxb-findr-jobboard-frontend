@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import type React from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils"
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://findr-jobboard-backend-production.up.railway.app/api/v1"
+  process.env.NEXT_PUBLIC_API_URL
 
 const SUGGESTED_SKILLS = [
   "JavaScript",

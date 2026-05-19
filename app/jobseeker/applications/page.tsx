@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,7 +108,7 @@ export default function ApplicationsPage() {
         return;
       }
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/user', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

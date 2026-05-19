@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -203,7 +203,7 @@ export default function EmployerRewardsPage() {
         return;
       }
 
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/details', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employer/details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

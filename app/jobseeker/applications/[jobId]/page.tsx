@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -90,7 +90,7 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
         }
 
         // Get all user applications to find the one matching jobId
-        const applicationsResponse = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/user', {
+        const applicationsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/user`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           }
@@ -116,7 +116,7 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
         } else {
           // If jobId is just a string, fetch the full job details
           try {
-            const jobResponse = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${application.jobId}`, {
+            const jobResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${application.jobId}`, {
               headers: {
                 'Authorization': `Bearer ${token}`,
               }
@@ -168,7 +168,7 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
       setIsWithdrawing(true);
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       
-      const response = await axios.delete(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${jobId}`, {
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/applications/${jobId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }

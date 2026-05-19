@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react"
 import axios from "axios"
@@ -30,7 +30,7 @@ const SEARCH_DEBOUNCE_MS = 300
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://findr-jobboard-backend-production.up.railway.app/api/v1"
+  process.env.NEXT_PUBLIC_API_URL
 
 interface NetworkPerson {
   id: string

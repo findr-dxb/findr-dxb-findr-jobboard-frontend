@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -49,7 +49,7 @@ export default function CompanyProfilePage({ params }: { params: Promise<{ compa
         setError(null);
         
         // Fetch company profile from API
-        const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/company/${companyId}`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/company/${companyId}`);
         
         if (response.data.success) {
           setCompany(response.data.data);

@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,7 +50,7 @@ export default function AdminGrievancesPage() {
     try {
       setLoading(true)
       
-      const response = await fetch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/admin/grievances?page=${currentPage}&limit=${pageSize}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/grievances?page=${currentPage}&limit=${pageSize}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       })

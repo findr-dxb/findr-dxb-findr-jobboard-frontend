@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -92,7 +92,7 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
         setJobId(id)
         
         // Fetch job data from API
-        const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${id}`)
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${id}`)
         if (response.data && response.data.data) {
           setJob(response.data.data)
         } else {
@@ -120,7 +120,7 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
       const fetchApplicationData = async () => {
         try {
           const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
-          const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${applicationId}`, {
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -460,7 +460,7 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
       }
 
       // Submit referral application to backend
-      const response = await axios.post('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/referral', {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/applications/referral`, {
         jobId,
         friendName: formData.friendName,
         email: formData.email,

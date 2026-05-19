@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -200,7 +200,7 @@ export default function AllApplicantsPage() {
       if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
       if (jobFilter && jobFilter !== 'all') params.append('jobId', jobFilter);
 
-      const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/employer?${params}`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/employer?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -225,7 +225,7 @@ export default function AllApplicantsPage() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       if (!token) return;
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/jobs', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/employer/jobs`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -298,7 +298,7 @@ export default function AllApplicantsPage() {
         });
       }
       
-      await axios.patch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${applicationId}/status`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/status`, {
         status: newStatus
       }, {
         headers: {
@@ -396,7 +396,7 @@ export default function AllApplicantsPage() {
         [normalizedId]: selectedApplicant.status
       }));
       
-      await axios.patch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${selectedApplicant._id}/status`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${selectedApplicant._id}/status`, {
         status: "interview_scheduled",
         notes: interviewDetails.notes,
         interviewDate: interviewDateTimeStr,

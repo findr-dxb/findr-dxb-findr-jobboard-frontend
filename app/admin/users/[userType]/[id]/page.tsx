@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -14,7 +14,7 @@ import {
   Gift, ShoppingCart, Bookmark, Clock, Shield
 } from "lucide-react"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app/api/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function AdminUserDetailPage() {
   const params = useParams() as { userType: string; id: string }

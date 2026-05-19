@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { Navbar } from "@/components/navbar"
@@ -36,7 +36,7 @@ import { normalizeUAE } from "@/lib/utils"
 import { ImageCropModal } from "@/components/image-crop-modal"
 import { UploadAPI } from "@/lib/upload-api"
 
-const API_BASE_URL = "https://findr-jobboard-backend-production.up.railway.app"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 interface ProfileData {
   personalInfo: {

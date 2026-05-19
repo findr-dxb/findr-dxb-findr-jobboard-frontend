@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
@@ -293,7 +293,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const parsedUser: User = JSON.parse(storedUser)
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app/api/v1'
+      const apiBase = process.env.NEXT_PUBLIC_API_URL
       const endpoint = parsedUser.type === 'employer'
         ? `${apiBase}/employer/details`
         : `${apiBase}/profile/details`

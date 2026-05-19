@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -89,7 +89,7 @@ export default function InterviewJobDetailPage({ params }: { params: Promise<{ j
         }
 
         // Get the specific interview/application data
-        const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${jobId}`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/${jobId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           }

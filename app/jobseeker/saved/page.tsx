@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { Navbar } from "@/components/navbar"
@@ -44,7 +44,7 @@ export default function SavedJobsPage() {
     try {
       setLoading(true)
       // Fetch all jobs and filter by saved IDs
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
         params: { 
           status: 'active',
           limit: 100 // Get a large number to ensure we catch all saved jobs

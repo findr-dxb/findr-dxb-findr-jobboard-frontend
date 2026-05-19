@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -39,7 +39,7 @@ export default function AdminApplicationsPage() {
         sortOrder: 'desc'
       })
       
-      const res = await fetch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/admin/applications?${queryParams}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/applications?${queryParams}`)
       const json = await res.json()
       
       if (!res.ok || !json.success) {
@@ -80,7 +80,7 @@ export default function AdminApplicationsPage() {
         sortOrder: 'desc'
       })
       
-      const res = await fetch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/admin/applications?${queryParams}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/applications?${queryParams}`)
       const json = await res.json()
       if (!res.ok || !json.success) {
         throw new Error(json.message || 'Failed to fetch applications')

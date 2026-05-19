@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import React, { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -86,7 +86,7 @@ export default function CartPage() {
           return
         }
 
-        const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/details', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -244,7 +244,7 @@ export default function CartPage() {
       // Handle different payment scenarios
       if (combinedAEDRequired > 0) {
         // Payment via Stripe (handles both AED-only and hybrid payments)
-        const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/rm-service/checkout', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rm-service/checkout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -285,7 +285,7 @@ export default function CartPage() {
             const serviceName = item.title
             const pointsRequired = item.points || 0
             
-            return fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/orders', {
+            return fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -340,7 +340,7 @@ export default function CartPage() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
       if (!token) return
 
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/details', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

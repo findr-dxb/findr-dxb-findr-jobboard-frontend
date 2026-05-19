@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import React, { useState, useMemo, useEffect } from "react";
@@ -91,7 +91,7 @@ export default function InterviewsPage() {
         return;
       }
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/interviews/employer', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/interviews/employer`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }

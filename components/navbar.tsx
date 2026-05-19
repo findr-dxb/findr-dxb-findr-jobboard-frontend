@@ -24,9 +24,7 @@ import { useAppDispatch } from "@/lib/hooks"
 import { checkEmployerEligibility } from "@/lib/features/jobPosting/jobPostingSlice"
 import { EmployerProfileCompletionDialog } from "@/components/ui/employer-profile-completion-dialog"
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://findr-jobboard-backend-production.up.railway.app/api/v1"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)

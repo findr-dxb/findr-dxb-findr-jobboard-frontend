@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import type React from "react"
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
       }
 
       const response = await axios.post(
-        'https://findr-jobboard-backend-production.up.railway.app/api/v1/contact',
+        `${process.env.NEXT_PUBLIC_API_URL}/contact`,
         {
           name: formData.name,
           email: formData.email,

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useParams, useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -196,7 +196,7 @@ export default function ApplicantProfilePage() {
         }
 
         // Fetch applicant data using the application ID - always fetch fresh data
-        const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${idParam}`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/${idParam}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Cache-Control': 'no-cache',
@@ -240,7 +240,7 @@ export default function ApplicantProfilePage() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       if (!token) return;
 
-      const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/reviews/application/${idParam}`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/employer/reviews/application/${idParam}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -387,7 +387,7 @@ export default function ApplicantProfilePage() {
         });
       }
       
-      await axios.patch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${applicantData._id}/status`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicantData._id}/status`, {
         status: newStatus
       }, {
         headers: {
@@ -487,7 +487,7 @@ export default function ApplicantProfilePage() {
         }));
       }
       
-      await axios.patch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/${applicantData._id}/status`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicantData._id}/status`, {
         status: "interview_scheduled",
         notes: interviewDetails.notes,
         interviewDate: interviewDateTimeStr,
@@ -535,7 +535,7 @@ export default function ApplicantProfilePage() {
         interviewNotes: employerReview.interviewNotes
       };
 
-      await axios.post(`https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/reviews`, reviewData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/employer/reviews`, reviewData, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }

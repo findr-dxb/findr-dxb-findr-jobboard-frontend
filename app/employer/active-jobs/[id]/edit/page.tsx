@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import type React from "react"
 import { useState, useEffect } from "react"
@@ -50,7 +50,7 @@ export default function EditJobPage() {
           return
         }
 
-        const response = await axios.get(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${jobId}`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           }
@@ -119,7 +119,7 @@ export default function EditJobPage() {
       }
 
       const salaryAmount = parseFloat(formData.salary) || 0
-      const response = await axios.put(`https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/${jobId}`, {
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`, {
         title: formData.jobTitle,
         companyName: formData.company,
         location: formData.location,

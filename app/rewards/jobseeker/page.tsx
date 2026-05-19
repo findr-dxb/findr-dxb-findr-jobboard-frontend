@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -160,7 +160,7 @@ export default function JobSeekerRewardsPage() {
         return;
       }
 
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/details', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -192,7 +192,7 @@ export default function JobSeekerRewardsPage() {
 
       try {
         // Fetch referral history to count hired referrals (job placements)
-        const referralHistoryResponse = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/referrals/history', {
+        const referralHistoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/applications/referrals/history`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

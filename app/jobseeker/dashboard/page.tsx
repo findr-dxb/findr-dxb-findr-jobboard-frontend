@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -53,7 +53,7 @@ export default function JobSeekerDashboard() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       if (!token) return;
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/user', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -74,7 +74,7 @@ export default function JobSeekerDashboard() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       if (!token) return;
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/interviews/jobseeker', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/interviews/jobseeker`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -95,7 +95,7 @@ export default function JobSeekerDashboard() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       if (!token) return;
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/applications/referrals/history', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/applications/referrals/history`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -123,7 +123,7 @@ export default function JobSeekerDashboard() {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       if (!token) return;
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/jobs/recommendations', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/recommendations`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -227,7 +227,7 @@ export default function JobSeekerDashboard() {
         return;
       }
 
-      const response = await fetch('https://findr-jobboard-backend-production.up.railway.app/api/v1/profile/details', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -60,7 +60,7 @@ export default function QuotationPage() {
     try {
       setLoading(true)
       
-      const response = await fetch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/admin/quotes?page=${currentPage}&limit=${pageSize}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/quotes?page=${currentPage}&limit=${pageSize}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
@@ -100,7 +100,7 @@ export default function QuotationPage() {
   // Update quote status
   const updateQuoteStatus = async (quoteId: string, status: string) => {
     try {
-      const response = await fetch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/admin/quotes/${quoteId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/quotes/${quoteId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({ status })
@@ -147,7 +147,7 @@ export default function QuotationPage() {
 
   const handleConfirmPayment = async (quotationId: string) => {
     try {
-      const response = await fetch(`https://findr-jobboard-backend-production.up.railway.app/api/v1/admin/quotes/${quotationId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/quotes/${quotationId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({ status: 'accepted' })

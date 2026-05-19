@@ -1,4 +1,4 @@
-// "use client"
+﻿// "use client"
 
 // import { useState, useEffect } from "react"
 // import axios from "axios"
@@ -932,7 +932,7 @@ interface EmployerProfileData {
   verified: boolean
 }
 
-const API_BASE_URL = "https://findr-jobboard-backend-production.up.railway.app/api/v1"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 const getAuthToken = () => {
   return localStorage.getItem("findr_token") || localStorage.getItem("authToken") || localStorage.getItem("token") || ""
@@ -1848,7 +1848,7 @@ export default function EmployerProfilePage() {
 
                     const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
                     if (token) {
-                      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://findr-jobboard-backend-production.up.railway.app'}/api/v1/employer/update`, {
+                      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/employer/update`, {
                         method: 'PUT',
                         headers: {
                           'Authorization': `Bearer ${token}`,

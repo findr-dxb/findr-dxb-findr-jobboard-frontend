@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+﻿import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import axios from 'axios'
 
 // Types
@@ -61,7 +61,7 @@ export const checkEmployerEligibility = createAsyncThunk(
         throw new Error('No authentication token found')
       }
 
-      const response = await axios.get('https://findr-jobboard-backend-production.up.railway.app/api/v1/employer/eligibility', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/employer/eligibility`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -97,7 +97,7 @@ export const submitJobPosting = createAsyncThunk(
       const mappedJobType = jobTypeMapping[formData.jobType] || 'Full Time'
       const salaryAmount = parseFloat(formData.salary) || 0
 
-      const response = await axios.post('https://findr-jobboard-backend-production.up.railway.app/api/v1/create/jobs', {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/create/jobs`, {
         title: formData.jobTitle,
         companyName: formData.company,
         location: formData.location,

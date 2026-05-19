@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import type React from "react"
 
@@ -16,7 +16,7 @@ import { User, Briefcase, Eye, EyeOff } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 
-const API_BASE_URL = "https://findr-jobboard-backend-production.up.railway.app/api/v1"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function LoginPage() {
   const searchParams = useSearchParams()

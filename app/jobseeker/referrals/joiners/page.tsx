@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
@@ -30,7 +30,7 @@ import { ArrowLeft, Loader2, Users, User, Eye, Search, ChevronLeft, ChevronRight
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://findr-jobboard-backend-production.up.railway.app/api/v1";
+  process.env.NEXT_PUBLIC_API_URL;
 const NETWORK_PER_PAGE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
