@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { Navbar } from "@/components/navbar"
@@ -31,7 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { FileUpload } from "@/components/file-upload"
 import { useAuth } from "@/contexts/auth-context"
-import { FollowUs } from "@/components/follow-us"
+import { FollowUs, type SocialFollowStatus } from "@/components/follow-us"
 import { normalizeUAE } from "@/lib/utils"
 import { ImageCropModal } from "@/components/image-crop-modal"
 import { UploadAPI } from "@/lib/upload-api"
@@ -149,29 +149,11 @@ export default function JobSeekerProfilePage() {
 
   const [profileCompletion, setProfileCompletion] = useState(0)
   const [points, setPoints] = useState(0)
+  const [socialFollowStatus, setSocialFollowStatus] = useState<SocialFollowStatus | undefined>(undefined)
   const [emiratesIdError, setEmiratesIdError] = useState<string>("")
 
-  // Helper function to modify Cloudinary URL to force download
+  // Helper function to get download URL
   const getDownloadUrl = (url: string): string => {
-    if (!url) return url;
-    
-    // Check if it's a Cloudinary URL
-    if (url.includes('res.cloudinary.com')) {
-      // Add fl_attachment flag to force download
-      // Format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{transformations}/{version}/{public_id}
-      // We need to insert fl_attachment after /upload/
-      const uploadIndex = url.indexOf('/upload/');
-      if (uploadIndex !== -1) {
-        const beforeUpload = url.substring(0, uploadIndex + 8); // Include '/upload/'
-        const afterUpload = url.substring(uploadIndex + 8);
-        
-        // Check if fl_attachment already exists
-        if (!afterUpload.startsWith('fl_attachment')) {
-          return `${beforeUpload}fl_attachment/${afterUpload}`;
-        }
-      }
-    }
-    
     return url;
   }
   const [tier, setTier] = useState("Blue")
@@ -203,7 +185,7 @@ export default function JobSeekerProfilePage() {
         throw new Error('No authentication token found')
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/profile/details`, {
+      const response = await fetch(`${API_BASE_URL}/profile/details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -275,7 +257,7 @@ export default function JobSeekerProfilePage() {
               const urlParts = url.split('/');
               const lastPart = urlParts[urlParts.length - 1];
               if (lastPart && lastPart.includes('.')) {
-                // Remove Cloudinary transformations and get the actual filename
+                // Remove transformations and get the actual filename
                 const cleanFilename = lastPart.split('?')[0]; // Remove query parameters
                 if (cleanFilename.length > 0) {
                   filename = cleanFilename;
@@ -300,6 +282,11 @@ export default function JobSeekerProfilePage() {
           },
           deductedPoints: apiData.deductedPoints || 0,
         }))
+
+        setSocialFollowStatus({
+          linkedIn: !!apiData.linkedIn,
+          instagram: !!apiData.instagram,
+        })
         
         // Points will be calculated in the useEffect based on profile completion and deductedPoints
         
@@ -465,7 +452,7 @@ export default function JobSeekerProfilePage() {
         resumeDocument: profileData.resumeDocument,
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+      const response = await fetch(`${API_BASE_URL}/profile/update`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -690,7 +677,7 @@ export default function JobSeekerProfilePage() {
     setRecordingTime(0);
   };
 
-  // Upload video to Cloudinary and save to profile
+  // Upload video and save to profile
   const handleSaveVideo = async () => {
     if (!videoUrl) {
       toast({
@@ -711,11 +698,11 @@ export default function JobSeekerProfilePage() {
         type: 'video/webm'
       });
 
-      // Upload to Cloudinary using our upload API
+      // Upload using our upload API
       const formData = new FormData();
       formData.append('file', videoFile);
 
-      const uploadResponse = await fetch(`${API_BASE_URL}/api/v1/upload`, {
+      const uploadResponse = await fetch(`${API_BASE_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -725,25 +712,25 @@ export default function JobSeekerProfilePage() {
       }
 
       const uploadData = await uploadResponse.json();
-      const videoCloudinaryUrl = uploadData.data.secure_url || uploadData.data.url;
+      const videoUploadedUrl = uploadData.data.secure_url || uploadData.data.url;
 
       // Update profile data with video URL
       setProfileData(prev => ({
         ...prev,
-        introVideo: videoCloudinaryUrl
+        introVideo: videoUploadedUrl
       }));
 
       // Auto-save to database
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       if (token) {
-        const saveResponse = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+        const saveResponse = await fetch(`${API_BASE_URL}/profile/update`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            introVideo: videoCloudinaryUrl
+            introVideo: videoUploadedUrl
           }),
         });
 
@@ -1097,7 +1084,7 @@ export default function JobSeekerProfilePage() {
 
                     const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
                     if (token) {
-                      const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+                      const response = await fetch(`${API_BASE_URL}/profile/update`, {
                         method: 'PUT',
                         headers: {
                           'Authorization': `Bearer ${token}`,
@@ -1169,7 +1156,7 @@ export default function JobSeekerProfilePage() {
                       try {
                         const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
                         if (token) {
-                          const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+                          const response = await fetch(`${API_BASE_URL}/profile/update`, {
                             method: 'PUT',
                             headers: {
                               'Authorization': `Bearer ${token}`,
@@ -1561,7 +1548,7 @@ export default function JobSeekerProfilePage() {
                               
                               // Extract filename from URL or use default
                               let filename = 'resume';
-                              if (profileData.resumeDocument.includes('res.cloudinary.com')) {
+                              if (profileData.resumeDocument) {
                                 const urlParts = profileData.resumeDocument.split('/');
                                 const lastPart = urlParts[urlParts.length - 1];
                                 if (lastPart && lastPart.includes('.')) {
@@ -1638,7 +1625,7 @@ export default function JobSeekerProfilePage() {
                     try {
                       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
                       if (token) {
-                        const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+                        const response = await fetch(`${API_BASE_URL}/profile/update`, {
                           method: 'PUT',
                           headers: {
                             'Authorization': `Bearer ${token}`,
@@ -1739,7 +1726,7 @@ export default function JobSeekerProfilePage() {
                                 
                                 // Extract filename from doc.name or URL
                                 let filename = doc.name;
-                                if (doc.url.includes('res.cloudinary.com') && !filename.includes('.')) {
+                                if (!filename.includes('.')) {
                                   const urlParts = doc.url.split('/');
                                   const lastPart = urlParts[urlParts.length - 1];
                                   if (lastPart && lastPart.includes('.')) {
@@ -1820,7 +1807,7 @@ export default function JobSeekerProfilePage() {
                               try {
                                 const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
                                 if (token) {
-                                  const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+                                  const response = await fetch(`${API_BASE_URL}/profile/update`, {
                                     method: 'PUT',
                                     headers: {
                                       'Authorization': `Bearer ${token}`,
@@ -1878,9 +1865,9 @@ export default function JobSeekerProfilePage() {
                     onUploadSuccess={async (fileData) => {
                       // Try multiple possible filename fields, prioritizing the most reliable ones
                       const originalName = fileData.clientOriginalName ||     // From our FileUpload component
-                                         fileData.original_filename ||        // From Cloudinary
-                                         fileData.display_name ||             // Alternative Cloudinary field
-                                         fileData.public_id ||                // Cloudinary public ID
+                                         fileData.original_filename ||        
+                                         fileData.display_name ||             
+                                         fileData.public_id ||                
                                          `Document-${Date.now()}`;            // Final fallback with timestamp
                       
                       const newDocument = {
@@ -1903,7 +1890,7 @@ export default function JobSeekerProfilePage() {
                       try {
                         const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
                         if (token) {
-                          const response = await fetch(`${API_BASE_URL}/api/v1/profile/update`, {
+                          const response = await fetch(`${API_BASE_URL}/profile/update`, {
                             method: 'PUT',
                             headers: {
                               'Authorization': `Bearer ${token}`,
@@ -2021,13 +2008,18 @@ export default function JobSeekerProfilePage() {
           </Card>
 
           {/* Follow Us Section */}
-          <FollowUs 
+          <FollowUs
+            initialFollowStatus={socialFollowStatus}
             onPointsEarned={(platform, earnedPoints) => {
               // Recalculate points with the new earned points
               const newCalculatedPoints = 50 + profileCompletion * 2 + earnedPoints
               const deductedPoints = profileData.deductedPoints || 0
               const availablePoints = Math.max(0, newCalculatedPoints - deductedPoints)
               setPoints(availablePoints)
+              setSocialFollowStatus((prev) => ({
+                linkedIn: prev?.linkedIn || platform === 'LinkedIn',
+                instagram: prev?.instagram || platform === 'Instagram',
+              }))
               toast({
                 title: "Profile Updated!",
                 description: `Earned ${earnedPoints} points for following us on ${platform}! Total points: ${availablePoints}`,

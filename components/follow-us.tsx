@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,20 +6,42 @@ import { Button } from "@/components/ui/button"
 import { Linkedin, Instagram, Star, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
+export type SocialFollowStatus = {
+  linkedIn?: boolean
+  instagram?: boolean
+}
+
 interface FollowUsProps {
   onPointsEarned?: (platform: string, points: number) => void
+  /** When set by parent (e.g. profile page), skips a duplicate /profile/details request */
+  initialFollowStatus?: SocialFollowStatus
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export function FollowUs({ onPointsEarned }: FollowUsProps) {
+function applyFollowStatus(
+  status: SocialFollowStatus,
+  setFollowedPlatforms: (value: Set<string>) => void
+) {
+  const followed = new Set<string>()
+  if (status.linkedIn) followed.add('LinkedIn')
+  if (status.instagram) followed.add('Instagram')
+  setFollowedPlatforms(followed)
+}
+
+export function FollowUs({ onPointsEarned, initialFollowStatus }: FollowUsProps) {
   const [followedPlatforms, setFollowedPlatforms] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState<Record<string, boolean>>({})
-  const [isLoadingStatus, setIsLoadingStatus] = useState(true)
+  const [isLoadingStatus, setIsLoadingStatus] = useState(initialFollowStatus === undefined)
   const { toast } = useToast()
 
-  // Fetch current follow status from backend
   useEffect(() => {
+    if (initialFollowStatus !== undefined) {
+      applyFollowStatus(initialFollowStatus, setFollowedPlatforms)
+      setIsLoadingStatus(false)
+      return
+    }
+
     const fetchFollowStatus = async () => {
       try {
         const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
@@ -28,7 +50,7 @@ export function FollowUs({ onPointsEarned }: FollowUsProps) {
           return
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/v1/profile/details`, {
+        const response = await fetch(`${API_BASE_URL}/profile/details`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -39,10 +61,13 @@ export function FollowUs({ onPointsEarned }: FollowUsProps) {
         if (response.ok) {
           const data = await response.json()
           if (data.success && data.data) {
-            const followed = new Set<string>()
-            if (data.data.linkedIn) followed.add('LinkedIn')
-            if (data.data.instagram) followed.add('Instagram')
-            setFollowedPlatforms(followed)
+            applyFollowStatus(
+              {
+                linkedIn: data.data.linkedIn,
+                instagram: data.data.instagram,
+              },
+              setFollowedPlatforms
+            )
           }
         }
       } catch (error) {
@@ -53,7 +78,7 @@ export function FollowUs({ onPointsEarned }: FollowUsProps) {
     }
 
     fetchFollowStatus()
-  }, [])
+  }, [initialFollowStatus])
 
   const handleSocialClick = async (platform: string, url: string) => {
     // Open social media link in new tab
@@ -87,7 +112,7 @@ export function FollowUs({ onPointsEarned }: FollowUsProps) {
       const platformKey = platform === 'LinkedIn' ? 'linkedIn' : 'instagram'
 
       // Call API to record the follow
-      const response = await fetch(`${API_BASE_URL}/api/v1/profile/follow-social`, {
+      const response = await fetch(`${API_BASE_URL}/profile/follow-social`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -102,8 +127,7 @@ export function FollowUs({ onPointsEarned }: FollowUsProps) {
         // Add platform to followed set
         setFollowedPlatforms(prev => new Set(prev).add(platform))
         
-        // Award points (10 per platform)
-        const points = data.data?.pointsAwarded || 10
+        const points = data.data?.pointsAwarded || 50
         if (onPointsEarned) {
           onPointsEarned(platform, points)
         }
@@ -161,7 +185,7 @@ export function FollowUs({ onPointsEarned }: FollowUsProps) {
           Follow Us
         </CardTitle>
         <CardDescription>
-          🎉 Follow us on LinkedIn or Instagram and earn 10 bonus points!
+          🎉 Follow us on LinkedIn or Instagram and earn 50 bonus points!
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -198,7 +222,7 @@ export function FollowUs({ onPointsEarned }: FollowUsProps) {
                 </span>
                 {!hasFollowed && !isLoading && (
                   <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full ml-1">
-                    +10 pts
+                    +50 pts
                   </span>
                 )}
               </Button>

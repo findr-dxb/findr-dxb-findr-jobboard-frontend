@@ -894,7 +894,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { TOP_200_COMPANIES, normalizeUAE } from "@/lib/utils"
-import { FollowUs } from "@/components/follow-us"
+import { FollowUs, type SocialFollowStatus } from "@/components/follow-us"
 import { FileUpload } from "@/components/file-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
@@ -1036,6 +1036,7 @@ export default function EmployerProfilePage() {
   const [saving, setSaving] = useState(false)
   const [cropModalOpen, setCropModalOpen] = useState(false)
   const [logoUploading, setLogoUploading] = useState(false)
+  const [socialFollowStatus, setSocialFollowStatus] = useState<SocialFollowStatus | undefined>(undefined)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -1091,6 +1092,10 @@ export default function EmployerProfilePage() {
           setPoints(data.points || 0)
           setProfileCompletion(data.profileCompleted || 0)
           setPostedJobsCount(data.postedJobs?.length || 0)
+          setSocialFollowStatus({
+            linkedIn: !!data.linkedIn,
+            instagram: !!data.instagram,
+          })
         }
       } catch (error: any) {
         toast({
@@ -1848,7 +1853,7 @@ export default function EmployerProfilePage() {
 
                     const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
                     if (token) {
-                      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/employer/update`, {
+                      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employer/update`, {
                         method: 'PUT',
                         headers: {
                           'Authorization': `Bearer ${token}`,
@@ -1880,9 +1885,14 @@ export default function EmployerProfilePage() {
               />
             </CardContent>
           </Card>
-          <FollowUs 
+          <FollowUs
+            initialFollowStatus={socialFollowStatus}
             onPointsEarned={(platform, earnedPoints) => {
               setPoints(prev => prev + earnedPoints)
+              setSocialFollowStatus((prev) => ({
+                linkedIn: prev?.linkedIn || platform === 'LinkedIn',
+                instagram: prev?.instagram || platform === 'Instagram',
+              }))
               toast({
                 title: "Profile Updated!",
                 description: `Earned ${earnedPoints} points for following us on ${platform}! Total points: ${points + earnedPoints}`,

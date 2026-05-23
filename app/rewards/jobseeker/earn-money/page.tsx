@@ -79,7 +79,7 @@ export default function EarnMoneyPage() {
         <div className="flex justify-center">
           <video 
             autoPlay
-            
+            controls
             loop
             playsInline
             className="rounded-xl shadow-lg w-full max-w-[1200px] min-w-0 bg-black" 

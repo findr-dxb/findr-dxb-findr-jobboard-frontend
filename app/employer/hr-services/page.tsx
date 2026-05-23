@@ -281,10 +281,6 @@ export default function HRServicesPage() {
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <Phone className="w-5 h-5" />
-                    <span>+971 54 551 5125</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
                     <Mail className="w-5 h-5" />
                     <span>contact@findr.ae</span>
                   </div>
@@ -293,7 +289,7 @@ export default function HRServicesPage() {
               <div className="text-center">
                 <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 mb-4">
                   <Calendar className="w-5 h-5 mr-2" />
-                  Schedule Free Consultation
+                  <Link href="/contact">Schedule Free Consultation</Link>
                 </Button>
                 <p className="text-emerald-100 text-sm">No commitment required • 30-minute session</p>
               </div>

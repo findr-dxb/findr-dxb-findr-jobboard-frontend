@@ -35,8 +35,8 @@ export class UploadAPI {
     try {
       // Use /upload-raw endpoint for documents (raw resource type), /upload for images/videos
       const endpoint = options.resourceType === 'raw' 
-        ? `${API_BASE_URL}/api/v1/upload-raw`
-        : `${API_BASE_URL}/api/v1/upload`;
+        ? `${API_BASE_URL}/upload-raw`
+        : `${API_BASE_URL}/upload`;
       
       const response = await axios.post(endpoint, formData, {
         headers: {
