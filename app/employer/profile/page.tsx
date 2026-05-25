@@ -91,7 +91,7 @@
 //     try {
 //       const token = getAuthToken()
 //       console.log("Token being used for API call:", token ? `${token.substring(0, 20)}...` : "No token found")
-      
+
 //       const response = await axios.get(`${API_BASE_URL}/employer/details`, {
 //         headers: {
 //           Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@
 //     try {
 //       const token = getAuthToken()
 //       console.log("Token being used for update:", token ? `${token.substring(0, 20)}...` : "No token found")
-      
+
 //       const response = await axios.put(`${API_BASE_URL}/employer/update`, profileData, {
 //         headers: {
 //           Authorization: `Bearer ${token}`,
@@ -169,10 +169,10 @@
 //     const fetchEmployerData = async () => {
 //       try {
 //         setLoading(true)
-        
+
 //         // Check if user is authenticated
 //         const token = getAuthToken()
-        
+
 //         // Debug: Log available tokens in localStorage
 //         console.log("=== Token Debug Info ===")
 //         console.log("findr_token:", localStorage.getItem("findr_token") ? "Present" : "Not found")
@@ -180,7 +180,7 @@
 //         console.log("token:", localStorage.getItem("token") ? "Present" : "Not found")
 //         console.log("Final token used:", token ? `${token.substring(0, 20)}...` : "No token")
 //         console.log("======================")
-        
+
 //         if (!token) {
 //           toast({
 //             title: "Authentication Required",
@@ -190,12 +190,12 @@
 //           setLoading(false)
 //           return
 //         }
-        
+
 //         const response = await apiService.getEmployerDetails()
-        
+
 //         if (response.success && response.data) {
 //           const data = response.data
-          
+
 //           // Map API response to frontend state structure
 //           setProfileData({
 //             companyInfo: {
@@ -227,7 +227,7 @@
 //             verified: data.verificationStatus === "verified",
 //             llcCertificate: null,
 //           })
-          
+
 //           // Set points and profile completion from API if available
 //           if (data.points !== undefined) {
 //             setPoints(data.points)
@@ -238,7 +238,7 @@
 //         }
 //       } catch (error: any) {
 //         console.error("Failed to fetch employer data:", error)
-        
+
 //         // Provide more specific error messages
 //         let errorMessage = "Failed to load profile data."
 //         if (error.response?.status === 401) {
@@ -248,7 +248,7 @@
 //         } else if (error.message) {
 //           errorMessage = error.message
 //         }
-        
+
 //         toast({
 //           title: "Error",
 //           description: errorMessage,
@@ -339,7 +339,7 @@
 //   const handleSave = async () => {
 //     try {
 //       setSaving(true)
-      
+
 //       // Prepare data for API in the format expected by backend
 //       const updateData = {
 //         // Company Information
@@ -351,39 +351,39 @@
 //         teamSize: profileData.companyInfo.teamSize,
 //         foundedYear: profileData.companyInfo.foundedYear ? parseInt(profileData.companyInfo.foundedYear) : 0,
 //         aboutCompany: profileData.companyInfo.about,
-        
+
 //         // Contact Person
 //         contactPerson: {
 //           name: profileData.contactPerson.name,
 //           email: profileData.contactPerson.email,
 //           phone: profileData.contactPerson.phone,
 //         },
-        
+
 //         // Location
 //         companyLocation: profileData.location.officeAddress,
 //         city: profileData.location.city,
 //         country: profileData.location.country,
-        
+
 //         // Social Links
 //         socialLinks: {
 //           linkedin: profileData.social.linkedin,
 //           twitter: profileData.social.twitter,
 //           facebook: profileData.social.instagram, // Map instagram to facebook as per API
 //         },
-        
+
 //         // Profile completion and points (will be calculated by backend)
 //         profileCompleted: profileCompletion,
 //         points: points,
 //       }
 
 //       const response = await apiService.updateEmployerProfile(updateData)
-      
+
 //       if (response.success) {
 //         toast({
 //           title: "Profile Updated!",
 //           description: `Profile saved successfully. Points: ${points}`,
 //         })
-        
+
 //         // Update local state with any data returned from backend
 //         if (response.data) {
 //           const data = response.data
@@ -943,7 +943,7 @@ const apiService = {
     try {
       const token = getAuthToken()
       if (!token) throw new Error("No authentication token found")
-      
+
       const response = await axios.get(`${API_BASE_URL}/employer/details`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -960,7 +960,7 @@ const apiService = {
     try {
       const token = getAuthToken()
       if (!token) throw new Error("No authentication token found")
-      
+
       const response = await axios.put(`${API_BASE_URL}/employer/update`, profileData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -977,10 +977,10 @@ const apiService = {
     try {
       const token = getAuthToken()
       if (!token) throw new Error("No authentication token found")
-      
+
       const formData = new FormData()
       formData.append("llcCertificate", file)
-      
+
       const response = await axios.post(`${API_BASE_URL}/employer/upload-certificate`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -1044,7 +1044,7 @@ export default function EmployerProfilePage() {
       try {
         setLoading(true)
         const token = getAuthToken()
-        
+
         if (!token) {
           toast({
             title: "Authentication Required",
@@ -1056,7 +1056,7 @@ export default function EmployerProfilePage() {
         }
 
         const response = await apiService.getEmployerDetails()
-        
+
         if (response.success && response.data) {
           const data = response.data
           setProfileData({
@@ -1145,7 +1145,7 @@ export default function EmployerProfilePage() {
       setProfileCompletion(percentage)
       const newPoints = percentage * 5
       setPoints(Math.round(newPoints))
-      
+
 
       const determineTier = () => {
         if (postedJobsCount >= 51) return "Platinum";
@@ -1184,7 +1184,7 @@ export default function EmployerProfilePage() {
     try {
       const logoUrl = fileData.secure_url || fileData.url;
       setProfileData(prev => ({ ...prev, companyLogo: logoUrl }));
-      
+
       // Auto-save to database
       const token = getAuthToken();
       if (token) {
@@ -1198,7 +1198,7 @@ export default function EmployerProfilePage() {
             companyLogo: logoUrl
           }),
         });
-        
+
         if (response.ok) {
           const stored = localStorage.getItem('findr_user')
           if (stored) {
@@ -1228,7 +1228,7 @@ export default function EmployerProfilePage() {
     try {
       const certificateUrl = fileData.secure_url || fileData.url;
       setProfileData(prev => ({ ...prev, businessLicense: certificateUrl }));
-      
+
       // Auto-save to database
       const token = getAuthToken();
       if (token) {
@@ -1244,7 +1244,7 @@ export default function EmployerProfilePage() {
             }
           }),
         });
-        
+
         if (response.ok) {
           toast({
             title: "LLC Certificate Uploaded",
@@ -1269,7 +1269,7 @@ export default function EmployerProfilePage() {
       const phone = profileData.companyInfo.phone?.trim() || '';
       if (phone) {
         const normalizedPhone = normalizeUAE(phone);
-        
+
         if (!normalizedPhone) {
           toast({
             title: "Invalid phone number",
@@ -1278,7 +1278,7 @@ export default function EmployerProfilePage() {
           });
           return;
         }
-        
+
         // Update the phone number with normalized value
         profileData.companyInfo.phone = normalizedPhone;
       }
@@ -1383,17 +1383,17 @@ export default function EmployerProfilePage() {
                   <div className="relative">
                     <div className="w-20 h-20 bg-white rounded-xl overflow-hidden flex items-center justify-center card-shadow">
                       {profileData.companyLogo ? (
-                        <img 
-                          src={profileData.companyLogo} 
-                          alt="Company Logo" 
+                        <img
+                          src={profileData.companyLogo}
+                          alt="Company Logo"
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <Building className="w-10 h-10 text-emerald-600" />
                       )}
                     </div>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full gradient-bg p-0"
                       onClick={() => {
                         const logoSection = document.querySelector('[data-section="company-logo"]');
@@ -1527,6 +1527,36 @@ export default function EmployerProfilePage() {
                       <SelectItem value="hospitality">Hospitality</SelectItem>
                       <SelectItem value="manufacturing">Manufacturing</SelectItem>
                       <SelectItem value="consulting">Consulting</SelectItem>
+                      <SelectItem value="banking">Banking</SelectItem>
+                      <SelectItem value="insurance">Insurance</SelectItem>
+                      <SelectItem value="real_estate">Real Estate</SelectItem>
+                      <SelectItem value="telecommunications">Telecommunications</SelectItem>
+                      <SelectItem value="media_entertainment">Media & Entertainment</SelectItem>
+                      <SelectItem value="marketing_advertising">Marketing & Advertising</SelectItem>
+                      <SelectItem value="ecommerce">E-Commerce</SelectItem>
+                      <SelectItem value="transportation">Transportation</SelectItem>
+                      <SelectItem value="logistics_supply_chain">Logistics & Supply Chain</SelectItem>
+                      <SelectItem value="automobile">Automobile</SelectItem>
+                      <SelectItem value="pharmaceutical">Pharmaceutical</SelectItem>
+                      <SelectItem value="biotechnology">Biotechnology</SelectItem>
+                      <SelectItem value="legal_services">Legal Services</SelectItem>
+                      <SelectItem value="government">Government</SelectItem>
+                      <SelectItem value="non_profit">Non-Profit</SelectItem>
+                      <SelectItem value="agriculture">Agriculture</SelectItem>
+                      <SelectItem value="energy_utilities">Energy & Utilities</SelectItem>
+                      <SelectItem value="oil_gas">Oil & Gas</SelectItem>
+                      <SelectItem value="food_beverage">Food & Beverage</SelectItem>
+                      <SelectItem value="fashion_apparel">Fashion & Apparel</SelectItem>
+                      <SelectItem value="sports_fitness">Sports & Fitness</SelectItem>
+                      <SelectItem value="travel_tourism">Travel & Tourism</SelectItem>
+                      <SelectItem value="human_resources">Human Resources</SelectItem>
+                      <SelectItem value="event_management">Event Management</SelectItem>
+                      <SelectItem value="cybersecurity">Cybersecurity</SelectItem>
+                      <SelectItem value="artificial_intelligence">Artificial Intelligence</SelectItem>
+                      <SelectItem value="gaming">Gaming</SelectItem>
+                      <SelectItem value="animation_vfx">Animation & VFX</SelectItem>
+                      <SelectItem value="architecture">Architecture</SelectItem>
+                      <SelectItem value="interior_design">Interior Design</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -1625,12 +1655,12 @@ export default function EmployerProfilePage() {
                         const isPlus = e.key === '+'
                         const isAllowedKey = allowedKeys.includes(e.key)
                         const isCtrlCmd = e.ctrlKey || e.metaKey
-                        
+
                         // Allow Ctrl/Cmd + A, C, V, X for select all, copy, paste, cut
                         if (isCtrlCmd && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
                           return
                         }
-                        
+
                         // Block if it's not a number, plus, or allowed key
                         if (!isNumber && !isPlus && !isAllowedKey) {
                           e.preventDefault()
@@ -1900,8 +1930,8 @@ export default function EmployerProfilePage() {
             }}
           />
           <div className="flex justify-center">
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={saving || loading}
               className="gradient-bg text-white px-8 py-2"
             >
