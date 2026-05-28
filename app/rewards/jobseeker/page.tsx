@@ -10,6 +10,7 @@ import { Gift, UserCheck, FileText, Star, ArrowRight, Award, Trophy, RefreshCw, 
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
+import { calculateJobseekerProfileCompletion } from "@/lib/jobseeker-profile-completion"
 
 const membershipTiers = [
   {
@@ -74,66 +75,17 @@ export default function JobSeekerRewardsPage() {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   };
 
-  // Calculate profile completion and points (fallback when server points missing)
   const calculateProfileMetrics = (profile: any) => {
-    let completed = 0;
-    const totalFields = 24; // employmentVisa removed
-
-    // Personal Info (9 fields - employmentVisa removed)
-    if (profile?.fullName) completed++;
-    if (profile?.email) completed++;
-    if (profile?.phoneNumber) completed++;
-    if (profile?.location) completed++;
-    if (profile?.dateOfBirth) completed++;
-    if (profile?.nationality) completed++;
-    if (profile?.professionalSummary) completed++;
-    if (profile?.emirateId) completed++;
-    if (profile?.passportNumber) completed++;
-
-    // Experience (4 fields)
-    const exp = profile?.professionalExperience?.[0];
-    if (exp?.currentRole) completed++;
-    if (exp?.company) completed++;
-    if (exp?.yearsOfExperience) completed++;
-    if (exp?.industry) completed++;
-
-    // Education (4 fields)
-    const edu = profile?.education?.[0];
-    if (edu?.highestDegree) completed++;
-    if (edu?.institution) completed++;
-    if (edu?.yearOfGraduation) completed++;
-    if (edu?.gradeCgpa) completed++;
-
-    // Skills, Preferences, Certifications, Resume (4 fields)
-    if (profile?.skills && profile.skills.length > 0) completed++;
-    if (profile?.jobPreferences?.preferredJobType && profile.jobPreferences.preferredJobType.length > 0) completed++;
-    if (profile?.certifications && profile.certifications.length > 0) completed++;
-    // Check resume in multiple possible locations (matching backend logic)
-    const hasResume = !!(profile?.resumeDocument && profile.resumeDocument.trim() !== '') ||
-      !!(profile?.resumeUrl && profile.resumeUrl.trim() !== '') ||
-      !!(profile?.resume && (typeof profile.resume === 'string' ? profile.resume.trim() !== '' : profile.resume)) ||
-      !!(profile?.jobPreferences?.resumeAndDocs && profile.jobPreferences.resumeAndDocs.length > 0) ||
-      !!(profile?.documents && profile.documents.length > 0 && profile.documents.some((doc: any) =>
-        doc.type === 'resume' || doc.name?.toLowerCase().includes('resume') || doc.name?.toLowerCase().includes('cv')
-      ));
-    if (hasResume) completed++;
-
-    // Social Links (3 fields) - check both uppercase and lowercase versions
-    if (profile?.socialLinks?.linkedIn || profile?.socialLinks?.linkedin) completed++;
-    if (profile?.socialLinks?.instagram) completed++;
-    if (profile?.socialLinks?.twitterX || profile?.socialLinks?.twitter) completed++;
-
-    const percentage = Math.round((completed / totalFields) * 100);
-    const calculatedPoints = 50 + percentage * 2; // Base 50 + 2 points per percentage (100% = 250 points)
-    const applicationPoints = profile?.rewards?.applyForJobs || 0; // Points from job applications
-    const rmServicePoints = profile?.rewards?.rmService || 0; // Points from RM service purchase
-    const socialMediaBonus = profile?.rewards?.socialMediaBonus || 0; // Points from following social media
-    const deductedPoints = profile?.deductedPoints || 0;
-    const totalPoints = calculatedPoints + applicationPoints + rmServicePoints + socialMediaBonus;
-    const availablePoints = Math.max(0, totalPoints - deductedPoints);
-
-    return { percentage, points: availablePoints };
-  };
+    const completion = calculateJobseekerProfileCompletion(profile)
+    const applicationPoints = profile?.rewards?.applyForJobs || 0
+    const rmServicePoints = profile?.rewards?.rmService || 0
+    const socialMediaBonus = profile?.rewards?.socialMediaBonus || 0
+    const deductedPoints = profile?.deductedPoints || 0
+    const totalPoints =
+      completion.profilePoints + applicationPoints + rmServicePoints + socialMediaBonus
+    const availablePoints = Math.max(0, totalPoints - deductedPoints)
+    return { percentage: completion.percentage, points: availablePoints }
+  }
 
   // Determine user tier based on points and profile (for display purposes only)
   const determineUserTier = (profile: any, points: number) => {

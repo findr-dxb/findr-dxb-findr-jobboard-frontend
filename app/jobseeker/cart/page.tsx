@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { ShoppingCart, Trash2, BadgePercent } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
+import { calculateJobseekerProfileCompletion } from "@/lib/jobseeker-profile-completion"
 
 export default function CartPage() {
   const [rewardPoints, setRewardPoints] = useState<number | "">("")
@@ -18,58 +19,16 @@ export default function CartPage() {
   const router = useRouter()
   const { cart, removeFromCart } = useCart()
 
-  // Calculate profile points (same logic as dashboard) - fallback only
   const calculateProfilePoints = (profile: any) => {
-    let completed = 0;
-    const totalFields = 24; // Same as dashboard (employmentVisa removed)
-
-    // Personal Info (9 fields - employmentVisa removed)
-    if (profile?.fullName) completed++;
-    if (profile?.email) completed++;
-    if (profile?.phoneNumber) completed++;
-    if (profile?.location) completed++;
-    if (profile?.dateOfBirth) completed++;
-    if (profile?.nationality) completed++;
-    if (profile?.professionalSummary) completed++;
-    if (profile?.emirateId) completed++;
-    if (profile?.passportNumber) completed++;
-
-    // Experience (4 fields)
-    const exp = profile?.professionalExperience?.[0];
-    if (exp?.currentRole) completed++;
-    if (exp?.company) completed++;
-    if (exp?.yearsOfExperience) completed++;
-    if (exp?.industry) completed++;
-
-    // Education (4 fields)
-    const edu = profile?.education?.[0];
-    if (edu?.highestDegree) completed++;
-    if (edu?.institution) completed++;
-    if (edu?.yearOfGraduation) completed++;
-    if (edu?.gradeCgpa) completed++;
-
-    // Skills, Preferences, Certifications, Resume (4 fields)
-    if (profile?.skills && profile.skills.length > 0) completed++;
-    if (profile?.jobPreferences?.preferredJobType && profile.jobPreferences.preferredJobType.length > 0) completed++;
-    if (profile?.certifications && profile.certifications.length > 0) completed++;
-    if (profile?.jobPreferences?.resumeAndDocs && profile.jobPreferences.resumeAndDocs.length > 0) completed++;
-
-    // Social Links (3 fields)
-    if (profile?.socialLinks?.linkedIn) completed++;
-    if (profile?.socialLinks?.instagram) completed++;
-    if (profile?.socialLinks?.twitterX) completed++;
-
-    const percentage = Math.round((completed / totalFields) * 100);
-    const calculatedPoints = 50 + percentage * 2; // Base 50 + 2 points per percentage (100% = 250 points)
-    const applicationPoints = profile?.rewards?.applyForJobs || 0; // Points from job applications
-    const rmServicePoints = profile?.rewards?.rmService || 0; // Points from RM service purchase
-    const socialMediaBonus = profile?.rewards?.socialMediaBonus || 0; // Points from following social media
-    const deductedPoints = profile?.deductedPoints || 0;
-    const totalPoints = calculatedPoints + applicationPoints + rmServicePoints + socialMediaBonus;
-    const availablePoints = Math.max(0, totalPoints - deductedPoints);
-
-    return availablePoints;
-  };
+    const completion = calculateJobseekerProfileCompletion(profile)
+    const applicationPoints = profile?.rewards?.applyForJobs || 0
+    const rmServicePoints = profile?.rewards?.rmService || 0
+    const socialMediaBonus = profile?.rewards?.socialMediaBonus || 0
+    const deductedPoints = profile?.deductedPoints || 0
+    const totalPoints =
+      completion.profilePoints + applicationPoints + rmServicePoints + socialMediaBonus
+    return Math.max(0, totalPoints - deductedPoints)
+  }
 
   // Fetch user's points on component mount
   useEffect(() => {

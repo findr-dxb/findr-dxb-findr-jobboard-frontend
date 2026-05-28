@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import { calculateJobseekerProfileCompletion } from "@/lib/jobseeker-profile-completion";
 
 interface Application {
   _id: string;
@@ -154,67 +155,14 @@ export default function JobSeekerDashboard() {
     else return "Blue"; // 0-1 year
   };
 
-  // Calculate profile completion and points (same logic as profile page)
   const calculateProfileMetrics = (profile: any) => {
-    let completed = 0;
-    const totalFields = 24; // Updated: removed employmentVisa (not in form, matching profile page)
-
-    // Personal Info (9 fields - employmentVisa is optional, not in form)
-    if (profile?.fullName) completed++;
-    if (profile?.email) completed++;
-    if (profile?.phoneNumber) completed++;
-    if (profile?.location) completed++;
-    if (profile?.dateOfBirth) completed++;
-    if (profile?.nationality) completed++;
-    if (profile?.professionalSummary) completed++;
-    if (profile?.emirateId) completed++;
-    if (profile?.passportNumber) completed++;
-
-    // Experience (4 fields)
-    const exp = profile?.professionalExperience?.[0];
-    if (exp?.currentRole) completed++;
-    if (exp?.company) completed++;
-    if (exp?.yearsOfExperience) completed++;
-    if (exp?.industry) completed++;
-
-    // Education (4 fields)
-    const edu = profile?.education?.[0];
-    if (edu?.highestDegree) completed++;
-    if (edu?.institution) completed++;
-    if (edu?.yearOfGraduation) completed++;
-    if (edu?.gradeCgpa) completed++;
-
-    // Skills, Preferences, Certifications, Resume (4 fields)
-    if (profile?.skills && profile.skills.length > 0) completed++;
-    if (profile?.jobPreferences?.preferredJobType && profile.jobPreferences.preferredJobType.length > 0) completed++;
-    if (profile?.certifications && profile.certifications.length > 0) completed++;
-    if (profile?.resumeDocument || (profile?.jobPreferences?.resumeAndDocs && profile.jobPreferences.resumeAndDocs.length > 0)) completed++;
-
-    // Social Links (3 fields)
-    if (profile?.socialLinks?.linkedIn) completed++;
-    if (profile?.socialLinks?.instagram) completed++;
-    if (profile?.socialLinks?.twitterX) completed++;
-
-    const percentage = Math.round((completed / totalFields) * 100);
-    
-    // Calculate base points
-    const basePoints = 50 + percentage * 2;
-    
-    // Determine tier (for display purposes only, not used in calculation)
-    const tier = determineUserTier(profile, basePoints);
-    
-    // Use base points directly without multiplier
-    const calculatedBasePoints = basePoints;
-    
-    // Add other points (applications, RM service)
+    const completion = calculateJobseekerProfileCompletion(profile);
     const applicationPoints = profile?.rewards?.applyForJobs || 0;
     const rmServicePoints = profile?.rewards?.rmService || 0;
     const deductedPoints = profile?.deductedPoints || 0;
-    
-    const totalPoints = calculatedBasePoints + applicationPoints + rmServicePoints;
+    const totalPoints = completion.profilePoints + applicationPoints + rmServicePoints;
     const availablePoints = Math.max(0, totalPoints - deductedPoints);
-
-    return { percentage, points: availablePoints };
+    return { percentage: completion.percentage, points: availablePoints };
   };
 
   // Fetch user profile

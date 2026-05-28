@@ -35,6 +35,10 @@ import { FollowUs, type SocialFollowStatus } from "@/components/follow-us"
 import { normalizeUAE } from "@/lib/utils"
 import { ImageCropModal } from "@/components/image-crop-modal"
 import { UploadAPI } from "@/lib/upload-api"
+import {
+  calculateJobseekerProfileCompletion,
+  profilePageDataToCompletionInput,
+} from "@/lib/jobseeker-profile-completion"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -57,6 +61,7 @@ interface ProfileData {
     company: string
     experience: string
     industry: string
+    currentSalary: string
   }
   education: {
     degree: string
@@ -118,6 +123,7 @@ export default function JobSeekerProfilePage() {
       company: "",
       experience: "",
       industry: "",
+      currentSalary: "",
     },
     education: {
       degree: "",
@@ -230,6 +236,7 @@ export default function JobSeekerProfilePage() {
                apiData.professionalExperience[0].yearsOfExperience <= 6 ? "4-6" :
                apiData.professionalExperience[0].yearsOfExperience <= 10 ? "7-10" : "10+") : "",
             industry: apiData.professionalExperience?.[0]?.industry || "",
+            currentSalary: apiData.jobPreferences?.salaryExpectation || "",
           },
           education: {
             degree: apiData.education?.[0]?.highestDegree || "",
@@ -429,7 +436,7 @@ export default function JobSeekerProfilePage() {
         // Job Preferences
         jobPreferences: {
           preferredJobType: profileData.preferences.jobType ? [profileData.preferences.jobType] : [],
-          salaryExpectation: profileData.preferences.salaryExpectation,
+          salaryExpectation: profileData.experience.currentSalary,
           preferredLocation: profileData.preferences.preferredLocation,
           availability: profileData.preferences.availability,
           resumeAndDocs: profileData.documents.map(doc => doc.url),
@@ -503,91 +510,41 @@ export default function JobSeekerProfilePage() {
     }
   }, [mediaStream]);
 
-  // Calculate profile completion and points
+  // Weighted profile completion (updates automatically when profileData changes)
   useEffect(() => {
-    const calculateCompletion = () => {
-      let completed = 0
-      const totalFields = 24 // Updated: removed employmentVisa (not in form)
+    const input = profilePageDataToCompletionInput(profileData)
+    const completion = calculateJobseekerProfileCompletion(input)
 
-      // Personal Info (9 fields - employmentVisa is optional, not in form)
-      if (profileData.personalInfo.fullName) completed++
-      if (profileData.personalInfo.email) completed++
-      if (profileData.personalInfo.phone) completed++
-      if (profileData.personalInfo.location) completed++
-      if (profileData.personalInfo.dateOfBirth) completed++
-      if (profileData.personalInfo.nationality) completed++
-      if (profileData.personalInfo.summary) completed++
-      if (profileData.personalInfo.emiratesId) completed++
-      if (profileData.personalInfo.passportNumber) completed++
-      // employmentVisa removed from required fields as it's not in the form
+    setProfileCompletion(completion.percentage)
 
-      // Experience (4 fields)
-      if (profileData.experience.currentRole) completed++
-      if (profileData.experience.company) completed++
-      if (profileData.experience.experience) completed++
-      if (profileData.experience.industry) completed++
-
-      // Education (4 fields)
-      if (profileData.education.degree) completed++
-      if (profileData.education.institution) completed++
-      if (profileData.education.year) completed++
-      if (profileData.education.grade) completed++
-
-      // Skills, Preferences, Certifications, Resume (4 fields)
-      if (profileData.skills) completed++
-      if (profileData.preferences.jobType) completed++
-      if (profileData.certifications) completed++
-      // Check if resume exists (either resume boolean or resumeDocument URL)
-      if (profileData.resume || profileData.resumeDocument) completed++
-
-      // Social Links (3 fields)
-      if (profileData.socialLinks.linkedin) completed++
-      if (profileData.socialLinks.instagram) completed++
-      if (profileData.socialLinks.twitter) completed++
-
-      const percentage = Math.min(Math.round((completed / totalFields) * 100), 100)
-      setProfileCompletion(percentage)
-
-      // Helper function for tier determination (for display purposes only)
-      const determineUserTier = (basePoints: number, yearsExp: number, isEmirati: boolean) => {
-        if (isEmirati) return "Platinum";
-        else if (basePoints >= 500) return "Platinum";
-        else if (yearsExp >= 5) return "Gold";
-        else if (yearsExp >= 2 && yearsExp <= 5) return "Silver";
-        else return "Blue";
-      };
-
-      // Calculate base points
-      const basePoints = 50 + percentage * 2;
-      
-      // Determine experience and tier (for display purposes only)
-      let yearsExp = 0;
-      const expStr = profileData.experience.experience;
-      if (expStr === "0-1") yearsExp = 1;
-      else if (expStr === "2-3") yearsExp = 3;
-      else if (expStr === "4-6") yearsExp = 6;
-      else if (expStr === "7-10") yearsExp = 10;
-      else if (expStr === "10+") yearsExp = 11;
-      
-      const isEmirati = profileData.personalInfo.nationality?.toLowerCase().includes("emirati");
-      const tier = determineUserTier(basePoints, yearsExp, isEmirati);
-      
-      // Use base points directly without multiplier
-      const calculatedBasePoints = basePoints;
-      
-      // Add other points
-      const applicationPoints = profileData?.rewards?.applyForJobs || 0;
-      const rmServicePoints = profileData?.rewards?.rmService || 0;
-      const deductedPoints = profileData.deductedPoints || 0;
-      
-      const totalPoints = calculatedBasePoints + applicationPoints + rmServicePoints;
-      const availablePoints = Math.max(0, totalPoints - deductedPoints);
-      
-      setPoints(availablePoints);
-      setTier(tier);
+    const determineUserTier = (basePoints: number, yearsExp: number, isEmirati: boolean) => {
+      if (isEmirati) return "Platinum"
+      if (basePoints >= 500) return "Platinum"
+      if (yearsExp >= 5) return "Gold"
+      if (yearsExp >= 2 && yearsExp <= 5) return "Silver"
+      return "Blue"
     }
 
-    calculateCompletion()
+    let yearsExp = 0
+    const expStr = profileData.experience.experience
+    if (expStr === "0-1") yearsExp = 1
+    else if (expStr === "2-3") yearsExp = 3
+    else if (expStr === "4-6") yearsExp = 6
+    else if (expStr === "7-10") yearsExp = 10
+    else if (expStr === "10+") yearsExp = 11
+
+    const isEmirati =
+      profileData.personalInfo.nationality?.toLowerCase().includes("emirati") ||
+      profileData.personalInfo.nationality?.toLowerCase().includes("uae")
+
+    const applicationPoints = profileData?.rewards?.applyForJobs || 0
+    const rmServicePoints = profileData?.rewards?.rmService || 0
+    const deductedPoints = profileData.deductedPoints || 0
+    const totalPoints = completion.profilePoints + applicationPoints + rmServicePoints
+    const availablePoints = Math.max(0, totalPoints - deductedPoints)
+
+    setPoints(availablePoints)
+    setTier(determineUserTier(completion.profilePoints, yearsExp, isEmirati))
   }, [profileData])
 
   const handleInputChange = (section: keyof ProfileData, field: string, value: string | boolean) => {
@@ -1340,6 +1297,17 @@ export default function JobSeekerProfilePage() {
                   </Select>
                 </div>
               </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="currentSalary">Current Salary (AED)</Label>
+                  <Input
+                    id="currentSalary"
+                    value={profileData.experience.currentSalary}
+                    onChange={(e) => handleInputChange("experience", "currentSalary", e.target.value)}
+                    placeholder="e.g., 8000-12000"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -1455,15 +1423,6 @@ export default function JobSeekerProfilePage() {
                       <SelectItem value="hybrid">Hybrid</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="salaryExpectation">Current Salary (AED)</Label>
-                  <Input
-                    id="salaryExpectation"
-                    value={profileData.preferences.salaryExpectation}
-                    onChange={(e) => handleInputChange("preferences", "salaryExpectation", e.target.value)}
-                    placeholder="e.g., 8000-12000"
-                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="preferredLocation">Preferred Location</Label>
