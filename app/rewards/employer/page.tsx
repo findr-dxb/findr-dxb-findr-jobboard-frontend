@@ -109,6 +109,24 @@ const howToEarn = [
   },
 ]
 
+function getEmployerInviteShareText(link: string) {
+  return `🚀 Still using hiring platforms where you only spend?
+
+Meet **Findr for Employers** — where every hiring activity rewards you.
+
+✔ Complete your profile → Earn 500 points
+✔ Post a job → Earn 100 points
+✔ Hire a candidate → Get extra rewards
+
+Redeem your points for premium HR services like Recruitment & Staffing, Onboarding, Payroll, Training, HR Analytics, and more.
+
+Most platforms help you hire. **Findr helps you hire, earn, and grow.**
+
+Smarter hiring starts here.
+
+Join Findr: ${link}`
+}
+
 export default function EmployerRewardsPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -286,26 +304,39 @@ export default function EmployerRewardsPage() {
     }
   };
 
-  // Share referral link
   const shareReferralLink = async () => {
-    if (!referralLink) return;
-    
-    if (typeof navigator !== "undefined" && (navigator as any).share) {
+    if (!referralLink) return
+
+    const shareText = getEmployerInviteShareText(referralLink)
+
+    if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await (navigator as any).share({
-          title: "Join Findr - Dubai Job Board",
-          text: "Join Findr using my referral link and start your career journey in Dubai!",
-          url: referralLink,
-        });
-      } catch (error) {
-        // User cancelled or error occurred
-        console.log("Share cancelled or failed");
+        await navigator.share({
+          title: "Findr for Employers",
+          text: shareText,
+        })
+      } catch {
+        // User cancelled share sheet
       }
-    } else {
-      // Fallback to copy if share API not available
-      copyReferralLink();
+      return
     }
-  };
+
+    try {
+      await navigator.clipboard.writeText(shareText)
+      setCopied(true)
+      toast({
+        title: "Copied!",
+        description: "Invite message copied — paste it in WhatsApp, email, or SMS",
+      })
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast({
+        title: "Could not copy",
+        description: "Please copy your referral link manually",
+        variant: "destructive",
+      })
+    }
+  }
 
   useEffect(() => {
     fetchEmployerProfile();

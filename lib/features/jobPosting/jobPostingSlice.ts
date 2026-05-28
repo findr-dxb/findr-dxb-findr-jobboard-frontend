@@ -1,7 +1,24 @@
-﻿import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import axios from 'axios'
+﻿import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit"
+import axios from "axios"
+import { getApiErrorMessage } from "@/lib/api-error"
 
-// Types
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+const JOB_TYPE_TO_API: Record<string, string> = {
+  "full-time": "Full Time",
+  "part-time": "Part Time",
+  contract: "Contract",
+  remote: "Remote",
+  hybrid: "Hybrid",
+}
+
+function getAuthToken(): string {
+  const token =
+    localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+  if (!token) throw new Error("Please log in to continue.")
+  return token
+}
+
 export interface JobFormData {
   jobTitle: string
   company: string
@@ -27,20 +44,21 @@ export interface JobPostingState {
   companyName: string
 }
 
-// Initial state
+const emptyForm: JobFormData = {
+  jobTitle: "",
+  company: "",
+  location: "",
+  jobType: "",
+  salary: "",
+  experience: "",
+  skills: "",
+  description: "",
+  requirements: "",
+  deadline: "",
+}
+
 const initialState: JobPostingState = {
-  formData: {
-    jobTitle: "",
-    company: "",
-    location: "",
-    jobType: "",
-    salary: "",
-    experience: "",
-    skills: "",
-    description: "",
-    requirements: "",
-    deadline: "",
-  },
+  formData: emptyForm,
   isSubmitting: false,
   isLoading: false,
   error: null,
@@ -48,96 +66,83 @@ const initialState: JobPostingState = {
   profileCompletion: 0,
   canPostJob: false,
   missingFields: [],
-  companyName: ""
+  companyName: "",
 }
 
-// Async thunks
+function authHeaders(token: string) {
+  return { Authorization: `Bearer ${token}` }
+}
+
 export const checkEmployerEligibility = createAsyncThunk(
-  'jobPosting/checkEmployerEligibility',
+  "jobPosting/checkEmployerEligibility",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
-
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/employer/eligibility`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
+      const token = getAuthToken()
+      const { data } = await axios.get(`${API_URL}/employer/eligibility`, {
+        headers: authHeaders(token),
       })
-
-      return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to check employer eligibility')
+      return data.data
+    } catch (err) {
+      return rejectWithValue(
+        getApiErrorMessage(err, "Could not verify your profile. Please try again.")
+      )
     }
   }
 )
 
 export const submitJobPosting = createAsyncThunk(
-  'jobPosting/submitJobPosting',
+  "jobPosting/submitJobPosting",
   async (formData: JobFormData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken')
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
+      const token = getAuthToken()
+      const salary = parseFloat(formData.salary) || 0
 
-      // Map frontend jobType values to backend enum values
-      const jobTypeMapping: { [key: string]: string } = {
-        'full-time': 'Full Time',
-        'part-time': 'Part Time',
-        'contract': 'Contract',
-        'freelance': 'Freelance', // Map freelance to Contract
-        'internship': 'Internship', // Map internship to Part Time
-        'remote': 'Remote',
-        'hybrid': 'Hybrid'
-      }
-
-      const mappedJobType = jobTypeMapping[formData.jobType] || 'Full Time'
-      const salaryAmount = parseFloat(formData.salary) || 0
-
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/create/jobs`, {
-        title: formData.jobTitle,
-        companyName: formData.company,
-        location: formData.location,
-        jobType: [mappedJobType],
-        salary: {
-          min: salaryAmount,
-          max: salaryAmount,
+      const { data } = await axios.post(
+        `${API_URL}/create/jobs`,
+        {
+          title: formData.jobTitle,
+          companyName: formData.company,
+          location: formData.location,
+          jobType: [JOB_TYPE_TO_API[formData.jobType] || "Full Time"],
+          salary: { min: salary, max: salary },
+          experienceLevel: formData.experience,
+          skills: formData.skills
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          description: formData.description,
+          requirements: formData.requirements
+            .split("\n")
+            .map((r) => r.trim())
+            .filter(Boolean),
+          applicationDeadline: formData.deadline,
         },
-        experienceLevel: formData.experience,
-        skills: formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill),
-        description: formData.description,
-        requirements: formData.requirements.split('\n').map(req => req.trim()).filter(req => req),
-        applicationDeadline: formData.deadline,
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      return response.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to submit job posting')
+        { headers: authHeaders(token) }
+      )
+      return data
+    } catch (err) {
+      return rejectWithValue(
+        getApiErrorMessage(err, "Could not post this job. Please try again.")
+      )
     }
   }
 )
 
-// Slice
 const jobPostingSlice = createSlice({
-  name: 'jobPosting',
+  name: "jobPosting",
   initialState,
   reducers: {
-    updateFormField: (state, action: PayloadAction<{ field: keyof JobFormData; value: string }>) => {
+    updateFormField: (
+      state,
+      action: PayloadAction<{ field: keyof JobFormData; value: string }>
+    ) => {
       state.formData[action.payload.field] = action.payload.value
     },
     updateFormData: (state, action: PayloadAction<Partial<JobFormData>>) => {
       state.formData = { ...state.formData, ...action.payload }
     },
     resetForm: (state) => {
-      state.formData = initialState.formData
+      state.formData = emptyForm
       state.error = null
       state.success = false
     },
@@ -147,12 +152,9 @@ const jobPostingSlice = createSlice({
     setSuccess: (state, action: PayloadAction<boolean>) => {
       state.success = action.payload
     },
-    resetJobPostingState: (state) => {
-      return { ...initialState }
-    }
+    resetJobPostingState: () => initialState,
   },
   extraReducers: (builder) => {
-    // Check employer eligibility
     builder
       .addCase(checkEmployerEligibility.pending, (state) => {
         state.isLoading = true
@@ -170,7 +172,6 @@ const jobPostingSlice = createSlice({
         state.error = action.payload as string
       })
 
-    // Submit job posting
     builder
       .addCase(submitJobPosting.pending, (state) => {
         state.isSubmitting = true
@@ -180,14 +181,14 @@ const jobPostingSlice = createSlice({
       .addCase(submitJobPosting.fulfilled, (state) => {
         state.isSubmitting = false
         state.success = true
-        state.formData = initialState.formData
+        state.formData = emptyForm
       })
       .addCase(submitJobPosting.rejected, (state, action) => {
         state.isSubmitting = false
         state.error = action.payload as string
         state.success = false
       })
-  }
+  },
 })
 
 export const {
@@ -196,7 +197,7 @@ export const {
   resetForm,
   clearError,
   setSuccess,
-  resetJobPostingState
+  resetJobPostingState,
 } = jobPostingSlice.actions
 
 export default jobPostingSlice.reducer

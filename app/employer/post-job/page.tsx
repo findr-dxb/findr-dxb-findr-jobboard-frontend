@@ -24,7 +24,13 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useJobPosting } from "@/lib/features/jobPosting/useJobPosting"
 import { useAppDispatch } from "@/lib/hooks"
-import { updateFormField, checkEmployerEligibility } from "@/lib/features/jobPosting/jobPostingSlice"
+import {
+  updateFormField,
+  checkEmployerEligibility,
+  submitJobPosting,
+} from "@/lib/features/jobPosting/jobPostingSlice"
+import { getThunkErrorMessage } from "@/lib/api-error"
+import { getJobFormValidationMessage } from "@/lib/features/jobPosting/validate-job-form"
 import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
 
@@ -192,7 +198,17 @@ export default function PostJobPage() {
   // Handle form submission (validation moved to Navbar "Post a Job" link)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
+    const validationMessage = getJobFormValidationMessage(formData)
+    if (validationMessage) {
+      toast({
+        title: "Missing information",
+        description: validationMessage,
+        variant: "destructive",
+      })
+      return
+    }
+
     // Validate deadline is not in the past
     if (formData.deadline) {
       const deadlineDate = new Date(formData.deadline)
@@ -210,28 +226,25 @@ export default function PostJobPage() {
       }
     }
     
-    try {
-      const submitResult = await submitJob()
-      
-      if (submitResult.type === 'jobPosting/submitJobPosting/fulfilled') {
-        toast({
-          title: "Job Posted Successfully!",
-          description: "Your job posting is now live and visible to job seekers.",
-        })
-        reset()
-        router.push('/employer/dashboard')
-      } else {
-        toast({
-          title: "Error",
-          description: error || "Failed to post job. Please try again.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error('Error posting job:', error)
+    const result = await submitJob()
+
+    if (submitJobPosting.fulfilled.match(result)) {
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Job posted",
+        description: "Your job is live and visible to job seekers.",
+      })
+      reset()
+      router.push("/employer/dashboard")
+      return
+    }
+
+    if (submitJobPosting.rejected.match(result)) {
+      toast({
+        title: "Could not post job",
+        description: getThunkErrorMessage(
+          result.payload,
+          "Could not post this job. Please try again."
+        ),
         variant: "destructive",
       })
     }
@@ -336,7 +349,7 @@ export default function PostJobPage() {
             </div>
           </div>
 
-          <div className="space-y-8">
+          <form className="space-y-8" onSubmit={handleSubmit}>
             {/* Basic Information */}
             <Card className="card-shadow border-0">
               <CardHeader>
@@ -626,15 +639,15 @@ export default function PostJobPage() {
 
             {/* Submit Button */}
             <div className="flex justify-center">
-              <Button 
-                onClick={handleSubmit}
-                disabled={isSubmitting} 
+              <Button
+                type="submit"
+                disabled={isSubmitting}
                 className="gradient-bg text-white px-12 py-3 text-lg h-12"
               >
                 {isSubmitting ? "Posting Job..." : "Post Job"}
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       </main>
     </div>

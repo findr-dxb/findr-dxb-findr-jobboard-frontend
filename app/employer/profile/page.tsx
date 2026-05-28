@@ -900,6 +900,10 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { ImageCropModal } from "@/components/image-crop-modal"
 import { UploadAPI } from "@/lib/upload-api"
+import {
+  IndustryComboInput,
+  normalizeIndustryCsv,
+} from "@/components/industry-combo-input"
 
 interface EmployerProfileData {
   companyInfo: {
@@ -1065,7 +1069,7 @@ export default function EmployerProfilePage() {
               email: data.companyEmail || data.email || "",
               phone: data.phoneNumber || "",
               website: data.website || "",
-              industry: data.industry || "",
+              industry: normalizeIndustryCsv(data.industry || ""),
               teamSize: data.teamSize || "",
               foundedYear: data.foundedYear ? data.foundedYear.toString() : "",
               about: data.aboutCompany || "",
@@ -1508,59 +1512,13 @@ export default function EmployerProfilePage() {
                 </div>
               </div>
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select
-                    value={profileData.companyInfo.industry}
-                    onValueChange={(value) => handleInputChange("companyInfo", "industry", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="construction">Construction</SelectItem>
-                      <SelectItem value="hospitality">Hospitality</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="consulting">Consulting</SelectItem>
-                      <SelectItem value="banking">Banking</SelectItem>
-                      <SelectItem value="insurance">Insurance</SelectItem>
-                      <SelectItem value="real_estate">Real Estate</SelectItem>
-                      <SelectItem value="telecommunications">Telecommunications</SelectItem>
-                      <SelectItem value="media_entertainment">Media & Entertainment</SelectItem>
-                      <SelectItem value="marketing_advertising">Marketing & Advertising</SelectItem>
-                      <SelectItem value="ecommerce">E-Commerce</SelectItem>
-                      <SelectItem value="transportation">Transportation</SelectItem>
-                      <SelectItem value="logistics_supply_chain">Logistics & Supply Chain</SelectItem>
-                      <SelectItem value="automobile">Automobile</SelectItem>
-                      <SelectItem value="pharmaceutical">Pharmaceutical</SelectItem>
-                      <SelectItem value="biotechnology">Biotechnology</SelectItem>
-                      <SelectItem value="legal_services">Legal Services</SelectItem>
-                      <SelectItem value="government">Government</SelectItem>
-                      <SelectItem value="non_profit">Non-Profit</SelectItem>
-                      <SelectItem value="agriculture">Agriculture</SelectItem>
-                      <SelectItem value="energy_utilities">Energy & Utilities</SelectItem>
-                      <SelectItem value="oil_gas">Oil & Gas</SelectItem>
-                      <SelectItem value="food_beverage">Food & Beverage</SelectItem>
-                      <SelectItem value="fashion_apparel">Fashion & Apparel</SelectItem>
-                      <SelectItem value="sports_fitness">Sports & Fitness</SelectItem>
-                      <SelectItem value="travel_tourism">Travel & Tourism</SelectItem>
-                      <SelectItem value="human_resources">Human Resources</SelectItem>
-                      <SelectItem value="event_management">Event Management</SelectItem>
-                      <SelectItem value="cybersecurity">Cybersecurity</SelectItem>
-                      <SelectItem value="artificial_intelligence">Artificial Intelligence</SelectItem>
-                      <SelectItem value="gaming">Gaming</SelectItem>
-                      <SelectItem value="animation_vfx">Animation & VFX</SelectItem>
-                      <SelectItem value="architecture">Architecture</SelectItem>
-                      <SelectItem value="interior_design">Interior Design</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <IndustryComboInput
+                  id="employer-industry"
+                  value={profileData.companyInfo.industry}
+                  onChange={(value) =>
+                    handleInputChange("companyInfo", "industry", value)
+                  }
+                />
                 <div className="space-y-2">
                   <Label htmlFor="teamSize">Team Size</Label>
                   <Select

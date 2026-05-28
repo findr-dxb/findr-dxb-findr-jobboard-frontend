@@ -39,6 +39,10 @@ import {
   calculateJobseekerProfileCompletion,
   profilePageDataToCompletionInput,
 } from "@/lib/jobseeker-profile-completion"
+import {
+  IndustryComboInput,
+  normalizeIndustryCsv,
+} from "@/components/industry-combo-input"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -235,7 +239,9 @@ export default function JobSeekerProfilePage() {
                apiData.professionalExperience[0].yearsOfExperience <= 3 ? "2-3" :
                apiData.professionalExperience[0].yearsOfExperience <= 6 ? "4-6" :
                apiData.professionalExperience[0].yearsOfExperience <= 10 ? "7-10" : "10+") : "",
-            industry: apiData.professionalExperience?.[0]?.industry || "",
+            industry: normalizeIndustryCsv(
+              apiData.professionalExperience?.[0]?.industry || ""
+            ),
             currentSalary: apiData.jobPreferences?.salaryExpectation || "",
           },
           education: {
@@ -1275,27 +1281,13 @@ export default function JobSeekerProfilePage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select
-                    value={profileData.experience.industry}
-                    onValueChange={(value) => handleInputChange("experience", "industry", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="construction">Construction</SelectItem>
-                      <SelectItem value="hospitality">Hospitality</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <IndustryComboInput
+                  id="jobseeker-industry"
+                  value={profileData.experience.industry}
+                  onChange={(value) =>
+                    handleInputChange("experience", "industry", value)
+                  }
+                />
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">

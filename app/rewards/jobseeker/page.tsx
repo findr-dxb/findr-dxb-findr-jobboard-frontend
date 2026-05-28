@@ -51,6 +51,23 @@ const membershipTiers = [
   },
 ]
 
+function getJobseekerInviteShareText(link: string) {
+  return `🚀 Still using job portals where you only apply and wait?
+
+Introducing Findr — a smarter UAE job platform where your activity earns rewards.
+
+✔ Create your profile and earn points
+✔ Invite friends and grow your rewards
+✔ Refer someone for a job and earn bonus points when they get hired
+✔ Redeem your points for exclusive services and benefits
+
+At Findr, opportunities go beyond job applications. Build your network, help others connect, and get rewarded along the way.
+
+Find jobs. Refer talent. Earn rewards.
+
+Join Findr today: ${link}`
+}
+
 export default function JobSeekerRewardsPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -244,26 +261,39 @@ export default function JobSeekerRewardsPage() {
     }
   };
 
-  // Share referral link
   const shareReferralLink = async () => {
-    if (!referralLink) return;
+    if (!referralLink) return
+
+    const shareText = getJobseekerInviteShareText(referralLink)
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join Findr - Dubai Job Board",
-          text: "Join Findr using my referral link and start your career journey in Dubai!",
-          url: referralLink,
-        });
-      } catch (error) {
-        // User cancelled or error occurred
-        console.log("Share cancelled or failed");
+          title: "Join Findr",
+          text: shareText,
+        })
+      } catch {
+        // User cancelled share sheet
       }
-    } else {
-      // Fallback to copy if share API not available
-      copyReferralLink();
+      return
     }
-  };
+
+    try {
+      await navigator.clipboard.writeText(shareText)
+      setCopied(true)
+      toast({
+        title: "Copied!",
+        description: "Invite message copied — paste it in WhatsApp, email, or SMS",
+      })
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast({
+        title: "Could not copy",
+        description: "Please copy your referral link manually",
+        variant: "destructive",
+      })
+    }
+  }
 
   useEffect(() => {
     fetchUserProfile();

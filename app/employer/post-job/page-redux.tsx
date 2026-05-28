@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { EmployerProfileCompletionDialog } from "@/components/ui/employer-profile-completion-dialog"
 import { useJobPosting } from "@/lib/features/jobPosting/useJobPosting"
+import { submitJobPosting } from "@/lib/features/jobPosting/jobPostingSlice"
+import { getThunkErrorMessage } from "@/lib/api-error"
 
 export default function PostJobPageRedux() {
   const [showProfileDialog, setShowProfileDialog] = useState(false)
@@ -67,30 +69,30 @@ export default function PostJobPageRedux() {
         return
       }
 
-      // Submit job posting
-      const submitResult = await submitJob()
-      
-      if (submitResult.type === 'jobPosting/submitJobPosting/fulfilled') {
+      const result = await submitJob()
+
+      if (submitJobPosting.fulfilled.match(result)) {
         toast({
-          title: "Job Posted Successfully!",
-          description: "Your job posting is now live and visible to job seekers.",
+          title: "Job posted",
+          description: "Your job is live and visible to job seekers.",
         })
         reset()
-        router.push('/employer/dashboard')
-      } else {
+        router.push("/employer/dashboard")
+        return
+      }
+
+      if (submitJobPosting.rejected.match(result)) {
         toast({
-          title: "Error",
-          description: error || "Failed to post job. Please try again.",
+          title: "Could not post job",
+          description: getThunkErrorMessage(
+            result.payload,
+            "Could not post this job. Please try again."
+          ),
           variant: "destructive",
         })
       }
-    } catch (error) {
-      console.error('Error posting job:', error)
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+    } catch (err) {
+      console.error("Error posting job:", err)
     }
   }
 
