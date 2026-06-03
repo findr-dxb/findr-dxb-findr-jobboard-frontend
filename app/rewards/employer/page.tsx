@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -188,26 +188,18 @@ export default function EmployerRewardsPage() {
     return points;
   };
 
-  const determineEmployerTier = (profile: any, points: number) => {
-    const teamSize: string = profile?.teamSize || "0-50";
-    const companyName = profile?.companyName || "";// Check if company is in TOP_200_COMPANIES
-    const isTopCompany = TOP_200_COMPANIES.some(
-      (company) => company.toLowerCase() === companyName.toLowerCase()
-    );
-    if (points >= 500) {
-      return "Platinum";
+  const determineEmployerTier = (profile: any) => {
+    // If the database has a saved membershipTier, use it
+    if (profile?.membershipTier) {
+      return profile.membershipTier;
     }
-    switch (teamSize) {
-      case "0-50":
-        return "Blue";
-      case "51-250":
-        return "Silver";
-      case "251-500":
-      case "500+":
-        return "Gold";
-      default:
-        return isTopCompany ? "Gold" : "Blue";
-    }
+    
+    // Otherwise calculate based on posted jobs count
+    const postedJobsCount = profile?.postedJobs?.length || 0;
+    if (postedJobsCount >= 51) return "Platinum";
+    if (postedJobsCount >= 26) return "Gold";
+    if (postedJobsCount >= 11) return "Silver";
+    return "Blue";
   };
 
   // Fetch employer profile data
@@ -220,7 +212,7 @@ export default function EmployerRewardsPage() {
         router.push('/login');
         return;
       }
-
+ 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employer/details`, {
         method: 'GET',
         headers: {
@@ -231,7 +223,7 @@ export default function EmployerRewardsPage() {
         console.error('Network error:', networkError);
         throw new Error('Network error: Unable to connect to server. Please check your connection.');
       });
-
+ 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 401 || response.status === 403) {
@@ -240,7 +232,7 @@ export default function EmployerRewardsPage() {
         }
         throw new Error(errorData.message || `Failed to fetch employer profile (${response.status})`);
       }
-
+ 
       const data = await response.json();
       
       if (!data.success || !data.data) {
@@ -262,7 +254,7 @@ export default function EmployerRewardsPage() {
         setReferralLink("");
       }
       
-      const tier = determineEmployerTier(data.data, calculatedPoints);
+      const tier = determineEmployerTier(data.data);
       setUserTier(tier);
       
     } catch (error) {
@@ -348,7 +340,9 @@ export default function EmployerRewardsPage() {
     ? null
     : currentTier.name === "Gold"
     ? employerTiers.find((t) => t.name === "Platinum")
-    : employerTiers.find((t) => t.pointsRequired && t.minPoints > userPoints);
+    : currentTier.name === "Silver"
+    ? employerTiers.find((t) => t.name === "Gold")
+    : employerTiers.find((t) => t.name === "Silver");
 
   if (loading) {
     return (
