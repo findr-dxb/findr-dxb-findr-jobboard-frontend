@@ -189,12 +189,6 @@ export default function EmployerRewardsPage() {
   };
 
   const determineEmployerTier = (profile: any) => {
-    // If the database has a saved membershipTier, use it
-    if (profile?.membershipTier) {
-      return profile.membershipTier;
-    }
-    
-    // Otherwise calculate based on posted jobs count
     const postedJobsCount = profile?.postedJobs?.length || 0;
     if (postedJobsCount >= 51) return "Platinum";
     if (postedJobsCount >= 26) return "Gold";

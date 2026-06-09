@@ -54,6 +54,8 @@ export type JobseekerProfileInput = {
     referFriend?: number
   }
   deductedPoints?: number
+  emirateId?: string
+  passportNumber?: string
 }
 
 export type ProfileCompletionResult = {
@@ -123,6 +125,8 @@ export function profilePageDataToCompletionInput(data: {
     nationality: string
     summary: string
     visaExpiryDate: string
+    emiratesId?: string
+    passportNumber?: string
   }
   experience: {
     currentRole: string
@@ -170,6 +174,8 @@ export function profilePageDataToCompletionInput(data: {
     nationality: data.personalInfo.nationality,
     professionalSummary: data.personalInfo.summary,
     visaExpiryDate: data.personalInfo.visaExpiryDate,
+    emirateId: data.personalInfo.emiratesId,
+    passportNumber: data.personalInfo.passportNumber,
     profilePicture: data.profilePicture,
     introVideo: data.introVideo,
     resumeDocument: data.resumeDocument,
@@ -224,6 +230,8 @@ export function calculateJobseekerProfileCompletion(
     { label: "Location", ok: isFilled(user.location) },
     { label: "Date of Birth", ok: isFilled(user.dateOfBirth) },
     { label: "Nationality", ok: isFilled(user.nationality) },
+    { label: "Emirates ID", ok: isFilled(user.emirateId) },
+    { label: "Passport Number", ok: isFilled(user.passportNumber) },
     { label: "Professional Summary", ok: isFilled(user.professionalSummary) },
   ]
   if (isNonEmirati(nationality)) {
@@ -312,10 +320,16 @@ export function calculateJobseekerProfileCompletion(
   const jobTypeOk = Array.isArray(preferredJobType)
     ? preferredJobType.length > 0
     : isFilled(preferredJobType)
-  const jobPrefsOk =
-    jobTypeOk && isFilled(prefs.preferredLocation) && isFilled(prefs.availability)
-  if (jobPrefsOk) percentage += 5
-  else missingFields.push("Job Preferences")
+
+  const prefChecks = [
+    { label: "Preferred Job Type", ok: jobTypeOk },
+    { label: "Preferred Location", ok: isFilled(prefs.preferredLocation) },
+    { label: "Availability", ok: isFilled(prefs.availability) }
+  ]
+
+  const prefScore = sectionScore(prefChecks, 5, "Job Preferences")
+  percentage += prefScore.score
+  missingFields.push(...prefScore.missing)
 
   const rounded = Math.min(Math.round(percentage), 100)
   const resume = hasResume(user)
