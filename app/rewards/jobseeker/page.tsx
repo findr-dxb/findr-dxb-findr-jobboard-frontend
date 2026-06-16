@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -363,28 +363,38 @@ export default function JobSeekerRewardsPage() {
                   </div>
                   <span className="font-bold text-emerald-800 text-base">{activityPoints}</span>
                 </div>
+                <Link href="/rewards/history" className="w-full">
+                  <button className="flex items-center justify-between bg-purple-50 hover:bg-purple-100 transition rounded-xl shadow-md px-4 py-3 border-0 cursor-pointer w-full text-left">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">📜</span>
+                      <span className="font-medium text-purple-900 text-sm">Reward History</span>
+                    </div>
+                  </button>
+                </Link>
               </div>
 
-              {/* Desktop layout (unchanged) */}
-              <div className="hidden md:flex flex-row gap-4 mt-2 w-full max-w-md">
-                {/* Referral Points Card */}
+              <div className="hidden md:flex flex-row gap-4 mt-2 w-full max-w-2xl items-stretch">
                 <div className="flex-1 bg-blue-50 rounded-xl shadow-md flex items-center px-5 py-4 min-w-0">
                   <span className="text-2xl mr-4">🎁</span>
                   <span className="font-medium text-blue-900 text-base flex-1">Placement Points</span>
                   <span className="font-bold text-blue-800 text-lg ml-2">{referralPoints}</span>
                 </div>
-                {/* Activity Points Card */}
                 <div className="flex-1 bg-emerald-50 rounded-xl shadow-md flex items-center px-5 py-4 min-w-0">
                   <span className="text-2xl mr-4">📝</span>
                   <span className="font-medium text-emerald-900 text-base flex-1">Activity Points</span>
                   <span className="font-bold text-emerald-800 text-lg ml-2">{activityPoints}</span>
                 </div>
+                <Link href="/rewards/history" className="flex-1">
+                  <button className="w-full bg-purple-50 hover:bg-purple-100 transition rounded-xl shadow-md flex items-center px-5 py-4 min-w-0 border-0 cursor-pointer text-left h-full">
+                    <span className="text-2xl mr-4">📜</span>
+                    <span className="font-medium text-purple-900 text-base flex-1">Reward History</span>
+                  </button>
+                </Link>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* How to Earn Points */}
         <Card className="card-shadow border-0 mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-lg">
