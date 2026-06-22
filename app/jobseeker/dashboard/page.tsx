@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -39,7 +39,6 @@ export default function JobSeekerDashboard() {
   const [calculatedPoints, setCalculatedPoints] = useState(0);
   const [interviewCount, setInterviewCount] = useState(0);
   const [referralStats, setReferralStats] = useState({ total: 0, active: 0, successful: 0 });
-  const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
   const [rmServiceStatus, setRmServiceStatus] = useState("inactive");
   const { toast } = useToast();
 
@@ -118,30 +117,8 @@ export default function JobSeekerDashboard() {
     }
   }, []);
 
-  // Fetch recommended jobs
-  const fetchRecommendedJobs = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
-      if (!token) return;
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/recommendations`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        params: {
-          limit: 3 // Get top 3 recommendations for dashboard
-        }
-      });
 
-      setRecommendedJobs(response.data.data || []);
-    } catch (error: any) {
-      // Silent error handling
-      // Set empty array on error to show "no recommendations" state
-      setRecommendedJobs([]);
-    }
-  }, []);
-
-  // Determine user tier based on points and profile (for display purposes only)
   const determineUserTier = (profile: any, basePoints: number) => {
     const yearsExp = profile?.professionalExperience?.[0]?.yearsOfExperience || 0;
     const isEmirati = profile?.nationality?.toLowerCase()?.includes("emirati");
@@ -149,10 +126,9 @@ export default function JobSeekerDashboard() {
     // If Emirati, always Platinum tier
     if (isEmirati) return "Platinum";
     // Otherwise determine by experience
-    else if (basePoints >= 500) return "Platinum";
-    else if (yearsExp >= 5) return "Gold";
-    else if (yearsExp >= 2 && yearsExp <= 5) return "Silver";
-    else return "Blue"; // 0-1 year
+    else if (yearsExp >= 10) return "Gold";
+    else if (yearsExp >= 3 && yearsExp < 10) return "Silver";
+    else return "Blue";
   };
 
   const calculateProfileMetrics = (profile: any) => {
@@ -220,14 +196,13 @@ export default function JobSeekerDashboard() {
         fetchUserProfile(),
         fetchApplications(),
         fetchInterviewCount(),
-        fetchReferralStats(),
-        fetchRecommendedJobs()
+        fetchReferralStats()
       ]);
     } finally {
       isFetchingRef.current = false;
       hasFetchedRef.current = true;
     }
-  }, [fetchUserProfile, fetchApplications, fetchInterviewCount, fetchReferralStats, fetchRecommendedJobs]);
+  }, [fetchUserProfile, fetchApplications, fetchInterviewCount, fetchReferralStats]);
 
   useEffect(() => {
     // Only fetch on initial mount
@@ -471,8 +446,8 @@ export default function JobSeekerDashboard() {
 
 
 
-          {/* Recent Activity & Recommendations */}
-          <div className="grid lg:grid-cols-2 gap-6">
+          {/* Recent Activity */}
+          <div className="grid gap-6">
             {/* Recent Applications */}
             <Card className="card-shadow border-0">
               <CardHeader>
@@ -532,66 +507,6 @@ export default function JobSeekerDashboard() {
                       </div>
                     </div>
                   ))
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recommended Jobs */}
-            <Card className="card-shadow border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg">
-                  <Award className="w-4 h-4 mr-2 text-emerald-600" />
-                  Recommended for You
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {recommendedJobs.length === 0 ? (
-                  <div className="text-center text-gray-500 py-4">
-                    <Award className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                    <p className="text-sm">
-                      {loading ? "Loading personalized recommendations..." : "No job recommendations available at the moment"}
-                    </p>
-                  </div>
-                ) : (
-                  recommendedJobs.map((job) => (
-                    <Link 
-                      key={job._id} 
-                      href={`/jobseeker/search/${job._id}`}
-                      className="block p-3 border border-emerald-100 rounded-lg hover:bg-emerald-50 transition-colors"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-sm hover:text-emerald-600 transition-colors">
-                          {job.title}
-                        </h4>
-                        <Badge className={`text-white text-xs ${
-                          job.recommendationScore >= 80 ? 'bg-green-500' :
-                          job.recommendationScore >= 60 ? 'bg-blue-500' : 'bg-yellow-500'
-                        }`}>
-                          {job.recommendationScore}% Match
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-1">{job.companyName}</p>
-                      <p className="text-xs text-gray-600 mb-1">{job.location}</p>
-                      {job.salary && (
-                        <p className="text-xs text-emerald-600 font-semibold">
-                          AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}
-                        </p>
-                      )}
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <Clock className="w-3 h-3 mr-1" />
-                        <span>{new Date(job.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </Link>
-                  ))
-                )}
-                {recommendedJobs.length > 0 && (
-                  <div className="text-center pt-2">
-                    <Link href="/jobseeker/search">
-                      <Button variant="outline" size="sm" className="text-emerald-600 border-emerald-600 hover:bg-emerald-50">
-                        View All Jobs
-                      </Button>
-                    </Link>
-                  </div>
                 )}
               </CardContent>
             </Card>

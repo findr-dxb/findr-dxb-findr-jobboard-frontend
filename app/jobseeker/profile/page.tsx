@@ -381,8 +381,7 @@ export default function JobSeekerProfilePage() {
       }
 
       // Validate Visa Expiry Date for non-Emirati users
-      const isEmirati = profileData.personalInfo.nationality?.toLowerCase().includes("emirati") || 
-                        profileData.personalInfo.nationality?.toLowerCase().includes("uae");
+      const isEmirati = profileData.personalInfo.nationality?.toLowerCase().includes("emirati");
       
       if (!isEmirati && profileData.personalInfo.nationality) {
         if (!profileData.personalInfo.visaExpiryDate || profileData.personalInfo.visaExpiryDate.trim() === "") {
@@ -525,9 +524,8 @@ export default function JobSeekerProfilePage() {
 
     const determineUserTier = (basePoints: number, yearsExp: number, isEmirati: boolean) => {
       if (isEmirati) return "Platinum"
-      if (basePoints >= 500) return "Platinum"
-      if (yearsExp >= 5) return "Gold"
-      if (yearsExp >= 2 && yearsExp <= 5) return "Silver"
+      if (yearsExp >= 10) return "Gold"
+      if (yearsExp >= 3 && yearsExp < 10) return "Silver"
       return "Blue"
     }
 
@@ -540,8 +538,7 @@ export default function JobSeekerProfilePage() {
     else if (expStr === "10+") yearsExp = 11
 
     const isEmirati =
-      profileData.personalInfo.nationality?.toLowerCase().includes("emirati") ||
-      profileData.personalInfo.nationality?.toLowerCase().includes("uae")
+      profileData.personalInfo.nationality?.toLowerCase().includes("emirati")
 
     const applicationPoints = profileData?.rewards?.applyForJobs || 0
     const rmServicePoints = profileData?.rewards?.rmService || 0
@@ -905,10 +902,9 @@ export default function JobSeekerProfilePage() {
                     onChange={(e) => {
                       const newNationality = e.target.value;
                       handleInputChange("personalInfo", "nationality", newNationality);
-                      // Clear visaExpiryDate if nationality is changed to Emirati/UAE
+                      // Clear visaExpiryDate if nationality is changed to Emirati
                       if (newNationality && 
-                          (newNationality.toLowerCase().includes("emirati") || 
-                           newNationality.toLowerCase().includes("uae"))) {
+                          (newNationality.toLowerCase().includes("emirati"))) {
                         handleInputChange("personalInfo", "visaExpiryDate", "");
                       }
                     }}
@@ -917,8 +913,7 @@ export default function JobSeekerProfilePage() {
                 </div>
                 {/* Show Visa Expiry Date only for non-Emirati users */}
                 {profileData.personalInfo.nationality && 
-                 !profileData.personalInfo.nationality.toLowerCase().includes("emirati") && 
-                 !profileData.personalInfo.nationality.toLowerCase().includes("uae") && (
+                 !profileData.personalInfo.nationality.toLowerCase().includes("emirati") && (
                   <div className="space-y-2">
                     <Label htmlFor="visaExpiryDate">
                       Visa Expiry Date <span className="text-red-500">*</span>

@@ -221,6 +221,16 @@ export default function PostJobPageRedux() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div>
+                  <Label htmlFor="nationality">Nationality Preference</Label>
+                  <Input
+                    id="nationality"
+                    value={formData.nationality}
+                    onChange={(e) => handleChange('nationality', e.target.value)}
+                    placeholder="e.g., Emirati, Any, Indian"
+                  />
+                </div>
               </CardContent>
             </Card>
 
@@ -332,10 +342,11 @@ export default function PostJobPageRedux() {
       <EmployerProfileCompletionDialog
         open={showProfileDialog}
         onOpenChange={setShowProfileDialog}
-        profileCompletion={profileCompletion}
+        completionPercentage={profileCompletion}
+        canPostJob={canPostJob}
         missingFields={missingFields}
         companyName={companyName}
-        onComplete={handleProfileDialogClose}
+        onCompleteProfile={handleProfileDialogClose}
       />
     </div>
   )

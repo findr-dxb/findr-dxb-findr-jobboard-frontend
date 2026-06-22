@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,8 @@ import {
   Edit,
   Pause,
   Play,
-  X
+  X,
+  Globe
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -269,6 +270,12 @@ export default function JobDetailPage() {
                       <Briefcase className="w-4 h-4 mr-2 text-purple-600" />
                       {jobData.experienceLevel} level
                     </div>
+                    {jobData.nationality && (
+                      <div className="flex items-center">
+                        <Globe className="w-4 h-4 mr-2 text-teal-600" />
+                        {jobData.nationality} preference
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="mt-4 lg:mt-0 lg:ml-6">

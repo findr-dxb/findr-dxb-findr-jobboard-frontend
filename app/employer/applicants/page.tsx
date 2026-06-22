@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -228,6 +228,9 @@ export default function AllApplicantsPage() {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/employer/jobs`, {
         headers: {
           'Authorization': `Bearer ${token}`,
+        },
+        params: {
+          limit: 100,
         }
       });
 

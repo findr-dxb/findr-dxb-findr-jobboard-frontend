@@ -20,7 +20,7 @@ const membershipTiers = [
     color: "text-blue-600",
     bg: "bg-blue-50",
     border: "border-blue-200",
-    desc: "For job seekers with 0 to 1 years of experience",
+    desc: "For job seekers with 0 to 3 years of experience",
   },
   {
     name: "Silver",
@@ -29,7 +29,7 @@ const membershipTiers = [
     color: "text-gray-600",
     bg: "bg-gray-50",
     border: "border-gray-200",
-    desc: "For job seekers with 1 to 5 years of experience",
+    desc: "For job seekers with 3 to 10 years of experience",
   },
   {
     name: "Gold",
@@ -38,7 +38,7 @@ const membershipTiers = [
     color: "text-yellow-600",
     bg: "bg-yellow-50",
     border: "border-yellow-200",
-    desc: "For job seekers with 5 or more years of experience",
+    desc: "For job seekers with 10 or more years of experience",
   },
   {
     name: "Platinum",
@@ -47,7 +47,7 @@ const membershipTiers = [
     color: "text-purple-600",
     bg: "bg-purple-50",
     border: "border-purple-200",
-    desc: "For Emirati nationals",
+    desc: "Exclusively for UAE nationals",
   },
 ]
 
@@ -112,10 +112,9 @@ export default function JobSeekerRewardsPage() {
     // If Emirati, always Platinum tier
     if (isEmirati) return "Platinum";
     // Otherwise determine by experience
-    else if (points >= 500) return "Platinum";
-    else if (yearsExp >= 5) return "Gold";
-    else if (yearsExp >= 2 && yearsExp <= 5) return "Silver";
-    else return "Blue"; // 0-1 year
+    else if (yearsExp >= 10) return "Gold";
+    else if (yearsExp >= 3 && yearsExp < 10) return "Silver";
+    else return "Blue";
   };
 
   // Fetch user profile data

@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import type React from "react"
 import { useState, useEffect } from "react"
@@ -28,7 +28,8 @@ export default function EditJobPage() {
     description: "",
     requirements: "",
     deadline: "",
-    status: "active"
+    status: "active",
+    nationality: ""
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -84,7 +85,8 @@ export default function EditJobPage() {
           description: job.description || "",
           requirements: Array.isArray(job.requirements) ? job.requirements.join("\n") : job.requirements || "",
           deadline: job.applicationDeadline ? new Date(job.applicationDeadline).toISOString().split('T')[0] : "",
-          status: job.status || "active"
+          status: job.status || "active",
+          nationality: job.nationality || ""
         })
       } catch (error) {
         console.error('Error fetching job:', error)
@@ -133,7 +135,8 @@ export default function EditJobPage() {
         description: formData.description,
         requirements: formData.requirements.split('\n').map(req => req.trim()).filter(req => req),
         applicationDeadline: formData.deadline,
-        status: formData.status
+        status: formData.status,
+        nationality: formData.nationality
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -286,19 +289,31 @@ export default function EditJobPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="status">Job Status</Label>
-                  <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="paused">Paused</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                      <SelectItem value="expired">Expired</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Job Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="paused">Paused</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="expired">Expired</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nationality">Nationality</Label>
+                    <Input
+                      id="nationality"
+                      value={formData.nationality}
+                      onChange={(e) => handleChange("nationality", e.target.value)}
+                      placeholder="e.g., Emirati, Any, Indian"
+                      className="h-11"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

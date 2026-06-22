@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +94,8 @@ const getCardGradient = (index: number, status?: string) => {
 
 export default function ActiveJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [page, setPage] = useState(1);
+  const limit = 9;
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
@@ -124,6 +126,7 @@ export default function ActiveJobsPage() {
         params: {
           ...(status && status !== 'all' && { status }),
           ...(search && { search }),
+          limit: 1000,
         }
       });
 
@@ -141,15 +144,15 @@ export default function ActiveJobsPage() {
   };
 
   useEffect(() => {
+    setPage(1);
     fetchJobs();
   }, [status]);
 
   // Handle search when user stops typing
   useEffect(() => {
     const searchTimeout = setTimeout(() => {
-      if (search !== "") {
-        fetchJobs();
-      }
+      setPage(1);
+      fetchJobs();
     }, 500);
 
     return () => clearTimeout(searchTimeout);
@@ -162,6 +165,15 @@ export default function ActiveJobsPage() {
       return matchesSearch;
     });
   }, [jobs, search]);
+
+  const paginatedJobs = useMemo(() => {
+    const start = (page - 1) * limit;
+    return filteredJobs.slice(start, start + limit);
+  }, [filteredJobs, page, limit]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredJobs.length / limit);
+  }, [filteredJobs, limit]);
 
   // Job status counts
   const jobCounts = useMemo(() => {
@@ -404,8 +416,8 @@ export default function ActiveJobsPage() {
                   </Button>
                 </div>
               )}
-              {filteredJobs.map((job, idx) => {
-                const cardGradient = getCardGradient(idx, job.status);
+              {paginatedJobs.map((job, idx) => {
+                const cardGradient = getCardGradient(idx + (page - 1) * limit, job.status);
                 return (
                   <Card key={job._id} className={`transition-shadow duration-200 shadow-lg border-2 border-transparent bg-gradient-to-br ${cardGradient} rounded-2xl overflow-hidden relative`}>
                     {/* Decorative corner accent */}
@@ -509,6 +521,34 @@ export default function ActiveJobsPage() {
                   </Card>
                 );
               })}
+              
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-8 w-full col-span-full">
+                  <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm p-2 rounded-xl border shadow-sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                      className="border-emerald-200 hover:bg-emerald-50 text-emerald-700"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm text-gray-600 px-2 font-medium">
+                      Page {page} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
+                      className="border-emerald-200 hover:bg-emerald-50 text-emerald-700"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

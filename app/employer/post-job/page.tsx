@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import type React from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -442,6 +442,16 @@ export default function PostJobPage() {
                         <SelectItem value="lead">Lead/Manager (10+ years)</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nationality">Nationality</Label>
+                    <Input
+                      id="nationality"
+                      value={formData.nationality}
+                      onChange={(e) => handleChange("nationality", e.target.value)}
+                      placeholder="e.g., Emirati, Any, Indian"
+                      className="h-11"
+                    />
                   </div>
                 </div>
               </CardContent>

@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { MapPin, Briefcase, DollarSign, Clock, Heart, ExternalLink, GraduationCap, TrendingUp, Check, Eye } from "lucide-react";
+import { MapPin, Briefcase, DollarSign, Clock, Heart, ExternalLink, GraduationCap, TrendingUp, Check, Eye, Globe } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
@@ -30,6 +30,7 @@ interface Job {
   skills?: string[];
   experienceLevel?: string;
   applicationDeadline?: string;
+  nationality?: string;
   employer?: {
     _id: string;
     companyName: string;
@@ -463,6 +464,12 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                   <TrendingUp className="w-4 h-4 mr-1 text-emerald-600" />
                   {getExperienceLabel(job.experienceLevel)}
                 </span>
+                {job.nationality && (
+                  <span className="flex items-center">
+                    <Globe className="w-4 h-4 mr-1 text-teal-600" />
+                    Nationality Preference: {job.nationality}
+                  </span>
+                )}
                 {job.applicationDeadline && (
                   <span className="flex items-center">
                     <GraduationCap className="w-4 h-4 mr-1 text-blue-600" />

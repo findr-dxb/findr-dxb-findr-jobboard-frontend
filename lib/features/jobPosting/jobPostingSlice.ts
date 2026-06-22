@@ -1,4 +1,4 @@
-﻿import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit"
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit"
 import axios from "axios"
 import { getApiErrorMessage } from "@/lib/api-error"
 
@@ -30,6 +30,7 @@ export interface JobFormData {
   description: string
   requirements: string
   deadline: string
+  nationality: string
 }
 
 export interface JobPostingState {
@@ -55,6 +56,7 @@ const emptyForm: JobFormData = {
   description: "",
   requirements: "",
   deadline: "",
+  nationality: "",
 }
 
 const initialState: JobPostingState = {
@@ -116,6 +118,7 @@ export const submitJobPosting = createAsyncThunk(
             .map((r) => r.trim())
             .filter(Boolean),
           applicationDeadline: formData.deadline,
+          nationality: formData.nationality,
         },
         { headers: authHeaders(token) }
       )
