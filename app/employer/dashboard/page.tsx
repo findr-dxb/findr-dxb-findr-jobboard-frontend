@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -377,11 +377,16 @@ export default function EmployerDashboard() {
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Active Jobs */}
             <Card className="card-shadow border-0">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="flex items-center text-lg">
                   <Building className="w-4 h-4 mr-2 text-emerald-600" />
                   Active Job Postings
                 </CardTitle>
+                <Link href="/employer/active-jobs">
+                  <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 text-xs font-semibold px-2.5 py-1 h-auto">
+                    View All
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent className="space-y-3">
                 {dashboardStats?.topPerformingJobs && dashboardStats.topPerformingJobs.length > 0 ? (
@@ -447,15 +452,20 @@ export default function EmployerDashboard() {
 
             {/* Recent Applications */}
             <Card className="card-shadow border-0">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="flex items-center text-lg">
                   <UserPlus className="w-4 h-4 mr-2 text-emerald-600" />
                   Recent Applications
                 </CardTitle>
+                <Link href="/employer/applicants">
+                  <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 text-xs font-semibold px-2.5 py-1 h-auto">
+                    View All
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent className="space-y-3">
                 {dashboardStats?.recentApplications && dashboardStats.recentApplications.length > 0 ? (
-                  dashboardStats.recentApplications.slice(0, 5).map((app: any) => {
+                  dashboardStats.recentApplications.slice(0, 3).map((app: any) => {
                     const formatDate = (dateString: string) => {
                       const date = new Date(dateString);
                       const now = new Date();

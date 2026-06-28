@@ -1,5 +1,6 @@
 "use client";
 import { Navbar } from "@/components/navbar";
+import { HireConfirmationModal } from "@/components/hire-confirmation-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ interface Applicant {
     title: string;
     companyName: string;
     location: string;
+    salary?: number;
   };
   status: string;
   appliedDate: string;
@@ -173,6 +175,8 @@ export default function AllApplicantsPage() {
   const [statusHistory, setStatusHistory] = useState<Record<string, string>>({}); // Track previous statuses for undo
   const [undoDialogOpen, setUndoDialogOpen] = useState(false);
   const [applicantToUndo, setApplicantToUndo] = useState<Applicant | null>(null);
+  const [hireDialogOpen, setHireDialogOpen] = useState(false);
+  const [applicantToHire, setApplicantToHire] = useState<Applicant | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -275,7 +279,7 @@ export default function AllApplicantsPage() {
   };
 
   // Update application status
-  const updateApplicationStatus = async (applicationId: string, newStatus: string, previousStatus?: string) => {
+  const updateApplicationStatus = async (applicationId: string, newStatus: string, previousStatus?: string, notes?: string) => {
     try {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       
@@ -302,7 +306,8 @@ export default function AllApplicantsPage() {
       }
       
       await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/status`, {
-        status: newStatus
+        status: newStatus,
+        notes
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -660,7 +665,10 @@ export default function AllApplicantsPage() {
                           <Button
                             size="sm"
                             className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
-                            onClick={() => updateApplicationStatus(applicant._id, 'hired')}
+                            onClick={() => {
+                              setApplicantToHire(applicant);
+                              setHireDialogOpen(true);
+                            }}
                           >
                             <Check className="w-4 h-4 mr-1" />
                             Hire Candidate
@@ -839,6 +847,24 @@ export default function AllApplicantsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Hire Candidate Confirmation Dialog */}
+      <HireConfirmationModal
+        isOpen={hireDialogOpen}
+        onOpenChange={setHireDialogOpen}
+        applicantName={applicantToHire?.applicantDetails?.name || 'Unknown'}
+        profilePicture={applicantToHire?.applicantDetails?.profilePicture}
+        jobTitle={applicantToHire?.jobDetails?.title || 'Unknown Position'}
+        location={applicantToHire?.applicantDetails?.location || applicantToHire?.jobDetails?.location}
+        expectedSalary={applicantToHire?.jobDetails?.salary}
+        onConfirm={async () => {
+          if (applicantToHire) {
+            await updateApplicationStatus(applicantToHire._id, 'hired');
+            setHireDialogOpen(false);
+            setApplicantToHire(null);
+          }
+        }}
+      />
     </div>
   );
 }

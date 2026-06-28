@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 import { Navbar } from "@/components/navbar";
+import { HireConfirmationModal } from "@/components/hire-confirmation-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,7 @@ interface JobDetails {
   title: string;
   companyName: string;
   location: string;
+  salary?: number;
 }
 
 const statusOptions = [
@@ -155,6 +157,8 @@ export default function JobApplicantsPage() {
   const [statusHistory, setStatusHistory] = useState<Record<string, string>>({}); // Track previous statuses for undo
   const [undoDialogOpen, setUndoDialogOpen] = useState(false);
   const [applicantToUndo, setApplicantToUndo] = useState<Applicant | null>(null);
+  const [hireDialogOpen, setHireDialogOpen] = useState(false);
+  const [applicantToHire, setApplicantToHire] = useState<Applicant | null>(null);
 
   // Fetch applicants for the job
   const fetchApplicants = async () => {
@@ -603,7 +607,10 @@ export default function JobApplicantsPage() {
                           <Button
                             size="sm"
                             className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
-                            onClick={() => updateApplicantStatus(applicant._id, 'hired')}
+                            onClick={() => {
+                              setApplicantToHire(applicant);
+                              setHireDialogOpen(true);
+                            }}
                           >
                             <Briefcase className="w-4 h-4 mr-1" />
                             Hire
@@ -755,6 +762,24 @@ export default function JobApplicantsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Hire Candidate Confirmation Dialog */}
+      <HireConfirmationModal
+        isOpen={hireDialogOpen}
+        onOpenChange={setHireDialogOpen}
+        applicantName={applicantToHire?.applicantDetails?.name || 'Unknown'}
+        profilePicture={applicantToHire?.applicantDetails?.profilePicture}
+        jobTitle={jobDetails?.title || 'Unknown Position'}
+        location={applicantToHire?.applicantDetails?.location || jobDetails?.location}
+        expectedSalary={jobDetails?.salary}
+        onConfirm={async () => {
+          if (applicantToHire) {
+            await updateApplicantStatus(applicantToHire._id, 'hired');
+            setHireDialogOpen(false);
+            setApplicantToHire(null);
+          }
+        }}
+      />
     </div>
   );
 }

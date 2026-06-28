@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Briefcase, DollarSign, Clock, Filter, Heart, ExternalLink, UserPlus, Calendar, Building2, Check, Eye } from "lucide-react"
+import { Search, MapPin, Briefcase, Clock, Filter, Heart, ExternalLink, UserPlus, Calendar, Building2, Check, Eye } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -465,7 +465,6 @@ export default function JobSearchPage() {
                           )}
                           {job.salary && (
                             <div className="flex items-center">
-                              <DollarSign className="w-4 h-4 mr-1" />
                               AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}
                             </div>
                           )}
