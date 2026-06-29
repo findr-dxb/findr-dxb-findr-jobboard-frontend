@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -222,12 +222,20 @@ export default function AdminUserDetailPage() {
       createdAt: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A",
       updatedAt: userData.updatedAt ? new Date(userData.updatedAt).toLocaleDateString() : "N/A",
       resumeAndDocs: allDocuments,
+      referredBy: userData.referredBy
+        ? {
+            name: userData.referredBy.fullName || userData.referredBy.name || "N/A",
+            email: userData.referredBy.email || "N/A",
+            profilePicture: userData.referredBy.profilePicture || "",
+            linkedin: userData.referredBy.socialLinks?.linkedIn || "",
+          }
+        : null,
     }
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="p-4 lg:p-8">
-          <div className="max-w-4xl mx-auto space-y-6">
+      <div className="w-full bg-transparent">
+        <div className="pb-4">
+          <div className="max-w-7xl mx-auto">
             {/* Back Button */}
             <Button
               variant="ghost"
@@ -243,8 +251,8 @@ export default function AdminUserDetailPage() {
         <CandidateProfileView candidate={candidate} />
 
         {/* Admin Additional Information */}
-        <div className="p-4 lg:p-8">
-          <div className="max-w-4xl mx-auto space-y-6 mt-6">
+        <div className="pt-6 pb-8 bg-transparent">
+          <div className="max-w-7xl mx-auto space-y-6">
             {/* Additional Personal Information */}
             <Card className="card-shadow border-0">
               <CardHeader>
@@ -275,6 +283,68 @@ export default function AdminUserDetailPage() {
                     <div className="text-sm text-gray-600 mb-1">Last Updated</div>
                     <div className="font-semibold">{adminData.updatedAt}</div>
                   </div>
+                </div>
+
+                <div className="border-t pt-4 mt-4">
+                  <div className="text-sm text-gray-500 mb-2 font-medium">Referred By</div>
+                  {adminData.referredBy ? (
+                    <div className="flex items-center gap-4 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100/50">
+                      {adminData.referredBy.profilePicture ? (
+                        <img
+                          src={adminData.referredBy.profilePicture}
+                          alt={adminData.referredBy.name}
+                          className="w-12 h-12 rounded-full object-cover border border-emerald-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200 text-emerald-700 font-bold text-lg">
+                          {adminData.referredBy.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-900">
+                          {adminData.referredBy.name}
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+                          <a
+                            href={`mailto:${adminData.referredBy.email}`}
+                            className="text-sm text-gray-600 hover:underline flex items-center gap-1.5"
+                          >
+                            <Mail className="w-3.5 h-3.5 text-gray-400" />
+                            {adminData.referredBy.email}
+                          </a>
+                          {adminData.referredBy.linkedin && (
+                            <>
+                              <span className="hidden sm:inline text-gray-300">|</span>
+                              <a
+                                href={adminData.referredBy.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5 fill-current shrink-0"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+                                </svg>
+                                {adminData.referredBy.linkedin}
+                              </a>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-500">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-700">Self Registered</div>
+                        <div className="text-xs text-gray-500">This user registered directly without a referral code.</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -625,7 +695,117 @@ export default function AdminUserDetailPage() {
     totalJobsPosted: userData.totalJobsPosted || 0,
     memberSince: userData.memberSince ? new Date(userData.memberSince).toLocaleDateString() : "N/A",
   }
-  return <CompanyProfileView company={company} />
+
+  const adminReferral = userData.referredBy
+    ? {
+        name: userData.referredBy.fullName || userData.referredBy.name || "N/A",
+        email: userData.referredBy.email || "N/A",
+        profilePicture: userData.referredBy.profilePicture || "",
+        linkedin: userData.referredBy.socialLinks?.linkedIn || "",
+      }
+    : null;
+
+  return (
+    <div className="w-full bg-transparent">
+      <div className="pb-4">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="mb-4"
+          >
+            ← Back to Users
+          </Button>
+
+          {/* Admin view for Employer's Referral */}
+          <Card className="card-shadow border-0 mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center text-lg">
+                <Shield className="w-4 h-4 mr-2 text-blue-600" />
+                Employer Administrative Information (Admin View)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Account Created</div>
+                  <div className="font-semibold">{userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Last Updated</div>
+                  <div className="font-semibold">{userData.updatedAt ? new Date(userData.updatedAt).toLocaleDateString() : "N/A"}</div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mt-2">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Referred By</div>
+                {adminReferral ? (
+                  <div className="flex items-center gap-4 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100/50">
+                    {adminReferral.profilePicture ? (
+                      <img
+                        src={adminReferral.profilePicture}
+                        alt={adminReferral.name}
+                        className="w-12 h-12 rounded-full object-cover border border-emerald-200"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200 text-emerald-700 font-bold text-lg">
+                        {adminReferral.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900">
+                        {adminReferral.name}
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+                        <a
+                          href={`mailto:${adminReferral.email}`}
+                          className="text-sm text-gray-600 hover:underline flex items-center gap-1.5"
+                        >
+                          <Mail className="w-3.5 h-3.5 text-gray-400" />
+                          {adminReferral.email}
+                        </a>
+                        {adminReferral.linkedin && (
+                          <>
+                            <span className="hidden sm:inline text-gray-300">|</span>
+                            <a
+                              href={adminReferral.linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5 fill-current shrink-0"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+                              </svg>
+                              {adminReferral.linkedin}
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-500">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-700">Self Registered</div>
+                      <div className="text-xs text-gray-500">This company registered directly without a referral code.</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      <CompanyProfileView company={company} />
+    </div>
+  )
 }
 
 

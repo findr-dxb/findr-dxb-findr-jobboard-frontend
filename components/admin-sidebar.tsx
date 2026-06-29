@@ -37,7 +37,7 @@ export function AdminSidebar() {
       
       // Force page refresh after logout
       setTimeout(() => {
-        window.location.href = "/login/admin"
+        window.location.href = "/"
       }, 300)
     } catch (error) {
       console.error('Error during logout:', error)

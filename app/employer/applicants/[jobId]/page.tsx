@@ -58,6 +58,9 @@ interface Applicant {
   employerComments?: string;
   reviewTimestamp?: string;
   interviewDate?: string;
+  hiredJobTitle?: string;
+  hiredLocation?: string;
+  hiredSalary?: string;
 }
 
 interface JobDetails {
@@ -218,7 +221,13 @@ export default function JobApplicantsPage() {
     });
   }, [applicants, search, statusFilter]);
 
-  const updateApplicantStatus = async (applicationId: string, newStatus: string, previousStatus?: string, notes?: string) => {
+  const updateApplicantStatus = async (
+    applicationId: string, 
+    newStatus: string, 
+    previousStatus?: string, 
+    notes?: string,
+    hiredDetails?: { jobTitle: string; location: string; closingSalary: string }
+  ) => {
     try {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       
@@ -243,10 +252,18 @@ export default function JobApplicantsPage() {
         });
       }
       
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/status`, {
+      const payload: any = {
         status: newStatus,
         notes
-      }, {
+      };
+
+      if (hiredDetails) {
+        payload.hiredJobTitle = hiredDetails.jobTitle;
+        payload.hiredLocation = hiredDetails.location;
+        payload.hiredSalary = hiredDetails.closingSalary;
+      }
+      
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/status`, payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -488,6 +505,12 @@ export default function JobApplicantsPage() {
 
                       {/* Applicant Details */}
                       <div className="space-y-2 mb-4 pt-2 border-t border-white/50 text-sm">
+                        {applicant.status === 'hired' && applicant.hiredJobTitle && (
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <Briefcase className="w-4 h-4 text-emerald-600 animate-pulse" />
+                            <span className="font-semibold text-gray-900">Hired as: {applicant.hiredJobTitle}</span>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 text-gray-700">
                           <Mail className="w-4 h-4 text-blue-600" />
                           <span className="truncate">{applicant.applicantDetails?.email}</span>
@@ -498,22 +521,30 @@ export default function JobApplicantsPage() {
                             <span>{applicant.applicantDetails.phone}</span>
                           </div>
                         )}
-                        {applicant.applicantDetails?.location && (
+                        {(applicant.status === 'hired' && applicant.hiredLocation ? applicant.hiredLocation : applicant.applicantDetails?.location) && (
                           <div className="flex items-center gap-2 text-gray-700">
                             <MapPin className="w-4 h-4 text-purple-600" />
-                            <span>{applicant.applicantDetails.location}</span>
+                            <span>
+                              {applicant.status === 'hired' && applicant.hiredLocation 
+                                ? `Hired Location: ${applicant.hiredLocation}` 
+                                : applicant.applicantDetails.location}
+                            </span>
                           </div>
                         )}
                         <div className="flex items-center gap-2 text-gray-700">
                           <Calendar className="w-4 h-4 text-orange-600" />
                           <span>Applied: {new Date(applicant.appliedDate).toLocaleDateString()}</span>
                         </div>
-                        {applicant.expectedSalary && (
+                        {applicant.status === 'hired' && applicant.hiredSalary ? (
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Hired Salary: AED {applicant.hiredSalary}</span>
+                          </div>
+                        ) : applicant.expectedSalary ? (
                           <div className="flex items-center gap-2 text-gray-700">
                             <DollarSign className="w-4 h-4 text-green-600" />
                             <span>Expected: AED {typeof applicant.expectedSalary === 'number' ? applicant.expectedSalary.toLocaleString() : (applicant.expectedSalary.min || applicant.expectedSalary.max || 0).toLocaleString()}</span>
                           </div>
-                        )}
+                        ) : null}
                         {applicant.availability && (
                           <div className="flex items-center gap-2 text-gray-700">
                             <Clock className="w-4 h-4 text-cyan-600" />
@@ -772,9 +803,9 @@ export default function JobApplicantsPage() {
         jobTitle={jobDetails?.title || 'Unknown Position'}
         location={applicantToHire?.applicantDetails?.location || jobDetails?.location}
         expectedSalary={jobDetails?.salary}
-        onConfirm={async () => {
+        onConfirm={async (hiredDetails) => {
           if (applicantToHire) {
-            await updateApplicantStatus(applicantToHire._id, 'hired');
+            await updateApplicantStatus(applicantToHire._id, 'hired', undefined, undefined, hiredDetails);
             setHireDialogOpen(false);
             setApplicantToHire(null);
           }

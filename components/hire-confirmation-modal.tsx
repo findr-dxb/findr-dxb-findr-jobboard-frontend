@@ -18,7 +18,7 @@ interface HireConfirmationModalProps {
   jobTitle: string;
   location?: string;
   expectedSalary?: number | { min?: number; max?: number };
-  onConfirm: () => void;
+  onConfirm: (hiredDetails: { jobTitle: string; location: string; closingSalary: string }) => void;
 }
 
 export function HireConfirmationModal({
@@ -31,23 +31,35 @@ export function HireConfirmationModal({
   expectedSalary,
   onConfirm,
 }: HireConfirmationModalProps) {
-  
-  const formatSalary = (salary?: number | { min?: number; max?: number }) => {
-    if (!salary) return 'Not Specified';
+  const [editedJobTitle, setEditedJobTitle] = React.useState(jobTitle);
+  const [editedLocation, setEditedLocation] = React.useState(location || "");
+  const [editedSalary, setEditedSalary] = React.useState("");
+
+  const formatInitialSalary = (salary?: number | { min?: number; max?: number }) => {
+    if (!salary) return '';
     if (typeof salary === 'number') {
-      return `AED ${salary.toLocaleString()}`;
+      return salary.toString();
     }
     if (typeof salary === 'object') {
       const min = salary.min;
       const max = salary.max;
       if (min !== undefined && max !== undefined) {
-        return `AED ${min.toLocaleString()} - ${max.toLocaleString()}`;
+        return `${min} - ${max}`;
       }
-      if (min !== undefined) return `AED ${min.toLocaleString()}`;
-      if (max !== undefined) return `AED ${max.toLocaleString()}`;
+      if (min !== undefined) return min.toString();
+      if (max !== undefined) return max.toString();
     }
-    return 'Not Specified';
+    return '';
   };
+
+  // Synchronize state when modal opens or props change
+  React.useEffect(() => {
+    if (isOpen) {
+      setEditedJobTitle(jobTitle);
+      setEditedLocation(location || "");
+      setEditedSalary(formatInitialSalary(expectedSalary));
+    }
+  }, [isOpen, jobTitle, location, expectedSalary]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -70,7 +82,7 @@ export function HireConfirmationModal({
         <div className="p-6 space-y-4">
           <div className="flex items-center gap-4 p-3 rounded-xl bg-white border border-emerald-100/40 shadow-sm">
             {profilePicture ? (
-              <div className="w-14 h-14 rounded-full ring-2 ring-emerald-100 shadow-sm overflow-hidden">
+              <div className="w-14 h-14 rounded-full ring-2 ring-emerald-100 shadow-sm overflow-hidden flex-shrink-0">
                 <img 
                   src={profilePicture} 
                   alt={applicantName}
@@ -78,7 +90,7 @@ export function HireConfirmationModal({
                 />
               </div>
             ) : (
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-sm ring-2 ring-emerald-100">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-sm ring-2 ring-emerald-100 flex-shrink-0">
                 {applicantName.charAt(0).toUpperCase()}
               </div>
             )}
@@ -86,33 +98,50 @@ export function HireConfirmationModal({
               <h4 className="font-bold text-base text-gray-900 truncate">
                 {applicantName}
               </h4>
-              <p className="text-sm font-medium text-emerald-600 truncate flex items-center gap-1 mt-0.5">
-                <Briefcase className="w-3.5 h-3.5" />
-                {jobTitle}
-              </p>
+              <div className="mt-1 flex items-center gap-1.5 w-full">
+                <Briefcase className="w-4 h-4 text-emerald-600 shrink-0" />
+                <input
+                  type="text"
+                  value={editedJobTitle}
+                  onChange={(e) => setEditedJobTitle(e.target.value)}
+                  className="w-full text-sm font-medium text-emerald-600 bg-emerald-50/20 border border-emerald-100/50 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:bg-white transition-all"
+                  placeholder="Hired Position / Job Title"
+                />
+              </div>
             </div>
           </div>
 
           {/* Location and Salary info */}
           <div className="grid grid-cols-1 gap-3 text-sm">
             <div className="p-3 rounded-xl bg-white border border-emerald-100/30 shadow-sm">
-              <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-emerald-500" />
                 Location
               </span>
-              <span className="font-medium text-gray-700 truncate block">
-                {location || 'Not Specified'}
-              </span>
+              <input
+                type="text"
+                value={editedLocation}
+                onChange={(e) => setEditedLocation(e.target.value)}
+                className="w-full text-sm font-medium text-gray-700 bg-gray-50 border border-gray-100 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:bg-white transition-all"
+                placeholder="Noida, Uttar Pradesh"
+              />
             </div>
             
             <div className="p-3 rounded-xl bg-white border border-emerald-100/30 shadow-sm">
-              <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3 text-emerald-500" />
                 Closing Salary
               </span>
-              <span className="font-semibold text-emerald-600 truncate block">
-                {formatSalary(expectedSalary)}
-              </span>
+              <div className="flex items-center gap-1 bg-gray-50 border border-gray-100 rounded-lg px-3 py-1.5 focus-within:ring-1 focus-within:ring-emerald-400 focus-within:bg-white transition-all">
+                <span className="text-sm font-semibold text-emerald-600">AED</span>
+                <input
+                  type="text"
+                  value={editedSalary}
+                  onChange={(e) => setEditedSalary(e.target.value)}
+                  className="w-full text-sm font-semibold text-emerald-600 bg-transparent border-none p-0 focus:outline-none focus:ring-0 transition-all"
+                  placeholder="e.g. 122222"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -126,7 +155,11 @@ export function HireConfirmationModal({
             Cancel
           </Button>
           <Button 
-            onClick={onConfirm} 
+            onClick={() => onConfirm({
+              jobTitle: editedJobTitle,
+              location: editedLocation,
+              closingSalary: editedSalary
+            })} 
             className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-md font-semibold rounded-lg border-none"
           >
             Confirm Hire

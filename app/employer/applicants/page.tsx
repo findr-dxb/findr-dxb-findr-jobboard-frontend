@@ -77,6 +77,9 @@ interface Applicant {
   rating?: number;
   viewedByEmployer: boolean;
   employerNotes?: string;
+  hiredJobTitle?: string;
+  hiredLocation?: string;
+  hiredSalary?: string;
 }
 
 interface Job {
@@ -279,7 +282,13 @@ export default function AllApplicantsPage() {
   };
 
   // Update application status
-  const updateApplicationStatus = async (applicationId: string, newStatus: string, previousStatus?: string, notes?: string) => {
+  const updateApplicationStatus = async (
+    applicationId: string, 
+    newStatus: string, 
+    previousStatus?: string, 
+    notes?: string,
+    hiredDetails?: { jobTitle: string; location: string; closingSalary: string }
+  ) => {
     try {
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       
@@ -305,10 +314,18 @@ export default function AllApplicantsPage() {
         });
       }
       
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/status`, {
+      const payload: any = {
         status: newStatus,
         notes
-      }, {
+      };
+
+      if (hiredDetails) {
+        payload.hiredJobTitle = hiredDetails.jobTitle;
+        payload.hiredLocation = hiredDetails.location;
+        payload.hiredSalary = hiredDetails.closingSalary;
+      }
+      
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/status`, payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -575,17 +592,30 @@ export default function AllApplicantsPage() {
                       {/* Job & Contact Details */}
                       <div className="space-y-2 mb-4 pt-2 border-t border-white/50">
                         <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <Briefcase className="w-4 h-4 text-emerald-600" />
-                          <span className="font-medium">{applicant.jobDetails?.title}</span>
+                          <Briefcase className="w-4 h-4 text-emerald-600 animate-pulse" />
+                          <span className="font-semibold text-gray-900">
+                            {applicant.status === 'hired' && applicant.hiredJobTitle 
+                              ? `Hired as: ${applicant.hiredJobTitle}` 
+                              : applicant.jobDetails?.title}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <Mail className="w-4 h-4 text-blue-600" />
                           <span className="truncate">{applicant.applicantDetails?.email}</span>
                         </div>
-                        {applicant.applicantDetails?.location && (
+                        {(applicant.status === 'hired' && applicant.hiredLocation ? applicant.hiredLocation : applicant.applicantDetails?.location) && (
                           <div className="flex items-center gap-2 text-sm text-gray-700">
                             <MapPin className="w-4 h-4 text-purple-600" />
-                            <span>{applicant.applicantDetails.location}</span>
+                            <span>
+                              {applicant.status === 'hired' && applicant.hiredLocation 
+                                ? `Hired Location: ${applicant.hiredLocation}` 
+                                : applicant.applicantDetails.location}
+                            </span>
+                          </div>
+                        )}
+                        {applicant.status === 'hired' && applicant.hiredSalary && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">AED {applicant.hiredSalary}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-2 text-sm text-gray-700">
@@ -857,9 +887,9 @@ export default function AllApplicantsPage() {
         jobTitle={applicantToHire?.jobDetails?.title || 'Unknown Position'}
         location={applicantToHire?.applicantDetails?.location || applicantToHire?.jobDetails?.location}
         expectedSalary={applicantToHire?.jobDetails?.salary}
-        onConfirm={async () => {
+        onConfirm={async (hiredDetails) => {
           if (applicantToHire) {
-            await updateApplicationStatus(applicantToHire._id, 'hired');
+            await updateApplicationStatus(applicantToHire._id, 'hired', undefined, undefined, hiredDetails);
             setHireDialogOpen(false);
             setApplicantToHire(null);
           }

@@ -58,11 +58,11 @@ export function CompanyProfileView({ company }: CompanyProfileViewProps) {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-transparent">
       {/* <Navbar /> */}
 
-      <main className="p-4 lg:p-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <main className="py-4 lg:py-6 px-0">
+        <div className="max-w-7xl mx-auto space-y-6">
           {/* Header with Back Button */}
           {/* <div className="flex items-center justify-between">
             <Button

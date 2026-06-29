@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useParams, useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,6 +127,9 @@ interface ApplicantData {
   coverLetter?: string;
   resume?: string;
   rating?: number;
+  hiredJobTitle?: string;
+  hiredLocation?: string;
+  hiredSalary?: string;
 }
 
 // Get today's date in YYYY-MM-DD format (local timezone)
@@ -701,6 +704,45 @@ export default function ApplicantProfilePage() {
 
           {/* DEBUG: Show available data */}
           
+
+          {/* Hired Details Card (if hired) */}
+          {applicantData.status === 'hired' && (
+            <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 shadow-sm mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-purple-950">
+                    Finalized Hiring Terms
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 bg-white rounded-xl border border-purple-100/50 shadow-sm">
+                    <span className="block text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <Briefcase className="w-3 h-3 text-purple-500" />
+                      Hired Position
+                    </span>
+                    <span className="font-bold text-purple-950 text-sm block truncate">{applicantData.hiredJobTitle || applicantData.jobDetails?.title || 'Unknown'}</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-purple-100/50 shadow-sm">
+                    <span className="block text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-purple-500" />
+                      Final Location
+                    </span>
+                    <span className="font-semibold text-purple-950 text-sm block truncate">{applicantData.hiredLocation || 'Not Specified'}</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-purple-100/50 shadow-sm">
+                    <span className="block text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <Award className="w-3 h-3 text-purple-500" />
+                      Closing Salary
+                    </span>
+                    <span className="font-bold text-emerald-700 text-sm block truncate">{applicantData.hiredSalary ? `AED ${applicantData.hiredSalary}` : 'Not Specified'}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Contact Information */}
           <Card className="border-0 shadow-sm mb-4">
