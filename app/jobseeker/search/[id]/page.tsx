@@ -189,7 +189,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
         description: "Please log in to apply for jobs.",
         variant: "destructive",
       });
-      router.push('/login/jobseeker');
+      router.push(`/login/jobseeker?redirect=/jobseeker/search/${id}`);
       return;
     }
     

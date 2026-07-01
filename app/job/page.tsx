@@ -47,6 +47,7 @@ export default function PublicJobsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false)
   const [selectedJobTitle, setSelectedJobTitle] = useState("")
+  const [selectedJobId, setSelectedJobId] = useState("")
   const { toast } = useToast()
   const router = useRouter()
 
@@ -84,14 +85,16 @@ export default function PublicJobsPage() {
     fetchJobs()
   }
 
-  const triggerLoginModal = (jobTitle: string) => {
+  const triggerLoginModal = (jobId: string, jobTitle: string) => {
+    setSelectedJobId(jobId)
     setSelectedJobTitle(jobTitle)
     setIsLoginDialogOpen(true)
   }
 
   const handleLoginRedirect = (type: "jobseeker" | "employer") => {
     setIsLoginDialogOpen(false)
-    router.push(`/login?type=${type}`)
+    const dest = type === "jobseeker" && selectedJobId ? `/jobseeker/search/${selectedJobId}` : (type === "jobseeker" ? "/jobseeker/search" : "/employer/dashboard")
+    router.push(`/login?type=${type}&redirect=${encodeURIComponent(dest)}`)
   }
 
   const formatDate = (dateString: string) => {
@@ -234,7 +237,7 @@ export default function PublicJobsPage() {
                     </p>
                     
                     <Button 
-                      onClick={() => triggerLoginModal(job.title)}
+                      onClick={() => triggerLoginModal(job._id, job.title)}
                       className="w-full h-11 bg-white hover:bg-emerald-600 border border-emerald-600 hover:border-emerald-600 text-emerald-600 hover:text-white font-semibold transition-all duration-200 rounded-xl flex items-center justify-center gap-1.5 shadow-sm"
                     >
                       <Eye className="w-4 h-4" />

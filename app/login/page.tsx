@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import type React from "react"
 
@@ -110,7 +110,8 @@ export default function LoginPage() {
       
       // Redirect based on role
       console.log('Login: User role:', data.user.role);
-      const redirectUrl = data.user.role === "jobseeker" ? "/jobseeker/dashboard" : "/employer/dashboard";
+      const customRedirect = searchParams.get("redirect");
+      const redirectUrl = customRedirect || (data.user.role === "jobseeker" ? "/jobseeker/dashboard" : "/employer/dashboard");
       console.log('Login: Redirecting to:', redirectUrl);
       
       // Also store the redirect URL for manual navigation if needed

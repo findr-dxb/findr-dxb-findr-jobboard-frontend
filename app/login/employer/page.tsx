@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,6 +28,8 @@ export default function EmployerLoginPage() {
   const { login } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get("redirect")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,9 +40,9 @@ export default function EmployerLoginPage() {
       if (success) {
         toast({
           title: "Login Successful!",
-          description: "Welcome back! Redirecting to your dashboard...",
+          description: "Welcome back! Redirecting...",
         })
-        router.push("/employer/dashboard")
+        router.push(redirectUrl || "/employer/dashboard")
       }
     } catch (error: any) {
       // Check if user is blocked

@@ -177,7 +177,7 @@ export default function JobSearchPage() {
         description: "Please log in to apply for jobs.",
         variant: "destructive",
       })
-      router.push('/login/jobseeker')
+      router.push(`/login/jobseeker?redirect=/jobseeker/search`)
       return
     }
     

@@ -58,7 +58,7 @@ export default function JobSeekerDashboard() {
           'Authorization': `Bearer ${token}`,
         },
         params: {
-          limit: 5 // Only get recent 5 applications
+          limit: 3 
         }
       });
 
@@ -450,11 +450,16 @@ export default function JobSeekerDashboard() {
           <div className="grid gap-6">
             {/* Recent Applications */}
             <Card className="card-shadow border-0">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="flex items-center text-lg">
                   <Clock className="w-4 h-4 mr-2 text-emerald-600" />
                   Recent Applications
                 </CardTitle>
+                <Link href="/jobseeker/applications">
+                  <Button variant="outline" size="sm" className="text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+                    View All
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent className="space-y-3">
                 {applications.length === 0 ? (
@@ -467,7 +472,7 @@ export default function JobSeekerDashboard() {
                     </Link>
                   </div>
                 ) : (
-                  applications.map(app => (
+                  applications.slice(0, 3).map(app => (
                     <div key={app._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg gap-2">
                       <div className="flex-1">
                         <Link 

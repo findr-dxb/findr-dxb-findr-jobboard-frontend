@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +88,8 @@ export default function ApplicationsPage() {
   });
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
@@ -114,6 +116,8 @@ export default function ApplicationsPage() {
         },
         params: {
           status: status || undefined,
+          page: currentPage,
+          limit: 10
         }
       });
 
@@ -126,6 +130,7 @@ export default function ApplicationsPage() {
         hired: 0,
         rejected: 0
       });
+      setTotalPages(response.data.pagination?.pages || 1);
     } catch (error) {
       console.error('Error fetching applications:', error);
       toast({
@@ -140,7 +145,12 @@ export default function ApplicationsPage() {
 
   useEffect(() => {
     fetchApplications();
-  }, [status]);
+  }, [status, currentPage]);
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    setCurrentPage(1);
+  };
 
   const filteredApps = useMemo(() => {
     return applications.filter(app => {
@@ -161,7 +171,7 @@ export default function ApplicationsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       <Navbar />
       <main className="flex-1 p-4 lg:p-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Title & Summary Cards */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2 tracking-tight">Your Applications</h1>
@@ -197,7 +207,7 @@ export default function ApplicationsPage() {
             />
             <select
               value={status}
-              onChange={e => setStatus(e.target.value)}
+              onChange={e => handleStatusChange(e.target.value)}
               className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100"
             >
               {statusOptions.map(opt => (
@@ -215,7 +225,7 @@ export default function ApplicationsPage() {
 
           {/* Applications Grid */}
           {!isLoading && (
-            <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {filteredApps.length === 0 && (
                 <div className="col-span-full text-center text-gray-400 py-12">
                   <p>No applications found.</p>
@@ -345,6 +355,33 @@ export default function ApplicationsPage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-8 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+              >
+                Previous
+              </Button>
+              <span className="text-xs text-gray-600 font-medium">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+              >
+                Next
+              </Button>
             </div>
           )}
         </div>
