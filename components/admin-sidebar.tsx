@@ -2,13 +2,14 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Users, Briefcase, FileText, Star, FileCheck, LogOut, Settings } from "lucide-react"
+import { LayoutDashboard, Users, Briefcase, FileText, Star, FileCheck, LogOut, Settings, Award } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/stars", label: "Findr Stars", icon: Award },
   { href: "/admin/create-admin", label: "Create Admin Account", icon: Star },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/applications", label: "Applications", icon: FileText },

@@ -488,6 +488,7 @@ export default function JobSeekerProfilePage() {
           title: "Profile Updated Successfully!",
           description: data.message,
         })
+        await refreshAuth()
       } else {
         throw new Error(data.message || 'Failed to update profile')
       }

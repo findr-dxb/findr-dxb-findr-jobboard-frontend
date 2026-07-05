@@ -1,4 +1,4 @@
-﻿// "use client"
+// "use client"
 
 // import { useState, useEffect } from "react"
 // import axios from "axios"
@@ -1324,6 +1324,7 @@ export default function EmployerProfilePage() {
         setPoints(response.data.points || points)
         setProfileCompletion(response.data.profileCompleted || profileCompletion)
       }
+      await refreshAuth()
     } catch (error: any) {
       toast({
         title: "Error",

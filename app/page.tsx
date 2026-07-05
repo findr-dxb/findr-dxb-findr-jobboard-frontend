@@ -154,8 +154,8 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12">
-            {/* Top Job Seekers Column */}
+          <div className="space-y-16">
+            {/* Top Job Seekers Section */}
             <div className="space-y-6">
               <div className="flex items-center space-x-3 mb-2">
                 <div className="p-2 bg-emerald-100 rounded-lg text-emerald-700">
@@ -172,42 +172,44 @@ export default async function HomePage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {starJobseekers.map((seeker: any, index: number) => (
-                    <Card key={seeker.id || index} className="relative overflow-hidden border border-emerald-100 hover:border-emerald-300 hover:shadow-lg transition-all duration-300 flex flex-col justify-between bg-white rounded-2xl group">
-                      <div className="absolute top-3 right-3 flex items-center space-x-1 bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-100">
+                    <Card key={seeker.id || index} className="rounded-2xl shadow bg-gradient-to-br from-emerald-50 to-white border-0 w-full max-w-xs flex flex-col items-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                      <div className="absolute top-3 right-3 flex items-center space-x-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200/55">
                         <Star className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
                         <span>#{index + 1}</span>
                       </div>
-                      <CardHeader className="pt-6 pb-2 px-6 flex flex-col items-center">
-                        <div className="relative mb-3">
+                      <CardHeader className="flex flex-col items-center pt-8 pb-2">
+                        <div className="relative mb-2">
                           {seeker.profilePicture ? (
                             <img
                               src={seeker.profilePicture}
                               alt={seeker.name}
-                              className="w-20 h-20 rounded-full object-cover border-4 border-emerald-50 shadow-inner group-hover:scale-105 transition-transform duration-300"
+                              className="w-16 h-16 rounded-full object-cover border-2 border-emerald-200 group-hover:scale-105 transition-transform duration-300"
                             />
                           ) : (
-                            <div className="w-20 h-20 rounded-full flex items-center justify-center bg-emerald-50 border-4 border-emerald-100 text-emerald-600 text-2xl font-bold group-hover:scale-105 transition-transform duration-300 shadow-inner">
+                            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-emerald-50 border-2 border-emerald-100 text-emerald-600 text-xl font-bold group-hover:scale-105 transition-transform duration-300 shadow-inner">
                               {seeker.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                             </div>
                           )}
-                          <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full shadow-md">
-                            <Award className="w-4 h-4" />
+                          <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-0.5 rounded-full shadow-md">
+                            <Award className="w-3.5 h-3.5" />
                           </div>
                         </div>
-                        <CardTitle className="text-lg font-bold text-center text-gray-800 group-hover:text-emerald-600 transition-colors">
-                          {seeker.name}
-                        </CardTitle>
-                        <div className="mt-1 flex items-center justify-center space-x-1.5 bg-emerald-50/50 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                      </CardHeader>
+                      <CardContent className="flex flex-col items-center px-6 pb-8 flex-grow justify-between w-full">
+                        <div className="flex flex-col items-center text-center">
+                          <p className="text-gray-600 mb-3 italic text-center text-sm line-clamp-3">
+                            “{seeker.appreciationMessage}”
+                          </p>
+                          <div className="text-sm text-gray-800 font-semibold group-hover:text-emerald-600 transition-colors">
+                            {seeker.name}
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-center space-x-1.5 bg-emerald-100/50 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                           <span>{seeker.points} Activity Points</span>
                         </div>
-                      </CardHeader>
-                      <CardContent className="px-6 pb-6 pt-2 text-center flex-grow flex items-center justify-center">
-                        <p className="text-sm text-gray-600 italic line-clamp-3">
-                          "{seeker.appreciationMessage}"
-                        </p>
                       </CardContent>
                     </Card>
                   ))}
@@ -215,7 +217,7 @@ export default async function HomePage() {
               )}
             </div>
 
-            {/* Top Employers Column */}
+            {/* Top Employers Section */}
             <div className="space-y-6">
               <div className="flex items-center space-x-3 mb-2">
                 <div className="p-2 bg-purple-100 rounded-lg text-purple-700">
@@ -232,42 +234,44 @@ export default async function HomePage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {starEmployers.map((employer: any, index: number) => (
-                    <Card key={employer.id || index} className="relative overflow-hidden border border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-300 flex flex-col justify-between bg-white rounded-2xl group">
-                      <div className="absolute top-3 right-3 flex items-center space-x-1 bg-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full border border-purple-100">
+                    <Card key={employer.id || index} className="rounded-2xl shadow bg-gradient-to-br from-purple-50 to-white border-0 w-full max-w-xs flex flex-col items-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                      <div className="absolute top-3 right-3 flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full border border-purple-200/55">
                         <Star className="w-3.5 h-3.5 fill-purple-500 text-purple-500" />
                         <span>#{index + 1}</span>
                       </div>
-                      <CardHeader className="pt-6 pb-2 px-6 flex flex-col items-center">
-                        <div className="relative mb-3">
+                      <CardHeader className="flex flex-col items-center pt-8 pb-2">
+                        <div className="relative mb-2">
                           {employer.profilePicture ? (
                             <img
                               src={employer.profilePicture}
                               alt={employer.name}
-                              className="w-20 h-20 rounded-full object-cover border-4 border-purple-50 shadow-inner group-hover:scale-105 transition-transform duration-300 bg-white"
+                              className="w-16 h-16 rounded-full object-cover border-2 border-purple-200 bg-white group-hover:scale-105 transition-transform duration-300"
                             />
                           ) : (
-                            <div className="w-20 h-20 rounded-full flex items-center justify-center bg-purple-50 border-4 border-purple-100 text-purple-600 text-2xl font-bold group-hover:scale-105 transition-transform duration-300 shadow-inner">
+                            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-purple-50 border-2 border-purple-100 text-purple-600 text-xl font-bold group-hover:scale-105 transition-transform duration-300 shadow-inner">
                               {employer.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                             </div>
                           )}
-                          <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white p-1 rounded-full shadow-md">
-                            <Award className="w-4 h-4" />
+                          <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white p-0.5 rounded-full shadow-md">
+                            <Award className="w-3.5 h-3.5" />
                           </div>
                         </div>
-                        <CardTitle className="text-lg font-bold text-center text-gray-800 group-hover:text-purple-600 transition-colors">
-                          {employer.name}
-                        </CardTitle>
-                        <div className="mt-1 flex items-center justify-center space-x-1.5 bg-purple-50/50 text-purple-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                      </CardHeader>
+                      <CardContent className="flex flex-col items-center px-6 pb-8 flex-grow justify-between w-full">
+                        <div className="flex flex-col items-center text-center">
+                          <p className="text-gray-600 mb-3 italic text-center text-sm line-clamp-3">
+                            “{employer.appreciationMessage}”
+                          </p>
+                          <div className="text-sm text-gray-800 font-semibold group-hover:text-purple-600 transition-colors">
+                            {employer.name}
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-center space-x-1.5 bg-purple-100/50 text-purple-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">
                           <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping"></span>
                           <span>{employer.points} Activity Points</span>
                         </div>
-                      </CardHeader>
-                      <CardContent className="px-6 pb-6 pt-2 text-center flex-grow flex items-center justify-center">
-                        <p className="text-sm text-gray-600 italic line-clamp-3">
-                          "{employer.appreciationMessage}"
-                        </p>
                       </CardContent>
                     </Card>
                   ))}
@@ -288,28 +292,22 @@ export default async function HomePage() {
             <Carousel opts={{ loop: true, align: 'start' }} plugins={[]}>
               <CarouselContent className="flex">
                 {[{
-                  avatar: '/images/jobseeker1.jpg',
+                  avatar: '/filipino-job_seeker-female.webp',
                   quote: 'Findr made my Dubai job search effortless. The resume builder and RM support were game changers. I landed my dream job in just 3 weeks!',
                   name: 'Sarah Johnson',
                   title: 'Marketing Manager, Dubai',
                   rating: 5
                 }, {
-                  avatar: '/images/jobseeker2.jpg',
+                  avatar: '/indian-job_seeker-male.webp',
                   quote: 'Thanks to Findr, I found a company that values my skills. The process was smooth and the support team was always available.',
-                  name: 'Priya Mehra',
+                  name: 'Rahul Sharma',
                   title: 'Software Engineer, Abu Dhabi',
                   rating: 5
                 }, {
-                  avatar: '/images/jobseeker3.jpg',
+                  avatar: '/emirati-male-job_seeker.webp',
                   quote: 'The rewards system kept me motivated. I highly recommend Findr to anyone looking for a job in the UAE.',
                   name: 'Mohammed Al Farsi',
                   title: 'Accountant, Sharjah',
-                  rating: 5
-                }, {
-                  avatar: '/images/placeholder-user.jpg',
-                  quote: 'Findr’s RM service is top-notch. I got interview calls within days!',
-                  name: 'Aisha Patel',
-                  title: 'HR Assistant, Dubai',
                   rating: 5
                 }].map((t, i) => (
                   <CarouselItem key={i} className="basis-full md:basis-1/2 lg:basis-1/3 flex justify-center">
@@ -341,28 +339,22 @@ export default async function HomePage() {
             <Carousel opts={{ loop: true, align: 'start' }} plugins={[]}>
               <CarouselContent className="flex">
                 {[{
-                  avatar: '/images/employer1.jpg',
+                  avatar: '/emirati-employer-maler.webp',
                   quote: 'We hired 3 top candidates through Findr in record time. The platform’s HR tools and support are unmatched in the UAE.',
                   name: 'Ahmed Al-Rashid',
                   title: 'HR Director, Al Noor Holdings',
                   rating: 5
                 }, {
-                  avatar: '/images/employer2.jpg',
+                  avatar: '/europion-employer-female.webp',
                   quote: 'Findr’s compliance and onboarding solutions saved us hours. Highly recommended for any growing business.',
-                  name: 'Fatima Zahra',
+                  name: 'Emma Larson',
                   title: 'Operations Manager, Tech Solutions',
                   rating: 5
                 }, {
-                  avatar: '/images/employer3.jpg',
+                  avatar: '/indian-male-employer.webp',
                   quote: 'The analytics dashboard gave us insights we never had before. Our hiring process is now seamless.',
-                  name: 'Omar Bin Saeed',
+                  name: 'Vikram Malhotra',
                   title: 'CEO, Future Innovations',
-                  rating: 5
-                }, {
-                  avatar: '/images/employer4.jpg',
-                  quote: 'Findr’s team is responsive and professional. We filled our urgent roles quickly.',
-                  name: 'Lina Haddad',
-                  title: 'Talent Acquisition Lead, MediaWorks',
                   rating: 5
                 }].map((t, i) => (
                   <CarouselItem key={i} className="basis-full md:basis-1/2 lg:basis-1/3 flex justify-center">

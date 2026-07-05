@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         type: response.user.role as UserType,
         name: response.user.role === 'employer'
           ? (response.user.companyName || response.user.name || response.user.fullName)
-          : (response.user.name || response.user.fullName || response.user.companyName),
+          : (response.user.fullName || response.user.name || response.user.companyName),
         profileImage: response.user.role === 'employer' 
           ? (response.user.companyLogo || `/images/${type}-hero.png`)
           : (response.user.profilePicture || `/images/${type}-hero.png`),
@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         type: response.user.role as UserType,
         name: response.user.role === 'employer'
           ? (response.user.companyName || response.user.name || response.user.fullName)
-          : (response.user.name || response.user.fullName || response.user.companyName),
+          : (response.user.fullName || response.user.name || response.user.companyName),
         profileImage: response.user.role === 'employer' 
           ? (response.user.companyLogo || `/images/${data.role}-hero.png`)
           : (response.user.profilePicture || `/images/${data.role}-hero.png`),
@@ -308,7 +308,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...parsedUser,
           name: parsedUser.type === 'employer'
             ? (data.companyName || data.name || data.fullName || parsedUser.name)
-            : (data.name || data.fullName || data.companyName || parsedUser.name),
+            : (data.fullName || data.name || data.companyName || parsedUser.name),
           profileImage: parsedUser.type === 'employer'
             ? (data.companyLogo || parsedUser.profileImage)
             : (data.profilePicture || parsedUser.profileImage),
