@@ -1,6 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
+import { HireConfirmationModal } from "@/components/hire-confirmation-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -119,10 +120,14 @@ interface ApplicantData {
   jobDetails: {
     title: string;
     companyName: string;
+    salary?: number;
   };
   status: string;
   appliedDate: string;
-  expectedSalary?: string;
+  expectedSalary?: {
+    min: number;
+    max: number;
+  };
   availability?: string;
   coverLetter?: string;
   resume?: string;
@@ -181,6 +186,7 @@ export default function ApplicantProfilePage() {
   const [existingReview, setExistingReview] = useState<any>(null);
   const [statusHistory, setStatusHistory] = useState<Record<string, string>>({}); // Track previous statuses for undo
   const [undoDialogOpen, setUndoDialogOpen] = useState(false);
+  const [hireDialogOpen, setHireDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchApplicantData = async () => {
@@ -366,7 +372,11 @@ export default function ApplicantProfilePage() {
   };
 
   // Update application status
-  const updateApplicationStatus = async (newStatus: string, previousStatus?: string) => {
+  const updateApplicationStatus = async (
+    newStatus: string, 
+    previousStatus?: string,
+    hiredDetails?: { jobTitle: string; location: string; closingSalary: string }
+  ) => {
     if (!applicantData) return;
 
     try {
@@ -390,9 +400,17 @@ export default function ApplicantProfilePage() {
         });
       }
       
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicantData._id}/status`, {
+      const payload: any = {
         status: newStatus
-      }, {
+      };
+
+      if (hiredDetails) {
+        payload.hiredJobTitle = hiredDetails.jobTitle;
+        payload.hiredLocation = hiredDetails.location;
+        payload.hiredSalary = hiredDetails.closingSalary;
+      }
+      
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicantData._id}/status`, payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -404,7 +422,19 @@ export default function ApplicantProfilePage() {
       });
       
       // Update local state
-      setApplicantData(prev => prev ? {...prev, status: newStatus} : null);
+      setApplicantData(prev => {
+        if (!prev) return null;
+        const updated = {
+          ...prev,
+          status: newStatus
+        };
+        if (hiredDetails) {
+          updated.hiredJobTitle = hiredDetails.jobTitle;
+          updated.hiredLocation = hiredDetails.location;
+          updated.hiredSalary = hiredDetails.closingSalary;
+        }
+        return updated;
+      });
       
     } catch (error: any) {
       // Remove from history if update failed using normalized ID
@@ -1093,7 +1123,7 @@ export default function ApplicantProfilePage() {
              {applicantData.status === 'interview_scheduled' && (
                <Button
                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
-                 onClick={() => updateApplicationStatus('hired')}
+                 onClick={() => setHireDialogOpen(true)}
                >
                  <Check className="w-4 h-4 mr-2" />
                  Hire Candidate
@@ -1458,6 +1488,21 @@ export default function ApplicantProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Hire Candidate Confirmation Dialog */}
+      <HireConfirmationModal
+        isOpen={hireDialogOpen}
+        onOpenChange={setHireDialogOpen}
+        applicantName={candidate.fullName || candidate.name || 'Unknown'}
+        profilePicture={candidate.profilePicture}
+        jobTitle={applicantData.jobDetails?.title || 'Unknown Position'}
+        location={candidate.location}
+        expectedSalary={applicantData.jobDetails?.salary}
+        onConfirm={async (hiredDetails) => {
+          await updateApplicationStatus('hired', undefined, hiredDetails);
+          setHireDialogOpen(false);
+        }}
+      />
     </div>
   );
 }
