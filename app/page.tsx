@@ -8,6 +8,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { AuthRedirect } from "@/components/auth-redirect"
 import axios from "axios"
 
+export const dynamic = "force-dynamic"
+
 export default async function HomePage() {
   let starJobseekers = [];
   let starEmployers = [];
@@ -309,6 +311,12 @@ export default async function HomePage() {
                   name: 'Mohammed Al Farsi',
                   title: 'Accountant, Sharjah',
                   rating: 5
+                }, {
+                  avatar: '/Jobseeker_image.webp',
+                  quote: 'The platform is extremely user-friendly and helped me connect with top employers in Dubai within days. Highly recommended!',
+                  name: 'Rajesh Patel',
+                  title: 'Financial Analyst, Dubai',
+                  rating: 5
                 }].map((t, i) => (
                   <CarouselItem key={i} className="basis-full md:basis-1/2 lg:basis-1/3 flex justify-center">
                     <Card className="rounded-2xl shadow bg-gradient-to-br from-emerald-50 to-white border-0 w-full max-w-xs flex flex-col items-center">
@@ -355,6 +363,12 @@ export default async function HomePage() {
                   quote: 'The analytics dashboard gave us insights we never had before. Our hiring process is now seamless.',
                   name: 'Vikram Malhotra',
                   title: 'CEO, Future Innovations',
+                  rating: 5
+                }, {
+                  avatar: '/employer_image.webp',
+                  quote: 'Finding specialized talent in the UAE was a challenge until we started using Findr. The quality of candidates is exceptional.',
+                  name: 'Sophia Chen',
+                  title: 'Talent Acquisition, Innovate Tech',
                   rating: 5
                 }].map((t, i) => (
                   <CarouselItem key={i} className="basis-full md:basis-1/2 lg:basis-1/3 flex justify-center">
