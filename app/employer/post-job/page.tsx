@@ -20,6 +20,7 @@ import {
   PlusCircle,
   X,
 } from "lucide-react"
+import { JobPostingLimitInactive } from "@/components/employer/job-posting-limit-inactive"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useJobPosting } from "@/lib/features/jobPosting/useJobPosting"
@@ -139,7 +140,9 @@ export default function PostJobPage() {
     updateField,
     reset,
     clearErrorMessage,
-    submitJob
+    submitJob,
+    jobPosting,
+    profileComplete,
   } = useJobPosting()
 
   // Handle form field changes
@@ -292,16 +295,19 @@ export default function PostJobPage() {
     const verifyEligibility = async () => {
       const result = await dispatch(checkEmployerEligibility())
       if (checkEmployerEligibility.fulfilled.match(result)) {
-        if (!result.payload.canPostJob) {
+        const profileOk =
+          result.payload.profileComplete ??
+          result.payload.profileCompletion.percentage >= 80
+        if (!profileOk) {
           toast({
             title: "Complete your profile",
             description: "You need to complete your company profile before posting jobs.",
             variant: "destructive",
           })
           router.replace("/employer/profile")
-        } else {
-          setIsEligibilityChecked(true)
+          return
         }
+        setIsEligibilityChecked(true)
       } else {
         toast({
           title: "Unable to verify",
@@ -326,6 +332,17 @@ export default function PostJobPage() {
           <Loader2 className="w-10 h-10 animate-spin text-emerald-600 mx-auto mb-4" />
           <p className="text-gray-600">Verifying access...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (profileComplete && jobPosting && !jobPosting.hasPostingSlot) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <main className="px-4 py-3 md:px-6 md:py-4">
+          <JobPostingLimitInactive jobPosting={jobPosting} />
+        </main>
       </div>
     )
   }

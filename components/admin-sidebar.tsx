@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Users, Briefcase, FileText, Star, FileCheck, LogOut, Settings, Award } from "lucide-react"
+import { LayoutDashboard, Users, Briefcase, FileText, Star, FileCheck, LogOut, Settings, Award, Headphones } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 
@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/service-management", label: "Service Management", icon: Settings },
   { href: "/admin/quotation", label: "Quotation", icon: FileCheck },
   { href: "/admin/grievances", label: "Grievances", icon: FileText },
+  { href: "/admin/rm-posting-requests", label: "RM Posting Requests", icon: Headphones },
 ]
 
 export function AdminSidebar() {

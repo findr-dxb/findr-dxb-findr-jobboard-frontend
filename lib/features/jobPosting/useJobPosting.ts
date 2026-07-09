@@ -7,7 +7,8 @@ import {
   setSuccess,
   resetJobPostingState,
   checkEmployerEligibility,
-  submitJobPosting
+  submitJobPosting,
+  unlockJobPostingSlot,
 } from './jobPostingSlice'
 
 export const useJobPosting = () => {
@@ -46,17 +47,24 @@ export const useJobPosting = () => {
     return dispatch(submitJobPosting(jobPostingState.formData))
   }
 
+  const unlockPostingSlot = () => {
+    return dispatch(unlockJobPostingSlot())
+  }
+
   return {
     // State
     formData: jobPostingState.formData,
     isSubmitting: jobPostingState.isSubmitting,
     isLoading: jobPostingState.isLoading,
+    isUnlocking: jobPostingState.isUnlocking,
     error: jobPostingState.error,
     success: jobPostingState.success,
     profileCompletion: jobPostingState.profileCompletion,
+    profileComplete: jobPostingState.profileComplete,
     canPostJob: jobPostingState.canPostJob,
     missingFields: jobPostingState.missingFields,
     companyName: jobPostingState.companyName,
+    jobPosting: jobPostingState.jobPosting,
     
     // Actions
     updateField,
@@ -66,6 +74,7 @@ export const useJobPosting = () => {
     setSuccessMessage,
     resetState,
     checkEligibility,
-    submitJob
+    submitJob,
+    unlockPostingSlot,
   }
 }

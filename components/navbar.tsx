@@ -63,13 +63,15 @@ export function Navbar() {
     try {
       const result = await dispatch(checkEmployerEligibility())
       if (checkEmployerEligibility.fulfilled.match(result)) {
-        const { canPostJob, profileCompletion, companyInfo } = result.payload
-        if (!canPostJob) {
+        const profileOk =
+          result.payload.profileComplete ??
+          result.payload.profileCompletion.percentage >= 80
+        if (!profileOk) {
           setPostJobProfileResult({
-            percentage: profileCompletion.percentage,
-            canPostJob,
-            missingFields: profileCompletion.missingFields,
-            companyName: companyInfo?.companyName,
+            percentage: result.payload.profileCompletion.percentage,
+            canPostJob: result.payload.canPostJob,
+            missingFields: result.payload.profileCompletion.missingFields,
+            companyName: result.payload.companyInfo?.companyName,
           })
           setShowPostJobProfileDialog(true)
         } else {

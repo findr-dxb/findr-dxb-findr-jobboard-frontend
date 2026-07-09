@@ -33,6 +33,19 @@ export interface JobFormData {
   nationality: string
 }
 
+export interface JobPostingLimitInfo {
+  limit: number
+  pointsCost: number
+  employerPoints: number
+  lastJobPostedAt: string | null
+  nextFreeSlotAt: string | null
+  daysUntilFreeSlot: number
+  cooldownDays: number
+  hasPostingSlot: boolean
+  canUnlockWithPoints: boolean
+  waitRequired: boolean
+}
+
 export interface JobPostingState {
   formData: JobFormData
   isSubmitting: boolean
@@ -40,9 +53,12 @@ export interface JobPostingState {
   error: string | null
   success: boolean
   profileCompletion: number
+  profileComplete: boolean
   canPostJob: boolean
   missingFields: string[]
   companyName: string
+  jobPosting: JobPostingLimitInfo | null
+  isUnlocking: boolean
 }
 
 const emptyForm: JobFormData = {
@@ -66,9 +82,12 @@ const initialState: JobPostingState = {
   error: null,
   success: false,
   profileCompletion: 0,
+  profileComplete: false,
   canPostJob: false,
   missingFields: [],
   companyName: "",
+  jobPosting: null,
+  isUnlocking: false,
 }
 
 function authHeaders(token: string) {
@@ -87,6 +106,25 @@ export const checkEmployerEligibility = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(
         getApiErrorMessage(err, "Could not verify your profile. Please try again.")
+      )
+    }
+  }
+)
+
+export const unlockJobPostingSlot = createAsyncThunk(
+  "jobPosting/unlockJobPostingSlot",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = getAuthToken()
+      const { data } = await axios.post(
+        `${API_URL}/employer/unlock-job-posting`,
+        {},
+        { headers: authHeaders(token) }
+      )
+      return data
+    } catch (err) {
+      return rejectWithValue(
+        getApiErrorMessage(err, "Could not unlock a job posting slot.")
       )
     }
   }
@@ -166,9 +204,11 @@ const jobPostingSlice = createSlice({
       .addCase(checkEmployerEligibility.fulfilled, (state, action) => {
         state.isLoading = false
         state.profileCompletion = action.payload.profileCompletion.percentage
+        state.profileComplete = action.payload.profileComplete ?? action.payload.profileCompletion.percentage >= 80
         state.canPostJob = action.payload.canPostJob
         state.missingFields = action.payload.profileCompletion.missingFields
         state.companyName = action.payload.companyInfo.companyName
+        state.jobPosting = action.payload.jobPosting ?? null
       })
       .addCase(checkEmployerEligibility.rejected, (state, action) => {
         state.isLoading = false
@@ -190,6 +230,25 @@ const jobPostingSlice = createSlice({
         state.isSubmitting = false
         state.error = action.payload as string
         state.success = false
+      })
+
+    builder
+      .addCase(unlockJobPostingSlot.pending, (state) => {
+        state.isUnlocking = true
+        state.error = null
+      })
+      .addCase(unlockJobPostingSlot.fulfilled, (state, action) => {
+        state.isUnlocking = false
+        if (action.payload?.jobPosting) {
+          state.jobPosting = action.payload.jobPosting
+          state.canPostJob =
+            (state.profileComplete ?? state.profileCompletion >= 80) &&
+            action.payload.jobPosting.hasPostingSlot
+        }
+      })
+      .addCase(unlockJobPostingSlot.rejected, (state, action) => {
+        state.isUnlocking = false
+        state.error = action.payload as string
       })
   },
 })
