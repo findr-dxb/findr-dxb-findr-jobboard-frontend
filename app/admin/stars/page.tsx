@@ -38,6 +38,7 @@ import {
   Edit2
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { notifyFindrStarsUpdated } from "@/lib/findr-stars"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -216,6 +217,7 @@ export default function FindrStarsAdminPage() {
       setSelectedUserId(null)
       setDialogOpen(false)
       fetchStars()
+      notifyFindrStarsUpdated()
     } catch (error: any) {
       toast({
         title: "Failed to Save Findr Star",
@@ -245,6 +247,7 @@ export default function FindrStarsAdminPage() {
         description: `${name} has been reset to system defaults.`,
       })
       fetchStars()
+      notifyFindrStarsUpdated()
     } catch (error: any) {
       toast({
         title: "Reset Failed",

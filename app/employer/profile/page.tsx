@@ -900,6 +900,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { ImageCropModal } from "@/components/image-crop-modal"
 import { UploadAPI } from "@/lib/upload-api"
+import { notifyFindrStarsUpdated } from "@/lib/findr-stars"
 import {
   IndustryComboInput,
   normalizeIndustryCsv,
@@ -1325,6 +1326,7 @@ export default function EmployerProfilePage() {
         setProfileCompletion(response.data.profileCompleted || profileCompletion)
       }
       await refreshAuth()
+      notifyFindrStarsUpdated()
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1859,6 +1861,7 @@ export default function EmployerProfilePage() {
                           localStorage.setItem('findr_user', JSON.stringify(parsed))
                         }
                         refreshAuth()
+                        notifyFindrStarsUpdated()
                         toast({ title: "Company Logo Updated", description: "Your company logo has been saved successfully." })
                       } else {
                         throw new Error('Failed to save company logo')

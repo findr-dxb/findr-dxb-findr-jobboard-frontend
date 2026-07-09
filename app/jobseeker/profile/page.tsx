@@ -35,6 +35,7 @@ import { FollowUs, type SocialFollowStatus } from "@/components/follow-us"
 import { normalizeUAE } from "@/lib/utils"
 import { ImageCropModal } from "@/components/image-crop-modal"
 import { UploadAPI } from "@/lib/upload-api"
+import { notifyFindrStarsUpdated } from "@/lib/findr-stars"
 import {
   calculateJobseekerProfileCompletion,
   profilePageDataToCompletionInput,
@@ -489,6 +490,7 @@ export default function JobSeekerProfilePage() {
           description: data.message,
         })
         await refreshAuth()
+        notifyFindrStarsUpdated()
       } else {
         throw new Error(data.message || 'Failed to update profile')
       }
@@ -1060,6 +1062,7 @@ export default function JobSeekerProfilePage() {
                           localStorage.setItem('findr_user', JSON.stringify(parsed))
                         }
                         refreshAuth()
+                        notifyFindrStarsUpdated()
                         toast({ title: "Profile Photo Updated", description: "Your profile photo has been saved successfully." })
                       } else {
                         throw new Error('Failed to save profile photo')

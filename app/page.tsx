@@ -2,27 +2,13 @@ import { Navbar } from "@/components/navbar"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Briefcase, Star, Award, Trophy } from "lucide-react"
+import { Users, Briefcase } from "lucide-react"
 import Link from "next/link"
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 import { AuthRedirect } from "@/components/auth-redirect"
-import axios from "axios"
+import { FindrStarsSection } from "@/components/findr-stars-section"
 
-export const dynamic = "force-dynamic"
-
-export default async function HomePage() {
-  let starJobseekers = [];
-  let starEmployers = [];
-
-  try {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/stars`);
-    if (response.data?.success && response.data?.data) {
-      starJobseekers = response.data.data.jobseekers || [];
-      starEmployers = response.data.data.employers || [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch Findr Stars:", error);
-  }
+export default function HomePage() {
   return (
     <AuthRedirect>
       <div className="min-h-screen bg-white">
@@ -140,149 +126,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Findr Stars Section */}
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white px-4 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-sm font-semibold mb-4 border border-emerald-100">
-              <Trophy className="w-4 h-4 text-emerald-600" />
-              <span>Findr Leaderboard</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Meet Our <span className="gradient-text">Findr Stars</span>
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Celebrating our most active, highly rated job seekers and employers based on platform activity, achievements, and points.
-            </p>
-          </div>
-
-          <div className="space-y-16">
-            {/* Top Job Seekers Section */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="p-2 bg-emerald-100 rounded-lg text-emerald-700">
-                  <Users className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800">Top Job Seekers</h3>
-              </div>
-              {starJobseekers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 bg-emerald-50/20 rounded-2xl border border-dashed border-emerald-200 min-h-[220px]">
-                  <Users className="w-8 h-8 text-emerald-400 mb-2 animate-pulse" />
-                  <p className="text-gray-500 text-sm font-medium text-center">No stars on the leaderboard yet.</p>
-                  <p className="text-gray-400 text-xs text-center mt-1 max-w-[240px]">
-                    Earn points by completing your profile and applying for jobs to show up here!
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {starJobseekers.map((seeker: any, index: number) => (
-                    <Card key={seeker.id || index} className="rounded-2xl shadow bg-gradient-to-br from-emerald-50 to-white border-0 w-full max-w-xs flex flex-col items-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-                      <div className="absolute top-3 right-3 flex items-center space-x-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200/55">
-                        <Star className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
-                        <span>#{index + 1}</span>
-                      </div>
-                      <CardHeader className="flex flex-col items-center pt-8 pb-2">
-                        <div className="relative mb-2">
-                          {seeker.profilePicture ? (
-                            <img
-                              src={seeker.profilePicture}
-                              alt={seeker.name}
-                              className="w-16 h-16 rounded-full object-cover border-2 border-emerald-200 group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-emerald-50 border-2 border-emerald-100 text-emerald-600 text-xl font-bold group-hover:scale-105 transition-transform duration-300 shadow-inner">
-                              {seeker.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
-                            </div>
-                          )}
-                          <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-0.5 rounded-full shadow-md">
-                            <Award className="w-3.5 h-3.5" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="flex flex-col items-center px-6 pb-8 flex-grow justify-between w-full">
-                        <div className="flex flex-col items-center text-center">
-                          <p className="text-gray-600 mb-3 italic text-center text-sm line-clamp-3">
-                            “{seeker.appreciationMessage}”
-                          </p>
-                          <div className="text-sm text-gray-800 font-semibold group-hover:text-emerald-600 transition-colors">
-                            {seeker.name}
-                          </div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-center space-x-1.5 bg-emerald-100/50 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                          <span>{seeker.points} Activity Points</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Top Employers Section */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="p-2 bg-purple-100 rounded-lg text-purple-700">
-                  <Briefcase className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800">Top Employers</h3>
-              </div>
-              {starEmployers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 bg-purple-50/20 rounded-2xl border border-dashed border-purple-200 min-h-[220px]">
-                  <Briefcase className="w-8 h-8 text-purple-400 mb-2 animate-pulse" />
-                  <p className="text-gray-500 text-sm font-medium text-center">No featured employers yet.</p>
-                  <p className="text-gray-400 text-xs text-center mt-1 max-w-[240px]">
-                    Post jobs and review candidates on Findr to show up on the leaderboard!
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {starEmployers.map((employer: any, index: number) => (
-                    <Card key={employer.id || index} className="rounded-2xl shadow bg-gradient-to-br from-purple-50 to-white border-0 w-full max-w-xs flex flex-col items-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-                      <div className="absolute top-3 right-3 flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full border border-purple-200/55">
-                        <Star className="w-3.5 h-3.5 fill-purple-500 text-purple-500" />
-                        <span>#{index + 1}</span>
-                      </div>
-                      <CardHeader className="flex flex-col items-center pt-8 pb-2">
-                        <div className="relative mb-2">
-                          {employer.profilePicture ? (
-                            <img
-                              src={employer.profilePicture}
-                              alt={employer.name}
-                              className="w-16 h-16 rounded-full object-cover border-2 border-purple-200 bg-white group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-purple-50 border-2 border-purple-100 text-purple-600 text-xl font-bold group-hover:scale-105 transition-transform duration-300 shadow-inner">
-                              {employer.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
-                            </div>
-                          )}
-                          <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white p-0.5 rounded-full shadow-md">
-                            <Award className="w-3.5 h-3.5" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="flex flex-col items-center px-6 pb-8 flex-grow justify-between w-full">
-                        <div className="flex flex-col items-center text-center">
-                          <p className="text-gray-600 mb-3 italic text-center text-sm line-clamp-3">
-                            “{employer.appreciationMessage}”
-                          </p>
-                          <div className="text-sm text-gray-800 font-semibold group-hover:text-purple-600 transition-colors">
-                            {employer.name}
-                          </div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-center space-x-1.5 bg-purple-100/50 text-purple-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping"></span>
-                          <span>{employer.points} Activity Points</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <FindrStarsSection />
 
       {/* Testimonials Section: Two Stacked Carousels */}
       <section className="py-16 px-4">
