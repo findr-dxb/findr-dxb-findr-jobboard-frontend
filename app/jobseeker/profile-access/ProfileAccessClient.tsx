@@ -66,9 +66,11 @@ export default function ProfileAccessClient({ token }: ProfileAccessClientProps)
                 <CheckCircle className="w-12 h-12 mx-auto mb-4 text-emerald-600" />
                 <h2 className="text-lg font-semibold text-gray-900 mb-2">Request approved</h2>
                 <p className="text-gray-600 mb-4">{message}</p>
-                <p className="text-sm text-gray-500">You can close this page now.</p>
-                <Link href="/">
-                  <Button className="mt-4 gradient-bg text-white">Go to home</Button>
+                <p className="text-sm text-gray-500">
+                  You and the requester are now connected in each other&apos;s network.
+                </p>
+                <Link href="/jobseeker/referrals/joiners">
+                  <Button className="mt-4 gradient-bg text-white">View your network</Button>
                 </Link>
               </>
             )}

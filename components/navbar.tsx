@@ -153,6 +153,13 @@ export function Navbar() {
       })
       const data = await res.json()
       if (data.success) {
+        if (data.alreadyGranted) {
+          setShowRequestAccessModal(false)
+          setIsSearchOpen(false)
+          resetSearchState()
+          router.push(`/jobseeker/referrals/joiners/${pendingProfileId}`)
+          return
+        }
         toast({
           title: "Request sent",
           description: data.message || "Request sent to target user for approval.",
