@@ -274,11 +274,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTimeout(() => {
       if (shouldRefresh) {
         // Force page refresh
-        window.location.href = currentUserType === "admin" ? "/login/admin" : "/login"
+        window.location.href = currentUserType === "admin" ? "/" : "/login"
       } else {
         // Redirect to appropriate login page based on user type
         if (currentUserType === "admin") {
-          router.replace("/login/admin")
+          router.replace("/")
         } else {
           router.replace("/login")
         }

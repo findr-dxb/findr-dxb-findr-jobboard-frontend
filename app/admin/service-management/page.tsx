@@ -56,7 +56,7 @@ export default function ServiceManagementPage() {
 
       if (response.status === 401) {
         toast.error('Authentication required. Please log in.')
-        router.push('/login/admin')
+        router.push('/')
         return
       }
 

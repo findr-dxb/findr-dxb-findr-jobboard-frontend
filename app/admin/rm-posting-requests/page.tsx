@@ -87,7 +87,7 @@ export default function AdminRmPostingRequestsPage() {
             description: "Please log in as admin.",
             variant: "destructive",
           })
-          router.push("/login/admin")
+          router.push("/")
           return
         }
         throw new Error(`HTTP ${response.status}`)

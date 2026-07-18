@@ -62,7 +62,7 @@ export default function AdminGrievancesPage() {
             description: "Please log in to view grievances.",
             variant: "destructive",
           })
-          router.push('/login/admin')
+          router.push('/')
           return
         }
         throw new Error(`HTTP error! status: ${response.status}`)

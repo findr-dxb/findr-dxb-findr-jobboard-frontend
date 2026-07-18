@@ -15,6 +15,53 @@ export interface DashboardStats {
   applications: number;
   servicesOrders: number;
   premiumOrders: number;
+  monthlyOrders: number;
+}
+
+export interface NationalityDemographics {
+  total: number;
+  countries: Array<{
+    country: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
+export interface IndustryDistribution {
+  total: number;
+  source?: "jobseeker" | "applications" | "employers" | "none";
+  industries: Array<{
+    industry: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
+export interface RecentLoginUser {
+  _id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  type: "candidate" | "employer";
+  status: "active" | "inactive";
+  loginAt: string;
+}
+
+export interface RecentLogins {
+  total: number;
+  users: RecentLoginUser[];
+}
+
+export interface ActiveUsersToday {
+  total: number;
+  candidates: number;
+  employers: number;
+  date: string;
+  hourly: Array<{
+    hour: number;
+    label: string;
+    count: number;
+  }>;
 }
 
 export interface DashboardAnalytics {
@@ -355,6 +402,109 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       applications: 0,
       servicesOrders: 0,
       premiumOrders: 0,
+      monthlyOrders: 0,
+    };
+  }
+};
+
+export const getNationalityDemographics = async (): Promise<NationalityDemographics> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/dashboard/nationality`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to fetch nationality demographics');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching nationality demographics:', error);
+    return { total: 0, countries: [] };
+  }
+};
+
+export const getIndustryDistribution = async (): Promise<IndustryDistribution> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/dashboard/industry`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to fetch industry distribution');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching industry distribution:', error);
+    return { total: 0, industries: [] };
+  }
+};
+
+export const getRecentLogins = async (): Promise<RecentLogins> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/dashboard/recent-logins`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to fetch recent logins');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching recent logins:', error);
+    return { total: 0, users: [] };
+  }
+};
+
+export const getActiveUsersToday = async (): Promise<ActiveUsersToday> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/dashboard/active-users-today`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to fetch active users today');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching active users today:', error);
+    return {
+      total: 0,
+      candidates: 0,
+      employers: 0,
+      date: new Date().toISOString(),
+      hourly: [],
     };
   }
 };

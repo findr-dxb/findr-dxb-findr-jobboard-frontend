@@ -372,12 +372,12 @@ export default function EmployerRewardsPage() {
               </div>
             </div>
             {/* Reward History Button */}
-            <Link href="/rewards/history" className="self-start md:self-auto shrink-0">
+            {/* <Link href="/rewards/history" className="self-start md:self-auto shrink-0">
               <button className="bg-purple-50 hover:bg-purple-100 transition rounded-xl shadow-md flex items-center px-5 py-4 border-0 cursor-pointer text-left w-full">
                 <span className="text-2xl mr-4">📜</span>
                 <span className="font-medium text-purple-900 text-base">Reward History</span>
               </button>
-            </Link>
+            </Link> */}
           </CardContent>
         </Card>
 
