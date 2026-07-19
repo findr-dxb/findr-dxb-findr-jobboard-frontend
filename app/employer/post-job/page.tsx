@@ -205,7 +205,7 @@ export default function PostJobPage() {
     const validationMessage = getJobFormValidationMessage(formData)
     if (validationMessage) {
       toast({
-        title: "Missing information",
+        title: "Validation error",
         description: validationMessage,
         variant: "destructive",
       })
@@ -631,10 +631,6 @@ export default function PostJobPage() {
                         )}
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    One field: suggestions open as you type; click a row or press Enter / comma to add.
-                    If nothing matches, Enter still adds what you typed.
-                  </p>
                 </div>
 
                 <div className="space-y-2">

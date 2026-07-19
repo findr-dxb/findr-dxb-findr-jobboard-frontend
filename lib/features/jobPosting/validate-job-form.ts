@@ -12,17 +12,32 @@ const REQUIRED_FIELDS: { key: keyof JobFormData; label: string }[] = [
   { key: "deadline", label: "Application deadline" },
 ]
 
-/** Returns a single user-facing message, or null if the form is complete. */
+/** Returns a single user-facing message, or null if the form is valid. */
 export function getJobFormValidationMessage(form: JobFormData): string | null {
   const missing = REQUIRED_FIELDS.filter(({ key }) => !String(form[key] ?? "").trim()).map(
     ({ label }) => label
   )
 
-  if (missing.length === 0) return null
-
   if (missing.length === 1) {
     return `${missing[0]} is required.`
   }
 
-  return `Please complete the following: ${missing.map((label) => `${label} is required.`).join(" ")}`
+  if (missing.length > 1) {
+    return `Please complete the following: ${missing.map((label) => `${label} is required.`).join(" ")}`
+  }
+
+  const salary = Number(form.salary)
+  if (!Number.isFinite(salary) || salary <= 0) {
+    return "Please enter a valid salary amount."
+  }
+
+  const jobType = String(form.jobType || "").toLowerCase()
+  if (jobType === "full-time" && salary < 3000) {
+    return "Full-time jobs require a minimum salary of 3000 AED."
+  }
+  if (jobType === "part-time" && salary < 1500) {
+    return "Part-time jobs require a minimum salary of 1500 AED."
+  }
+
+  return null
 }
