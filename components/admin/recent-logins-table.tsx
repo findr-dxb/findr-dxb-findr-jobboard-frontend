@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { UserPlus } from "lucide-react"
-import type { RecentLogins } from "@/lib/admin-api"
+import type { SignupsToday } from "@/lib/admin-api"
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -11,19 +11,19 @@ function getInitials(name: string): string {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
 }
 
-function formatLoginDateTime(value: string): string {
+function formatSignupDateTime(value: string): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return "—"
   return date.toLocaleString()
 }
 
 interface Props {
-  data: RecentLogins | null
+  data: SignupsToday | null
   isLoading?: boolean
 }
 
 export function RecentLoginsTable({ data, isLoading }: Props) {
-  const users = data?.users || []
+  const users = (data?.users || []).slice(0, 5)
   const total = data?.total || 0
 
   return (
@@ -33,13 +33,13 @@ export function RecentLoginsTable({ data, isLoading }: Props) {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50">
             <UserPlus className="h-4 w-4 text-emerald-600" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900">New Sign-ups</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Today's Sign-ups</h2>
           <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-            {total.toLocaleString()} Total
+            {total.toLocaleString()} Today
           </span>
         </div>
         <Link
-          href="/admin/users"
+          href="/admin/signups-today"
           className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
         >
           View All
@@ -50,7 +50,7 @@ export function RecentLoginsTable({ data, isLoading }: Props) {
         <div className="flex h-40 items-center justify-center text-sm text-gray-500">Loading…</div>
       ) : users.length === 0 ? (
         <div className="flex h-40 items-center justify-center text-sm text-gray-500">
-          No new sign-ups yet
+          No sign-ups today
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -104,7 +104,7 @@ export function RecentLoginsTable({ data, isLoading }: Props) {
                     />
                   </td>
                   <td className="py-3.5 text-right text-sm text-gray-500 whitespace-nowrap">
-                    {formatLoginDateTime(user.loginAt)}
+                    {formatSignupDateTime(user.signupAt)}
                   </td>
                 </tr>
               ))}

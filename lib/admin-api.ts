@@ -52,6 +52,32 @@ export interface RecentLogins {
   users: RecentLoginUser[];
 }
 
+export interface SignupTodayUser {
+  _id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  type: "candidate" | "employer";
+  status: "active" | "inactive";
+  signupAt: string;
+}
+
+export interface SignupsToday {
+  total: number;
+  candidates: number;
+  employers: number;
+  date: string;
+  users: SignupTodayUser[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+    limit: number;
+  };
+}
+
 export interface ActiveUsersToday {
   total: number;
   candidates: number;
@@ -62,6 +88,32 @@ export interface ActiveUsersToday {
     label: string;
     count: number;
   }>;
+}
+
+export interface ActiveUserTodayItem {
+  _id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  type: "candidate" | "employer";
+  status: "active" | "inactive";
+  loginAt: string;
+}
+
+export interface ActiveUsersTodayList {
+  total: number;
+  candidates: number;
+  employers: number;
+  date: string;
+  users: ActiveUserTodayItem[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+    limit: number;
+  };
 }
 
 export interface DashboardAnalytics {
@@ -479,6 +531,55 @@ export const getRecentLogins = async (): Promise<RecentLogins> => {
   }
 };
 
+export const getSignupsToday = async (params?: {
+  page?: number;
+  limit?: number;
+}): Promise<SignupsToday> => {
+  try {
+    const queryParams = new URLSearchParams({
+      page: String(params?.page || 1),
+      limit: String(params?.limit || 20),
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/signups-today?${queryParams}`,
+      {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Failed to fetch today's sign-ups");
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching today's sign-ups:", error);
+    return {
+      total: 0,
+      candidates: 0,
+      employers: 0,
+      date: new Date().toISOString(),
+      users: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 0,
+        totalCount: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        limit: params?.limit || 20,
+      },
+    };
+  }
+};
+
 export const getActiveUsersToday = async (): Promise<ActiveUsersToday> => {
   try {
     const response = await fetch(`${API_BASE_URL}/admin/dashboard/active-users-today`, {
@@ -505,6 +606,55 @@ export const getActiveUsersToday = async (): Promise<ActiveUsersToday> => {
       employers: 0,
       date: new Date().toISOString(),
       hourly: [],
+    };
+  }
+};
+
+export const getActiveUsersTodayList = async (params?: {
+  page?: number;
+  limit?: number;
+}): Promise<ActiveUsersTodayList> => {
+  try {
+    const queryParams = new URLSearchParams({
+      page: String(params?.page || 1),
+      limit: String(params?.limit || 20),
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/active-users-today/list?${queryParams}`,
+      {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to fetch active users list');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching active users list:', error);
+    return {
+      total: 0,
+      candidates: 0,
+      employers: 0,
+      date: new Date().toISOString(),
+      users: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 0,
+        totalCount: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        limit: params?.limit || 20,
+      },
     };
   }
 };

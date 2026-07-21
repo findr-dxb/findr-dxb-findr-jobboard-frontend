@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   Users,
   Building2,
@@ -8,18 +8,19 @@ import {
   FileText,
   Bell,
   ShoppingBasket,
+  RefreshCw,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   getDashboardStats,
   getNationalityDemographics,
   getIndustryDistribution,
-  getRecentLogins,
+  getSignupsToday,
   getActiveUsersToday,
   type DashboardStats,
   type NationalityDemographics,
   type IndustryDistribution,
-  type RecentLogins,
+  type SignupsToday,
   type ActiveUsersToday,
 } from "@/lib/admin-api"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
@@ -33,13 +34,14 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [nationality, setNationality] = useState<NationalityDemographics | null>(null)
   const [industry, setIndustry] = useState<IndustryDistribution | null>(null)
-  const [recentLogins, setRecentLogins] = useState<RecentLogins | null>(null)
+  const [signupsToday, setSignupsToday] = useState<SignupsToday | null>(null)
   const [activeUsersToday, setActiveUsersToday] = useState<ActiveUsersToday | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isNationalityLoading, setIsNationalityLoading] = useState(true)
   const [isIndustryLoading, setIsIndustryLoading] = useState(true)
-  const [isLoginsLoading, setIsLoginsLoading] = useState(true)
+  const [isSignupsLoading, setIsSignupsLoading] = useState(true)
   const [isActiveUsersLoading, setIsActiveUsersLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [now, setNow] = useState(() => new Date())
 
@@ -48,7 +50,7 @@ export default function AdminDashboardPage() {
     return () => clearInterval(timer)
   }, [])
 
-  useEffect(() => {
+  const loadDashboard = useCallback(async () => {
     const fetchStats = async () => {
       try {
         setIsLoading(true)
@@ -98,16 +100,30 @@ export default function AdminDashboardPage() {
       }
     }
 
-    const fetchRecentLogins = async () => {
+    const fetchSignupsToday = async () => {
       try {
-        setIsLoginsLoading(true)
-        const data = await getRecentLogins()
-        setRecentLogins(data)
+        setIsSignupsLoading(true)
+        const data = await getSignupsToday({ page: 1, limit: 5 })
+        setSignupsToday(data)
       } catch (err) {
-        console.error("Error fetching recent logins:", err)
-        setRecentLogins({ total: 0, users: [] })
+        console.error("Error fetching today's sign-ups:", err)
+        setSignupsToday({
+          total: 0,
+          candidates: 0,
+          employers: 0,
+          date: new Date().toISOString(),
+          users: [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 0,
+            totalCount: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: 5,
+          },
+        })
       } finally {
-        setIsLoginsLoading(false)
+        setIsSignupsLoading(false)
       }
     }
 
@@ -130,12 +146,27 @@ export default function AdminDashboardPage() {
       }
     }
 
-    fetchStats()
-    fetchNationality()
-    fetchIndustry()
-    fetchRecentLogins()
-    fetchActiveUsersToday()
+    await Promise.all([
+      fetchStats(),
+      fetchNationality(),
+      fetchIndustry(),
+      fetchSignupsToday(),
+      fetchActiveUsersToday(),
+    ])
   }, [])
+
+  useEffect(() => {
+    loadDashboard()
+  }, [loadDashboard])
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      await loadDashboard()
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
 
   const statsConfig = [
     {
@@ -192,6 +223,14 @@ export default function AdminDashboardPage() {
     router.push(route)
   }
 
+  const isAnyLoading =
+    isRefreshing ||
+    isLoading ||
+    isNationalityLoading ||
+    isIndustryLoading ||
+    isSignupsLoading ||
+    isActiveUsersLoading
+
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -204,9 +243,20 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="text-sm text-gray-600 text-right">
-          <p>Date: {now.toLocaleDateString()}</p>
-          <p>Time: {now.toLocaleTimeString()}</p>
+        <div className="flex items-center gap-4 self-start sm:self-auto">
+          <div className="text-sm text-gray-600 text-right">
+            <p>Date: {now.toLocaleDateString()}</p>
+            <p>Time: {now.toLocaleTimeString()}</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isAnyLoading}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
         </div>
       </div>
 
@@ -245,7 +295,7 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <RecentLoginsTable data={recentLogins} isLoading={isLoginsLoading} />
+        <RecentLoginsTable data={signupsToday} isLoading={isSignupsLoading} />
         <ActiveUsersTodayChart data={activeUsersToday} isLoading={isActiveUsersLoading} />
       </div>
 

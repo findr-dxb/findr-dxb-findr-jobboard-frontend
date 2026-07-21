@@ -1,11 +1,33 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import Link from "next/link"
 import type { ApexOptions } from "apexcharts"
 import { Activity } from "lucide-react"
 import type { ActiveUsersToday } from "@/lib/admin-api"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
+
+function buildHourlySeries(
+  hourly: ActiveUsersToday["hourly"] | undefined
+): Array<{ hour: number; label: string; count: number }> {
+  const base = Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    label: `${hour.toString().padStart(2, "0")}:00`,
+    count: 0,
+  }))
+
+  if (!hourly?.length) return base
+
+  hourly.forEach((entry) => {
+    const hour = typeof entry.hour === "number" ? entry.hour : Number(String(entry.label).split(":")[0])
+    if (Number.isInteger(hour) && hour >= 0 && hour < 24) {
+      base[hour].count = entry.count || 0
+    }
+  })
+
+  return base
+}
 
 interface Props {
   data: ActiveUsersToday | null
@@ -13,13 +35,7 @@ interface Props {
 }
 
 export function ActiveUsersTodayChart({ data, isLoading }: Props) {
-  const hourly = data?.hourly?.length
-    ? data.hourly
-    : Array.from({ length: 24 }, (_, hour) => ({
-        hour,
-        label: `${hour.toString().padStart(2, "0")}:00`,
-        count: 0,
-      }))
+  const hourly = buildHourlySeries(data?.hourly)
 
   const total = data?.total || 0
   const candidates = data?.candidates || 0
@@ -30,11 +46,12 @@ export function ActiveUsersTodayChart({ data, isLoading }: Props) {
       type: "bar",
       toolbar: { show: false },
       fontFamily: "inherit",
+      animations: { enabled: true },
     },
     plotOptions: {
       bar: {
-        borderRadius: 4,
-        columnWidth: "60%",
+        borderRadius: 3,
+        columnWidth: "70%",
       },
     },
     colors: ["#166534"],
@@ -43,20 +60,26 @@ export function ActiveUsersTodayChart({ data, isLoading }: Props) {
       borderColor: "#f3f4f6",
       strokeDashArray: 4,
       xaxis: { lines: { show: false } },
+      padding: { left: 4, right: 4 },
     },
     xaxis: {
       categories: hourly.map((h) => h.label),
+      tickAmount: 24,
       labels: {
+        show: true,
+        hideOverlappingLabels: false,
+        showDuplicates: true,
+        trim: false,
         rotate: -45,
-        rotateAlways: false,
-        style: { colors: "#9ca3af", fontSize: "10px" },
-        formatter: (value: string) => {
-          const hour = Number(String(value).split(":")[0])
-          return hour % 3 === 0 ? value : ""
-        },
+        rotateAlways: true,
+        style: { colors: "#9ca3af", fontSize: "9px" },
       },
       axisBorder: { show: false },
       axisTicks: { show: false },
+      title: {
+        text: "Hours (24h)",
+        style: { color: "#9ca3af", fontSize: "11px", fontWeight: 500 },
+      },
     },
     yaxis: {
       labels: {
@@ -65,8 +88,18 @@ export function ActiveUsersTodayChart({ data, isLoading }: Props) {
       },
       min: 0,
       forceNiceScale: true,
+      title: {
+        text: "Active users",
+        style: { color: "#9ca3af", fontSize: "11px", fontWeight: 500 },
+      },
     },
     tooltip: {
+      x: {
+        formatter: (_val, opts) => {
+          const hour = opts?.dataPointIndex ?? 0
+          return `${String(hour).padStart(2, "0")}:00 – ${String(hour).padStart(2, "0")}:59`
+        },
+      },
       y: {
         formatter: (val: number) => `${val} active`,
       },
@@ -92,6 +125,12 @@ export function ActiveUsersTodayChart({ data, isLoading }: Props) {
             {total.toLocaleString()} Total
           </span>
         </div>
+        <Link
+          href="/admin/active-users-today"
+          className="text-sm font-medium text-emerald-600 hover:text-emerald-700 whitespace-nowrap"
+        >
+          View All
+        </Link>
       </div>
 
       <div className="mb-4 flex gap-4 text-sm">
@@ -106,9 +145,9 @@ export function ActiveUsersTodayChart({ data, isLoading }: Props) {
       </div>
 
       {isLoading ? (
-        <div className="flex h-56 items-center justify-center text-sm text-gray-500">Loading…</div>
+        <div className="flex h-64 items-center justify-center text-sm text-gray-500">Loading…</div>
       ) : (
-        <Chart options={options} series={series} type="bar" height={240} />
+        <Chart options={options} series={series} type="bar" height={280} />
       )}
     </div>
   )
