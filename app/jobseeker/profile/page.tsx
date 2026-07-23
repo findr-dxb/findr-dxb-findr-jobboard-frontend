@@ -41,6 +41,10 @@ import {
   profilePageDataToCompletionInput,
 } from "@/lib/jobseeker-profile-completion"
 import {
+  determineJobseekerMembership,
+  getMembershipTierColor,
+} from "@/lib/jobseeker-membership"
+import {
   IndustryComboInput,
   normalizeIndustryCsv,
 } from "@/components/industry-combo-input"
@@ -167,7 +171,7 @@ export default function JobSeekerProfilePage() {
   const getDownloadUrl = (url: string): string => {
     return url;
   }
-  const [tier, setTier] = useState("Blue")
+  const [tier, setTier] = useState("Prime")
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [cropModalOpen, setCropModalOpen] = useState(false)
@@ -525,24 +529,6 @@ export default function JobSeekerProfilePage() {
 
     setProfileCompletion(completion.percentage)
 
-    const determineUserTier = (basePoints: number, yearsExp: number, isEmirati: boolean) => {
-      if (isEmirati) return "Platinum"
-      if (yearsExp >= 10) return "Gold"
-      if (yearsExp >= 3 && yearsExp < 10) return "Silver"
-      return "Blue"
-    }
-
-    let yearsExp = 0
-    const expStr = profileData.experience.experience
-    if (expStr === "0-1") yearsExp = 1
-    else if (expStr === "2-3") yearsExp = 3
-    else if (expStr === "4-6") yearsExp = 6
-    else if (expStr === "7-10") yearsExp = 10
-    else if (expStr === "10+") yearsExp = 11
-
-    const isEmirati =
-      profileData.personalInfo.nationality?.toLowerCase().includes("emirati")
-
     const applicationPoints = profileData?.rewards?.applyForJobs || 0
     const rmServicePoints = profileData?.rewards?.rmService || 0
     const deductedPoints = profileData.deductedPoints || 0
@@ -550,7 +536,12 @@ export default function JobSeekerProfilePage() {
     const availablePoints = Math.max(0, totalPoints - deductedPoints)
 
     setPoints(availablePoints)
-    setTier(determineUserTier(completion.profilePoints, yearsExp, isEmirati))
+    setTier(
+      determineJobseekerMembership({
+        nationality: profileData.personalInfo.nationality,
+        salaryExpectation: profileData.experience.currentSalary,
+      })
+    )
   }, [profileData])
 
   const handleInputChange = (section: keyof ProfileData, field: string, value: string | boolean) => {
@@ -721,22 +712,13 @@ export default function JobSeekerProfilePage() {
     }
   };
 
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case "Platinum":
-        return "bg-purple-100 text-purple-800 border-purple-200"
-      case "Gold":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
-    }
-  }
+  const getTierColor = (tierName: string) => getMembershipTierColor(tierName)
 
-  const getTierIcon = (tier: string) => {
-    switch (tier) {
-      case "Platinum":
+  const getTierIcon = (tierName: string) => {
+    switch (tierName) {
+      case "Icon":
         return <Trophy className="w-4 h-4" />
-      case "Gold":
+      case "Elite":
         return <Award className="w-4 h-4" />
       default:
         return <Star className="w-4 h-4" />

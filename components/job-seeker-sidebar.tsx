@@ -96,7 +96,7 @@ export function JobSeekerSidebar() {
                       <Star className="w-3 h-3 text-yellow-500" />
                       <span className="text-xs font-medium">{user?.points} Points</span>
                     </div>
-                    <Badge className="gradient-bg text-white text-xs">Silver</Badge>
+                    <Badge className="gradient-bg text-white text-xs">Prime</Badge>
                   </div>
                 </div>
               </CardContent>

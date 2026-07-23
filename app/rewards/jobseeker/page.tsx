@@ -11,43 +11,51 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { calculateJobseekerProfileCompletion } from "@/lib/jobseeker-profile-completion"
+import {
+  determineJobseekerMembershipFromUser,
+  MEMBERSHIP_TIER_INFO,
+} from "@/lib/jobseeker-membership"
 
 const membershipTiers = [
   {
-    name: "Blue",
-    minPoints: 0,
+    name: "Prime",
     icon: Star,
     color: "text-blue-600",
     bg: "bg-blue-50",
     border: "border-blue-200",
-    desc: "For job seekers with 0 to 3 years of experience",
+    desc: MEMBERSHIP_TIER_INFO[0].desc,
   },
   {
-    name: "Silver",
-    minPoints: 150,
+    name: "Plus",
     icon: Trophy,
-    color: "text-gray-600",
-    bg: "bg-gray-50",
-    border: "border-gray-200",
-    desc: "For job seekers with 3 to 10 years of experience",
+    color: "text-sky-600",
+    bg: "bg-sky-50",
+    border: "border-sky-200",
+    desc: MEMBERSHIP_TIER_INFO[1].desc,
   },
   {
-    name: "Gold",
-    minPoints: 250,
+    name: "Pro",
     icon: Award,
-    color: "text-yellow-600",
-    bg: "bg-yellow-50",
-    border: "border-yellow-200",
-    desc: "For job seekers with 10 or more years of experience",
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    desc: MEMBERSHIP_TIER_INFO[2].desc,
   },
   {
-    name: "Platinum",
-    minPoints: 500,
+    name: "Elite",
     icon: Gift,
     color: "text-purple-600",
     bg: "bg-purple-50",
     border: "border-purple-200",
-    desc: "Exclusively for UAE nationals",
+    desc: MEMBERSHIP_TIER_INFO[3].desc,
+  },
+  {
+    name: "Icon",
+    icon: Star,
+    color: "text-emerald-600",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+    desc: MEMBERSHIP_TIER_INFO[4].desc,
   },
 ]
 
@@ -78,7 +86,7 @@ export default function JobSeekerRewardsPage() {
   const [userPoints, setUserPoints] = useState(0)
   const [referralPoints, setReferralPoints] = useState(0)
   const [activityPoints, setActivityPoints] = useState(0)
-  const [userTier, setUserTier] = useState("Blue")
+  const [userTier, setUserTier] = useState("Prime")
   const [profileCompletion, setProfileCompletion] = useState(0)
   const [referralLink, setReferralLink] = useState("")
   const [copied, setCopied] = useState(false)
@@ -104,17 +112,9 @@ export default function JobSeekerRewardsPage() {
     return { percentage: completion.percentage, points: availablePoints }
   }
 
-  // Determine user tier based on points and profile (for display purposes only)
-  const determineUserTier = (profile: any, points: number) => {
-    const yearsExp = profile?.professionalExperience?.[0]?.yearsOfExperience || 0;
-    const isEmirati = profile?.nationality?.toLowerCase()?.includes("emirati");
-
-    // If Emirati, always Platinum tier
-    if (isEmirati) return "Platinum";
-    // Otherwise determine by experience
-    else if (yearsExp >= 10) return "Gold";
-    else if (yearsExp >= 3 && yearsExp < 10) return "Silver";
-    else return "Blue";
+  // Determine user tier from salary + Emirati nationality
+  const determineUserTier = (profile: any) => {
+    return determineJobseekerMembershipFromUser(profile)
   };
 
   // Fetch user profile data
@@ -192,7 +192,7 @@ export default function JobSeekerRewardsPage() {
       const basePoints = 50 + metrics.percentage * 2; // Base 50 + 2 points per percentage
 
       // Determine tier (for display purposes only, not used in calculation)
-      const tier = determineUserTier(data.data, basePoints);
+      const tier = determineUserTier(data.data);
 
       // Use base points directly without multiplier
       const calculatedBasePoints = basePoints;
@@ -297,9 +297,6 @@ export default function JobSeekerRewardsPage() {
   useEffect(() => {
     fetchUserProfile();
   }, []);
-
-  // Calculate tier and progress
-  const nextTier = membershipTiers.find((t) => t.minPoints > userPoints);
 
   if (loading) {
     return (
@@ -455,10 +452,10 @@ export default function JobSeekerRewardsPage() {
         <Card className="card-shadow border-0">
           <CardHeader>
             <CardTitle className="text-2xl">Membership Tiers</CardTitle>
-            <CardDescription>Unlock more benefits as you earn points</CardDescription>
+            <CardDescription>Membership is based on salary range. Emirati users receive Icon.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
               {membershipTiers.map((tier) => (
                 <div
                   key={tier.name}

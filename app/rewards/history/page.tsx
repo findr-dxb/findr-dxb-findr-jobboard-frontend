@@ -119,7 +119,7 @@ export default function RewardHistoryPage() {
             <div className="bg-white rounded-xl shadow-md px-6 py-4 flex flex-col items-center justify-center min-w-[140px] border border-blue-50 shrink-0 self-start sm:self-auto">
               <span className="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Balance</span>
               <span className="text-3xl font-black text-blue-950 mt-1">{userProfile?.points || 0}</span>
-              <span className="text-blue-600 font-semibold text-xs mt-1">{userProfile?.membershipTier || "Blue"} Tier</span>
+              <span className="text-blue-600 font-semibold text-xs mt-1">{userProfile?.membershipTier || "Prime"} Tier</span>
             </div>
           </CardContent>
         </Card>

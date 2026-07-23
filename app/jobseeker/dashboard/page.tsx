@@ -12,6 +12,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { calculateJobseekerProfileCompletion } from "@/lib/jobseeker-profile-completion";
+import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership";
 
 interface Application {
   _id: string;
@@ -118,18 +119,6 @@ export default function JobSeekerDashboard() {
   }, []);
 
 
-
-  const determineUserTier = (profile: any, basePoints: number) => {
-    const yearsExp = profile?.professionalExperience?.[0]?.yearsOfExperience || 0;
-    const isEmirati = profile?.nationality?.toLowerCase()?.includes("emirati");
-
-    // If Emirati, always Platinum tier
-    if (isEmirati) return "Platinum";
-    // Otherwise determine by experience
-    else if (yearsExp >= 10) return "Gold";
-    else if (yearsExp >= 3 && yearsExp < 10) return "Silver";
-    else return "Blue";
-  };
 
   const calculateProfileMetrics = (profile: any) => {
     const completion = calculateJobseekerProfileCompletion(profile);
@@ -273,29 +262,7 @@ export default function JobSeekerDashboard() {
                     </div>
                     <div className="text-sm text-gray-600">Reward Points</div>
                     <Badge className="gradient-bg text-white mt-1 text-xs">
-                      {(() => {
-                        // Use calculated points instead of backend points
-                        const points = calculatedPoints;
-                        
-                        
-                        // Complex tier logic matching profile page
-                        const yearsExp = userProfile?.professionalExperience?.[0]?.yearsOfExperience || 0;
-                        
-                        const isEmirati = userProfile?.nationality?.toLowerCase()?.includes("emirati");
-                        const hasEmploymentVisa = userProfile?.employmentVisa === "yes";
-                        const hasEmiratesId = !!userProfile?.emirateId;
-                        
-                        // Determine tier based on new logic
-                        let tier;
-                        if (isEmirati) tier = "Platinum"; // Emirati users get Platinum tier
-                        else if (points >= 500) tier = "Platinum";
-                        else if (yearsExp >= 5) tier = "Gold";
-                        else if (yearsExp >= 2 && yearsExp <= 5) tier = "Silver";
-                        else tier = "Blue"; // 0-1 year
-                        
-                        
-                        return tier;
-                      })()} Tier
+                      {determineJobseekerMembershipFromUser(userProfile || {})} Tier
                     </Badge>
                   </div>
                 </div>

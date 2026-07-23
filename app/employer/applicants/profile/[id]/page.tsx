@@ -655,12 +655,15 @@ export default function ApplicantProfilePage() {
 
   const getTierColor = (tier: string) => {
     switch (tier) {
-      case "Platinum":
+      case "Icon":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      case "Elite":
         return "bg-purple-100 text-purple-800 border-purple-200";
-      case "Gold":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Silver":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+      case "Pro":
+        return "bg-amber-100 text-amber-800 border-amber-200";
+      case "Plus":
+        return "bg-sky-100 text-sky-800 border-sky-200";
+      case "Prime":
       default:
         return "bg-blue-100 text-blue-800 border-blue-200";
     }
@@ -716,7 +719,7 @@ export default function ApplicantProfilePage() {
                     <p className="text-gray-600 mb-2">{candidate.email}</p>
                     <div className="flex items-center space-x-2">
                       <Badge className="bg-blue-100 text-blue-800 border border-blue-200 text-xs px-2 py-1">
-                        🏆 {candidate.membershipTier || 'Blue'} Member
+                        🏆 {candidate.membershipTier || 'Prime'} Member
                       </Badge>
                     </div>
                   </div>

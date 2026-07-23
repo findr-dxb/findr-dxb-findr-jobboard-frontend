@@ -59,10 +59,11 @@ export function isEligibleToApplyByPercentage(profileCompletionPercentage: numbe
 }
 
 export function getCompletionTier(percentage: number): string {
-  if (percentage >= 90) return "Platinum"
-  if (percentage >= 80) return "Gold"
-  if (percentage >= 60) return "Silver"
-  return "Bronze"
+  // Legacy helper — jobseeker membership is salary-based (see jobseeker-membership.ts)
+  if (percentage >= 90) return "Elite"
+  if (percentage >= 80) return "Pro"
+  if (percentage >= 60) return "Plus"
+  return "Prime"
 }
 
 export function hasValidResume(profile: any): boolean {

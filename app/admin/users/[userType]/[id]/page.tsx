@@ -13,6 +13,7 @@ import {
   FileText, Award, ExternalLink, Video, Image as ImageIcon, 
   Gift, ShoppingCart, Bookmark, Clock, Shield
 } from "lucide-react"
+import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -102,69 +103,9 @@ export default function AdminUserDetailPage() {
       ? firstEducation.yearOfGraduation.toString() 
       : "N/A";
 
-    // Calculate tier dynamically (same logic as dashboard and profile pages)
+    // Calculate membership from salary + Emirati nationality
     const calculateTier = () => {
-      // Calculate profile completion points
-      let completed = 0;
-      const totalFields = 24;
-      
-      if (userData.fullName) completed++;
-      if (userData.email) completed++;
-      if (userData.phoneNumber) completed++;
-      if (userData.location) completed++;
-      if (userData.dateOfBirth) completed++;
-      if (userData.nationality) completed++;
-      if (userData.professionalSummary) completed++;
-      if (userData.emirateId) completed++;
-      if (userData.passportNumber) completed++;
-      
-      if (firstExperience.currentRole) completed++;
-      if (firstExperience.company) completed++;
-      if (firstExperience.yearsOfExperience) completed++;
-      if (firstExperience.industry) completed++;
-      
-      if (firstEducation.highestDegree) completed++;
-      if (firstEducation.institution) completed++;
-      if (firstEducation.yearOfGraduation) completed++;
-      if (firstEducation.gradeCgpa) completed++;
-      
-      if (userData.skills && userData.skills.length > 0) completed++;
-      if (jobPrefs.preferredJobType && jobPrefs.preferredJobType.length > 0) completed++;
-      if (userData.certifications && userData.certifications.length > 0) completed++;
-      if (jobPrefs.resumeAndDocs && jobPrefs.resumeAndDocs.length > 0) completed++;
-      if (userData.socialLinks?.linkedIn) completed++;
-      if (userData.socialLinks?.instagram) completed++;
-      if (userData.socialLinks?.twitterX) completed++;
-      
-      const percentage = Math.min(Math.round((completed / totalFields) * 100), 100);
-      
-      // Calculate base points
-      const basePoints = 50 + percentage * 2;
-      
-      // Get experience and determine tier (for display purposes only)
-      const yearsExp = firstExperience.yearsOfExperience || 0;
-      const isEmirati = userData.nationality?.toLowerCase().includes("emirati");
-      
-      // Determine tier
-      let tier: string;
-      if (isEmirati) tier = "Platinum";
-      else if (basePoints >= 500) tier = "Platinum";
-      else if (yearsExp >= 5) tier = "Gold";
-      else if (yearsExp >= 2 && yearsExp <= 5) tier = "Silver";
-      else tier = "Blue";
-      
-      // Use base points directly without multiplier
-      const calculatedBasePoints = basePoints;
-      
-      // Add other points
-      const applicationPoints = userData.rewards?.applyForJobs || 0;
-      const rmServicePoints = userData.rewards?.rmService || 0;
-      const deductedPoints = userData.deductedPoints || 0;
-      
-      const totalPoints = calculatedBasePoints + applicationPoints + rmServicePoints;
-      const availablePoints = Math.max(0, totalPoints - deductedPoints);
-      
-      return tier;
+      return determineJobseekerMembershipFromUser(userData)
     };
 
     const candidate = {

@@ -41,7 +41,7 @@ export type CandidateProfile = {
   coverLetter: string;
   documentsList: string[];
   rating: number;
-  tier: "Platinum" | "Gold" | "Silver" | "Blue" | string;
+  tier: "Icon" | "Elite" | "Pro" | "Plus" | "Prime" | string;
 };
 
 export const applications: Application[] = [
@@ -84,7 +84,7 @@ export const applications: Application[] = [
       coverLetter: "Cover Letter - John Doe.pdf",
       documentsList: ["Reference Letter.pdf", "Certification.pdf"],
       rating: 4.5,
-      tier: "Gold",
+      tier: "Elite",
     },
   },
   {
@@ -126,7 +126,7 @@ export const applications: Application[] = [
       coverLetter: "Cover Letter - Jane Smith.pdf",
       documentsList: ["Portfolio.pdf"],
       rating: 4.2,
-      tier: "Silver",
+      tier: "Plus",
     },
   },
   {
@@ -168,7 +168,7 @@ export const applications: Application[] = [
       coverLetter: "Cover Letter - Alex Lee.pdf",
       documentsList: ["Reference Letter.pdf"],
       rating: 4.0,
-      tier: "Blue",
+      tier: "Prime",
     },
   },
 ];

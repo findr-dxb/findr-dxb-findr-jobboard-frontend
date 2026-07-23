@@ -90,7 +90,7 @@ export default function PublicCandidateProfilePage() {
     coverLetter: userData.coverLetter || "",
     documentsList: userData.documentsList || [],
     rating: userData.rating || 0,
-    tier: userData.tier || "Blue",
+    tier: userData.tier || "Prime",
   }
 
   return <CandidateProfileView candidate={candidate} />

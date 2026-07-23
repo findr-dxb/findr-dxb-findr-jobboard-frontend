@@ -68,6 +68,7 @@ export type ProfileCompletionResult = {
 
 function isFilled(value: unknown): boolean {
   if (value === null || value === undefined) return false
+  if (value instanceof Date) return !Number.isNaN(value.getTime())
   if (typeof value === "string") return value.trim() !== ""
   if (typeof value === "number") return true
   if (typeof value === "boolean") return value
