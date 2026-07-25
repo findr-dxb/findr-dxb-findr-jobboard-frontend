@@ -22,76 +22,47 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { JobDetailsModal } from "@/components/admin/job-details-modal"
+import {
+  getStatusLabel,
+  getStatusColor,
+  formatDate,
+  filterByDate,
+  filterBySearchAndStatus,
+  getStats,
+  canShowActions,
+} from "@/components/admin/applications-helpers"
 import { Application } from "@/lib/admin-types"
 import { updateApplicationScreening } from "@/lib/admin-api"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 const PAGE_SIZE = 10
 
-// Show friendly status text under candidate name
-function getStatusLabel(status?: string) {
-  if (status === "shortlisted") return "Shortlisted"
-  if (status === "hired") return "Hired"
-  if (status === "rejected" || status === "admin_rejected") return "Rejected"
-  if (status === "interview_scheduled") return "Interview"
-  if (status === "withdrawn") return "Withdrawn"
-  if (status === "admin_hold") return "On Hold"
-  return "Applied"
-}
-
-function getStatusColor(status?: string) {
-  const label = getStatusLabel(status)
-  if (label === "Shortlisted") return "bg-blue-100 text-blue-700"
-  if (label === "Hired") return "bg-emerald-100 text-emerald-700"
-  if (label === "Rejected") return "bg-rose-100 text-rose-700"
-  if (label === "Interview") return "bg-green-100 text-green-700"
-  if (label === "On Hold") return "bg-amber-100 text-amber-700"
-  return "bg-slate-100 text-slate-600"
-}
-
-function formatDate(dateValue?: string) {
-  if (!dateValue) return "-"
-  const date = new Date(dateValue)
-  if (isNaN(date.getTime())) return "-"
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  })
-}
-
-function getPeriodStart(period: string) {
-  const start = new Date()
-  start.setHours(0, 0, 0, 0)
-
-  if (period === "weekly") {
-    start.setDate(start.getDate() - 7)
-  }
-  if (period === "monthly") {
-    start.setMonth(start.getMonth() - 1)
-  }
-
-  return start
-}
-
 export default function AdminApplicationsPage() {
   const router = useRouter()
 
-  // All applications from API (loaded once)
+  // ---------- State ----------
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const [loadingActionId, setLoadingActionId] = useState("")
 
-  // Filters (all handled on frontend)
+  // Filters (all done on frontend)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [period, setPeriod] = useState("") // "", "daily", "weekly", "monthly", "custom"
+  const [period, setPeriod] = useState("") // "", daily, weekly, monthly, custom
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [page, setPage] = useState(1)
 
+  // Job details popup
+  const [jobModalOpen, setJobModalOpen] = useState(false)
+  const [jobLoading, setJobLoading] = useState(false)
+  const [jobError, setJobError] = useState("")
+  const [jobDetails, setJobDetails] = useState<any>(null)
+
+  // ---------- Load data once ----------
   useEffect(() => {
     loadApplications()
   }, [])
@@ -124,74 +95,15 @@ export default function AdminApplicationsPage() {
     }
   }
 
-  // ---------- Frontend filters ----------
+  // ---------- Frontend filtering ----------
+  // 1) Date filter first (also used for summary box counts)
+  const listByDate = filterByDate(applications, period, startDate, endDate)
 
-  // 1) Filter by date first (used for summary box counts)
-  let listByDate = applications
+  // 2) Then search + status box
+  const filteredList = filterBySearchAndStatus(listByDate, search, statusFilter)
 
-  if (period === "daily" || period === "weekly" || period === "monthly") {
-    const start = getPeriodStart(period)
-    listByDate = applications.filter((app) => {
-      if (!app.appliedDate) return false
-      return new Date(app.appliedDate) >= start
-    })
-  }
-
-  if (period === "custom") {
-    listByDate = applications.filter((app) => {
-      if (!app.appliedDate) return false
-      const applied = new Date(app.appliedDate)
-
-      if (startDate) {
-        const start = new Date(startDate)
-        start.setHours(0, 0, 0, 0)
-        if (applied < start) return false
-      }
-
-      if (endDate) {
-        const end = new Date(endDate)
-        end.setHours(23, 59, 59, 999)
-        if (applied > end) return false
-      }
-
-      return true
-    })
-  }
-
-  // 2) Then filter by search + status box
-  const searchText = search.toLowerCase().trim()
-
-  const filteredList = listByDate.filter((app) => {
-    // Search: candidate name or job title
-    if (searchText) {
-      const name = (app.candidate || "").toLowerCase()
-      const job = (app.jobTitle || "").toLowerCase()
-      if (!name.includes(searchText) && !job.includes(searchText)) {
-        return false
-      }
-    }
-
-    // Status box filter
-    if (statusFilter === "all") return true
-    if (statusFilter === "rejected") {
-      return app.status === "rejected" || app.status === "admin_rejected"
-    }
-    return app.status === statusFilter
-  })
-
-  // Summary box counts (from date-filtered list only)
-  const stats = {
-    total: listByDate.length,
-    movedToPipeline: listByDate.filter((a) => a.status === "pending").length,
-    rejected: listByDate.filter(
-      (a) => a.status === "rejected" || a.status === "admin_rejected"
-    ).length,
-    hold: listByDate.filter((a) => a.status === "admin_hold").length,
-    unattended: listByDate.filter((a) => a.status === "admin_review").length,
-    shortlisted: listByDate.filter((a) => a.status === "shortlisted").length,
-    interviewed: listByDate.filter((a) => a.status === "interview_scheduled").length,
-    hired: listByDate.filter((a) => a.status === "hired").length,
-  }
+  // Summary counts
+  const stats = getStats(listByDate)
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredList.length / PAGE_SIZE))
@@ -200,6 +112,32 @@ export default function AdminApplicationsPage() {
   const pageList = filteredList.slice(startIndex, startIndex + PAGE_SIZE)
 
   // ---------- Actions ----------
+  async function openJobModal(jobId?: string) {
+    if (!jobId) {
+      setError("Job id not found for this application")
+      return
+    }
+
+    try {
+      setJobModalOpen(true)
+      setJobLoading(true)
+      setJobError("")
+      setJobDetails(null)
+
+      const res = await fetch(`${API_URL}/admin/jobs/${jobId}`)
+      const json = await res.json()
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to load job details")
+      }
+
+      setJobDetails(json.data)
+    } catch (err: any) {
+      setJobError(err.message || "Failed to load job details")
+    } finally {
+      setJobLoading(false)
+    }
+  }
 
   async function handleAction(appId: string, action: "pipeline" | "hold" | "reject") {
     try {
@@ -259,7 +197,7 @@ export default function AdminApplicationsPage() {
     setFiltersOpen(false)
   }
 
-  // Summary boxes config
+  // Summary boxes
   const boxes = [
     { label: "Total", value: stats.total, filter: "all", icon: Layers, iconBg: "bg-emerald-50", iconColor: "text-emerald-600", valueColor: "text-emerald-700" },
     { label: "Moved to Pipeline", value: stats.movedToPipeline, filter: "pending", icon: GitBranch, iconBg: "bg-teal-50", iconColor: "text-teal-600", valueColor: "text-gray-900" },
@@ -317,7 +255,6 @@ export default function AdminApplicationsPage() {
 
       {/* Search + Filters + Export */}
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-        {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
@@ -331,7 +268,6 @@ export default function AdminApplicationsPage() {
           />
         </div>
 
-        {/* Date filter dropdown */}
         <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
           <PopoverTrigger asChild>
             <Button className="h-11 rounded-full bg-emerald-500 px-5 text-white hover:bg-emerald-600">
@@ -347,7 +283,6 @@ export default function AdminApplicationsPage() {
             className="w-64 p-0 overflow-visible"
             style={{ maxHeight: "none" }}
           >
-            {/* Quick periods */}
             <div className="px-3 pt-3 pb-2">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">
                 Time Period
@@ -372,7 +307,6 @@ export default function AdminApplicationsPage() {
               ))}
             </div>
 
-            {/* Custom date range */}
             <div className="border-t px-3 py-2.5 space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
                 Custom Range
@@ -418,7 +352,6 @@ export default function AdminApplicationsPage() {
           </PopoverContent>
         </Popover>
 
-        {/* Export */}
         <Button
           onClick={handleExport}
           variant="outline"
@@ -466,12 +399,7 @@ export default function AdminApplicationsPage() {
                   const isRejected = app.status === "admin_rejected" || app.status === "rejected"
                   const isPipeline = app.status === "pending"
                   const isHold = app.status === "admin_hold"
-
-                  // Only show action buttons for apps still in admin screening
-                  const showActions =
-                    app.status === "admin_review" ||
-                    app.status === "admin_hold" ||
-                    app.status === "pending"
+                  const showActions = canShowActions(app.status)
 
                   return (
                     <tr key={app.id} className="border-b last:border-0 hover:bg-slate-50">
@@ -499,9 +427,15 @@ export default function AdminApplicationsPage() {
                         </div>
                       </td>
 
-                      {/* Job title */}
+                      {/* Job title — opens popup */}
                       <td className="px-5 py-4">
-                        <span className="font-medium text-emerald-600">{app.jobTitle}</span>
+                        <button
+                          type="button"
+                          onClick={() => openJobModal(app.jobId)}
+                          className="font-medium text-emerald-600 hover:text-emerald-700 hover:underline text-left"
+                        >
+                          {app.jobTitle}
+                        </button>
                       </td>
 
                       {/* Actions */}
@@ -593,6 +527,15 @@ export default function AdminApplicationsPage() {
           )}
         </>
       )}
+
+      {/* Job details popup (separate file for clarity) */}
+      <JobDetailsModal
+        open={jobModalOpen}
+        onOpenChange={setJobModalOpen}
+        loading={jobLoading}
+        error={jobError}
+        job={jobDetails}
+      />
     </div>
   )
 }
