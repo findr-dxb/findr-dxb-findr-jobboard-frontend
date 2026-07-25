@@ -48,6 +48,9 @@ import {
   IndustryComboInput,
   normalizeIndustryCsv,
 } from "@/components/industry-combo-input"
+import { SuggestionComboInput } from "@/components/suggestion-combo-input"
+import { SUGGESTED_NATIONALITIES } from "@/lib/suggested-nationalities"
+import { SUGGESTED_ROLES } from "@/lib/suggested-roles"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -879,23 +882,23 @@ export default function JobSeekerProfilePage() {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="nationality">Nationality</Label>
-                  <Input
-                    id="nationality"
-                    value={profileData.personalInfo.nationality}
-                    onChange={(e) => {
-                      const newNationality = e.target.value;
-                      handleInputChange("personalInfo", "nationality", newNationality);
-                      // Clear visaExpiryDate if nationality is changed to Emirati
-                      if (newNationality && 
-                          (newNationality.toLowerCase().includes("emirati"))) {
-                        handleInputChange("personalInfo", "visaExpiryDate", "");
-                      }
-                    }}
-                    placeholder="e.g., Indian, British, American"
-                  />
-                </div>
+                <SuggestionComboInput
+                  id="jobseeker-nationality"
+                  label="Nationality"
+                  value={profileData.personalInfo.nationality}
+                  suggestions={SUGGESTED_NATIONALITIES}
+                  placeholder="Search or type a nationality"
+                  onChange={(newNationality) => {
+                    handleInputChange("personalInfo", "nationality", newNationality)
+                    // Clear visa expiry for Emirati users
+                    if (
+                      newNationality &&
+                      newNationality.toLowerCase().includes("emirati")
+                    ) {
+                      handleInputChange("personalInfo", "visaExpiryDate", "")
+                    }
+                  }}
+                />
                 {/* Show Visa Expiry Date only for non-Emirati users */}
                 {profileData.personalInfo.nationality && 
                  !profileData.personalInfo.nationality.toLowerCase().includes("emirati") && (
@@ -1224,15 +1227,16 @@ export default function JobSeekerProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentRole">Current Role</Label>
-                  <Input
-                    id="currentRole"
-                    value={profileData.experience.currentRole}
-                    onChange={(e) => handleInputChange("experience", "currentRole", e.target.value)}
-                    placeholder="e.g., Senior Software Engineer"
-                  />
-                </div>
+                <SuggestionComboInput
+                  id="jobseeker-current-role"
+                  label="Current Role"
+                  value={profileData.experience.currentRole}
+                  suggestions={SUGGESTED_ROLES}
+                  placeholder="Search or type a role"
+                  onChange={(value) =>
+                    handleInputChange("experience", "currentRole", value)
+                  }
+                />
                 <div className="space-y-2">
                   <Label htmlFor="company">Company</Label>
                   <Input

@@ -13,6 +13,7 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { calculateJobseekerProfileCompletion } from "@/lib/jobseeker-profile-completion";
 import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership";
+import { getJobseekerStatusLabel } from "@/lib/jobseeker-status-label";
 
 interface Application {
   _id: string;
@@ -458,14 +459,14 @@ export default function JobSeekerDashboard() {
                           </p>
                         )}
                         <Badge className={`text-xs mt-1 ${
-                          app.status === 'pending' ? 'bg-gray-100 text-gray-800' :
+                          app.status === 'pending' || app.status === 'admin_review' || app.status === 'admin_hold' ? 'bg-gray-100 text-gray-800' :
                           app.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
                           app.status === 'interview_scheduled' ? 'bg-green-100 text-green-800' :
                           app.status === 'hired' ? 'bg-purple-100 text-purple-800' :
-                          app.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          app.status === 'rejected' || app.status === 'admin_rejected' ? 'bg-red-100 text-red-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {app.status.charAt(0).toUpperCase() + app.status.slice(1).replace('_', ' ')}
+                          {getJobseekerStatusLabel(app.status)}
                         </Badge>
                       </div>
                       <div className="flex gap-2">

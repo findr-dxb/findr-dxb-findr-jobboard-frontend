@@ -821,6 +821,29 @@ export type SidebarBadgeKey =
 
 export type SidebarBadges = Record<SidebarBadgeKey, number>;
 
+export type ApplicationScreeningAction = "pipeline" | "hold" | "reject";
+
+export const updateApplicationScreening = async (
+  applicationId: string,
+  action: ApplicationScreeningAction
+): Promise<{ id: string; status: string; action: string }> => {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/applications/${applicationId}/status`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ action }),
+    }
+  );
+
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Failed to update application");
+  }
+
+  return result.data;
+};
+
 export const getSidebarBadges = async (
   since: Partial<Record<SidebarBadgeKey, string>>
 ): Promise<SidebarBadges> => {

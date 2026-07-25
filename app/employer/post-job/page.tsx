@@ -34,6 +34,8 @@ import { getThunkErrorMessage } from "@/lib/api-error"
 import { getJobFormValidationMessage } from "@/lib/features/jobPosting/validate-job-form"
 import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
+import { SuggestionComboInput } from "@/components/suggestion-combo-input"
+import { JOB_NATIONALITY_PREFERENCES } from "@/lib/suggested-nationalities"
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -460,16 +462,14 @@ export default function PostJobPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="nationality">Nationality</Label>
-                    <Input
-                      id="nationality"
-                      value={formData.nationality}
-                      onChange={(e) => handleChange("nationality", e.target.value)}
-                      placeholder="e.g., Emirati, Any, Indian"
-                      className="h-11"
-                    />
-                  </div>
+                  <SuggestionComboInput
+                    id="post-job-nationality"
+                    label="Nationality"
+                    value={formData.nationality}
+                    suggestions={JOB_NATIONALITY_PREFERENCES}
+                    placeholder="Search or type a nationality"
+                    onChange={(value) => handleChange("nationality", value)}
+                  />
                 </div>
               </CardContent>
             </Card>

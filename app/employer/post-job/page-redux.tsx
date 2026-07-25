@@ -16,6 +16,8 @@ import { EmployerProfileCompletionDialog } from "@/components/ui/employer-profil
 import { useJobPosting } from "@/lib/features/jobPosting/useJobPosting"
 import { submitJobPosting } from "@/lib/features/jobPosting/jobPostingSlice"
 import { getThunkErrorMessage } from "@/lib/api-error"
+import { SuggestionComboInput } from "@/components/suggestion-combo-input"
+import { JOB_NATIONALITY_PREFERENCES } from "@/lib/suggested-nationalities"
 
 export default function PostJobPageRedux() {
   const [showProfileDialog, setShowProfileDialog] = useState(false)
@@ -222,15 +224,14 @@ export default function PostJobPageRedux() {
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="nationality">Nationality Preference</Label>
-                  <Input
-                    id="nationality"
-                    value={formData.nationality}
-                    onChange={(e) => handleChange('nationality', e.target.value)}
-                    placeholder="e.g., Emirati, Any, Indian"
-                  />
-                </div>
+                <SuggestionComboInput
+                  id="post-job-redux-nationality"
+                  label="Nationality Preference"
+                  value={formData.nationality}
+                  suggestions={JOB_NATIONALITY_PREFERENCES}
+                  placeholder="Search or type a nationality"
+                  onChange={(value) => handleChange("nationality", value)}
+                />
               </CardContent>
             </Card>
 

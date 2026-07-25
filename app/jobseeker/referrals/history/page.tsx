@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import axios from "axios"
 import { formatSalaryExpectation } from "@/lib/formatters"
+import { getJobseekerStatusLabel } from "@/lib/jobseeker-status-label"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL
 
@@ -60,38 +61,28 @@ const getStatusIcon = (status: string) => {
 
 const getStatusBadge = (status: string) => {
   const baseClasses = "text-xs font-medium px-2 py-1 rounded-full"
+  const label = getJobseekerStatusLabel(status)
+
   switch (status) {
     case "pending":
-      return <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Pending</Badge>
+    case "admin_review":
+    case "admin_hold":
+      return <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800`}>{label}</Badge>
     case "shortlisted":
-      return <Badge className={`${baseClasses} bg-blue-100 text-blue-800`}>Shortlisted</Badge>
+      return <Badge className={`${baseClasses} bg-blue-100 text-blue-800`}>{label}</Badge>
     case "interview_scheduled":
-      return <Badge className={`${baseClasses} bg-green-100 text-green-800`}>Interview</Badge>
+      return <Badge className={`${baseClasses} bg-green-100 text-green-800`}>{label}</Badge>
     case "hired":
-      return <Badge className={`${baseClasses} bg-emerald-100 text-emerald-800`}>Hired</Badge>
+      return <Badge className={`${baseClasses} bg-emerald-100 text-emerald-800`}>{label}</Badge>
     case "rejected":
-      return <Badge className={`${baseClasses} bg-red-100 text-red-800`}>Rejected</Badge>
+    case "admin_rejected":
+      return <Badge className={`${baseClasses} bg-red-100 text-red-800`}>{label}</Badge>
     default:
-      return <Badge className={`${baseClasses} bg-gray-100 text-gray-800`}>{status}</Badge>
+      return <Badge className={`${baseClasses} bg-gray-100 text-gray-800`}>{label}</Badge>
   }
 }
 
-const formatStatus = (status: string) => {
-  switch (status) {
-    case "pending":
-      return "Pending"
-    case "shortlisted":
-      return "Shortlisted"
-    case "interview_scheduled":
-      return "Interview Scheduled"
-    case "hired":
-      return "Hired"
-    case "rejected":
-      return "Rejected"
-    default:
-      return status.charAt(0).toUpperCase() + status.slice(1)
-  }
-}
+const formatStatus = (status: string) => getJobseekerStatusLabel(status)
 
 
 export default function ReferralHistoryPage() {

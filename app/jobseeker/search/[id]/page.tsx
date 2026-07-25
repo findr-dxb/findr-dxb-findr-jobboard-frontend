@@ -85,8 +85,11 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
     try {
       setIsLoading(true);
       console.log('Fetching job with ID:', id);
-      
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${id}`);
+
+      const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       console.log('Job API Response:', response.data);
       
       if (response.data && response.data.data) {

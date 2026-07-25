@@ -42,7 +42,15 @@ export interface Jobseeker {
   export interface Application {
     id: string;
     candidate: string;
+    candidateInitials?: string;
+    candidateAvatar?: string;
+    applicantId?: string;
+    jobId?: string;
     jobTitle: string;
+    companyName?: string;
+    status?: string;
+    appliedDate?: string;
+    isReferral?: boolean;
     applicationUrl: string;
   }
   

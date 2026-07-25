@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Edit2, MapPin, DollarSign, Calendar, Briefcase, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter, useParams } from "next/navigation"
+import { SuggestionComboInput } from "@/components/suggestion-combo-input"
+import { JOB_NATIONALITY_PREFERENCES } from "@/lib/suggested-nationalities"
 
 export default function EditJobPage() {
   const params = useParams()
@@ -304,16 +306,14 @@ export default function EditJobPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="nationality">Nationality</Label>
-                    <Input
-                      id="nationality"
-                      value={formData.nationality}
-                      onChange={(e) => handleChange("nationality", e.target.value)}
-                      placeholder="e.g., Emirati, Any, Indian"
-                      className="h-11"
-                    />
-                  </div>
+                  <SuggestionComboInput
+                    id="edit-job-nationality"
+                    label="Nationality"
+                    value={formData.nationality}
+                    suggestions={JOB_NATIONALITY_PREFERENCES}
+                    placeholder="Search or type a nationality"
+                    onChange={(value) => handleChange("nationality", value)}
+                  />
                 </div>
               </CardContent>
             </Card>

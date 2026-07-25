@@ -9,6 +9,7 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Calendar, MapPin, Building2, DollarSign, Briefcase, Eye, Clock } from "lucide-react";
+import { getJobseekerStatusLabel } from "@/lib/jobseeker-status-label";
 
 interface Application {
   _id: string;
@@ -56,6 +57,8 @@ const statusOptions = [
 const statusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case "pending":
+    case "admin_review":
+    case "admin_hold":
       return "bg-gray-100 text-gray-800";
     case "shortlisted":
       return "bg-blue-100 text-blue-800";
@@ -64,17 +67,14 @@ const statusColor = (status: string) => {
     case "hired":
       return "bg-emerald-100 text-emerald-800";
     case "rejected":
+    case "admin_rejected":
       return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
   }
 };
 
-const formatStatus = (status: string) => {
-  return status.split('_').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ');
-};
+const formatStatus = (status: string) => getJobseekerStatusLabel(status);
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);

@@ -10,6 +10,7 @@ import { MapPin, Briefcase, DollarSign, Clock, Calendar, Building, User, FileTex
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { formatSalary } from "@/lib/formatters";
+import { getJobseekerStatusLabel } from "@/lib/jobseeker-status-label";
 import axios from "axios";
 
 interface ApplicationData {
@@ -422,6 +423,8 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
+      case "admin_review":
+      case "admin_hold":
         return "bg-yellow-100 text-yellow-800";
       case "shortlisted":
         return "bg-blue-100 text-blue-800";
@@ -430,6 +433,7 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
       case "hired":
         return "bg-purple-100 text-purple-800";
       case "rejected":
+      case "admin_rejected":
         return "bg-red-100 text-red-800";
       case "withdrawn":
         return "bg-gray-100 text-gray-800";
@@ -438,11 +442,7 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
     }
   };
 
-  const formatStatus = (status: string) => {
-    return status.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
+  const formatStatus = (status: string) => getJobseekerStatusLabel(status);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
