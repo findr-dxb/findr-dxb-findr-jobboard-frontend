@@ -6,58 +6,11 @@ import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
-import { Gift, UserCheck, FileText, Star, ArrowRight, Award, Trophy, RefreshCw, Copy, Check, Share2 } from "lucide-react"
+import { Gift, UserCheck, FileText, Star, ArrowRight, Trophy, RefreshCw, Copy, Check, Share2 } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { calculateJobseekerProfileCompletion } from "@/lib/jobseeker-profile-completion"
-import {
-  determineJobseekerMembershipFromUser,
-  MEMBERSHIP_TIER_INFO,
-} from "@/lib/jobseeker-membership"
-
-const membershipTiers = [
-  {
-    name: "Prime",
-    icon: Star,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    desc: MEMBERSHIP_TIER_INFO[0].desc,
-  },
-  {
-    name: "Plus",
-    icon: Trophy,
-    color: "text-sky-600",
-    bg: "bg-sky-50",
-    border: "border-sky-200",
-    desc: MEMBERSHIP_TIER_INFO[1].desc,
-  },
-  {
-    name: "Pro",
-    icon: Award,
-    color: "text-amber-600",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    desc: MEMBERSHIP_TIER_INFO[2].desc,
-  },
-  {
-    name: "Elite",
-    icon: Gift,
-    color: "text-purple-600",
-    bg: "bg-purple-50",
-    border: "border-purple-200",
-    desc: MEMBERSHIP_TIER_INFO[3].desc,
-  },
-  {
-    name: "Icon",
-    icon: Star,
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    desc: MEMBERSHIP_TIER_INFO[4].desc,
-  },
-]
 
 function getJobseekerInviteShareText(link: string) {
   return `🚀 Still using job portals where you only apply and wait?
@@ -86,7 +39,6 @@ export default function JobSeekerRewardsPage() {
   const [userPoints, setUserPoints] = useState(0)
   const [referralPoints, setReferralPoints] = useState(0)
   const [activityPoints, setActivityPoints] = useState(0)
-  const [userTier, setUserTier] = useState("Prime")
   const [profileCompletion, setProfileCompletion] = useState(0)
   const [referralLink, setReferralLink] = useState("")
   const [copied, setCopied] = useState(false)
@@ -112,12 +64,7 @@ export default function JobSeekerRewardsPage() {
     return { percentage: completion.percentage, points: availablePoints }
   }
 
-  // Determine user tier from salary + Emirati nationality
-  const determineUserTier = (profile: any) => {
-    return determineJobseekerMembershipFromUser(profile)
-  };
-
-  // Fetch user profile data
+  // Fetch user profile data (membership UI removed from this page)
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
@@ -191,9 +138,6 @@ export default function JobSeekerRewardsPage() {
       // Calculate base points
       const basePoints = 50 + metrics.percentage * 2; // Base 50 + 2 points per percentage
 
-      // Determine tier (for display purposes only, not used in calculation)
-      const tier = determineUserTier(data.data);
-
       // Use base points directly without multiplier
       const calculatedBasePoints = basePoints;
 
@@ -220,7 +164,6 @@ export default function JobSeekerRewardsPage() {
       } else {
         setReferralLink("");
       }
-      setUserTier(tier);
 
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -334,12 +277,14 @@ export default function JobSeekerRewardsPage() {
                   <h1 className="font-extrabold mb-1 text-4xl md:text-5xl text-blue-900 leading-tight">
                     {userPoints} Points
                   </h1>
+                  {/* Membership badge hidden with Membership Tiers section
                   <span
                     className="mb-1 bg-white text-blue-900 font-semibold rounded-full px-6 py-2 text-base shadow-sm"
                     style={{ marginBottom: 4 }}
                   >
                     {userTier} Member
                   </span>
+                  */}
 
                 </div>
               </div>
@@ -449,7 +394,7 @@ export default function JobSeekerRewardsPage() {
 
 
         {/* Membership Tiers */}
-        <Card className="card-shadow border-0">
+        {/* <Card className="card-shadow border-0">
           <CardHeader>
             <CardTitle className="text-2xl">Membership Tiers</CardTitle>
             <CardDescription>Membership is based on salary range. Emirati users receive Icon.</CardDescription>
@@ -471,7 +416,7 @@ export default function JobSeekerRewardsPage() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Refer a Friend Section */}
         <Card className="card-shadow border-0 bg-gradient-to-br from-emerald-50 to-blue-50">

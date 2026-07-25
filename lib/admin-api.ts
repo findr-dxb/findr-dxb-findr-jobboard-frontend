@@ -808,3 +808,59 @@ export const getEmployerById = async (id: string): Promise<Employer> => {
     throw error;
   }
 };
+
+export type SidebarBadgeKey =
+  | "users"
+  | "jobs"
+  | "applications"
+  | "services"
+  | "serviceManagement"
+  | "quotation"
+  | "grievances"
+  | "rmPostingRequests";
+
+export type SidebarBadges = Record<SidebarBadgeKey, number>;
+
+export const getSidebarBadges = async (
+  since: Partial<Record<SidebarBadgeKey, string>>
+): Promise<SidebarBadges> => {
+  const empty: SidebarBadges = {
+    users: 0,
+    jobs: 0,
+    applications: 0,
+    services: 0,
+    serviceManagement: 0,
+    quotation: 0,
+    grievances: 0,
+    rmPostingRequests: 0,
+  };
+
+  try {
+    const queryParams = new URLSearchParams();
+    (Object.keys(empty) as SidebarBadgeKey[]).forEach((key) => {
+      if (since[key]) queryParams.set(key, since[key] as string);
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/admin/sidebar-badges?${queryParams.toString()}`,
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message || "Failed to fetch sidebar badges");
+    }
+
+    return { ...empty, ...result.data };
+  } catch (error) {
+    console.error("Error fetching sidebar badges:", error);
+    return empty;
+  }
+};
