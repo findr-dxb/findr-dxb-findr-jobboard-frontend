@@ -230,6 +230,7 @@ export function Navbar() {
         setIsSearching(false)
         return
       }
+      
 
       const response = await fetch(
         `${API_BASE_URL}/users/lookup?identifier=${encodeURIComponent(trimmed)}`,
