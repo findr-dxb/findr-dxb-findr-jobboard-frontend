@@ -263,6 +263,12 @@ export function CandidateProfileView({ candidate }: { candidate: CandidateProfil
                   <span className="text-gray-700">Born: {candidate.dateOfBirth}</span>
                 </div>
               </div>
+              {candidate.spokenLanguages && (
+                <div className="pt-3 border-t border-gray-100 flex items-center">
+                  <span className="font-semibold text-gray-900 text-sm mr-2">Spoken Languages:</span>
+                  <span className="text-gray-700 text-sm">{candidate.spokenLanguages}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
 

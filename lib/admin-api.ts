@@ -1,4 +1,4 @@
-﻿import { Jobseeker, Employer } from './admin-types';
+import { Jobseeker, Employer } from './admin-types';
 
 // Auth headers helper - Note: Admin routes don't use authentication (following existing pattern)
 const getAuthHeaders = () => {

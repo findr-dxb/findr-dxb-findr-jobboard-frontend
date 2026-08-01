@@ -112,7 +112,7 @@ function hasAdditionalDocuments(user: JobseekerProfileInput): boolean {
 function isNonEmirati(nationality?: string): boolean {
   if (!nationality) return false
   const n = nationality.toLowerCase()
-  return !n.includes("emirati")
+  return !n.includes("emirati") && !n.includes("uae national")
 }
 
 /** Map nested profile page state to API-shaped input for completion calc */

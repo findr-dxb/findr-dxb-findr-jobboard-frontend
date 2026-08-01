@@ -63,6 +63,7 @@ interface ProfileData {
     dateOfBirth: string
     nationality: string
     summary: string
+    spokenLanguages: string
     emiratesId: string
     passportNumber: string
     employmentVisa: string
@@ -125,6 +126,7 @@ export default function JobSeekerProfilePage() {
       dateOfBirth: "",
       nationality: "",
       summary: "",
+      spokenLanguages: "",
       emiratesId: "",
       passportNumber: "",
       employmentVisa: "",
@@ -233,6 +235,7 @@ export default function JobSeekerProfilePage() {
               new Date(apiData.dateOfBirth).toISOString().split('T')[0] : "",
             nationality: apiData.nationality || "",
             summary: apiData.professionalSummary || "",
+            spokenLanguages: apiData.spokenLanguages || "",
             emiratesId: apiData.emirateId || "",
             passportNumber: apiData.passportNumber || "",
             employmentVisa: "", // Not provided by API, keep empty
@@ -418,6 +421,7 @@ export default function JobSeekerProfilePage() {
         emirateId: profileData.personalInfo.emiratesId,
         passportNumber: profileData.personalInfo.passportNumber,
         professionalSummary: profileData.personalInfo.summary,
+        spokenLanguages: profileData.personalInfo.spokenLanguages,
         visaExpiryDate: visaExpiryDate,
         
         // Professional Experience (convert to array format expected by backend)
@@ -899,6 +903,7 @@ export default function JobSeekerProfilePage() {
                     }
                   }}
                 />
+                
                 {/* Show Visa Expiry Date only for non-Emirati users */}
                 {profileData.personalInfo.nationality && 
                  !profileData.personalInfo.nationality.toLowerCase().includes("emirati") && (
@@ -920,9 +925,18 @@ export default function JobSeekerProfilePage() {
                     <p className="text-xs text-gray-500">Required for non-Emirati users</p>
                   </div>
                 )}
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+                {/* Spoken Languages inside the same grid */}
+                <div className="space-y-2">
+                  <Label htmlFor="spokenLanguages">Spoken Languages</Label>
+                  <Input
+                    id="spokenLanguages"
+                    value={profileData.personalInfo.spokenLanguages || ""}
+                    onChange={(e) => handleInputChange("personalInfo", "spokenLanguages", e.target.value)}
+                    placeholder="e.g. English, Arabic, French"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="emiratesId">Emirates ID</Label>
                   <Input

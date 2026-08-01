@@ -61,6 +61,7 @@ interface ApplicantData {
     dateOfBirth?: string;
     nationality?: string;
     professionalSummary?: string;
+    spokenLanguages?: string;
     professionalExperience?: Array<{
       currentRole: string;
       company: string;
@@ -832,10 +833,13 @@ export default function ApplicantProfilePage() {
                     </span>
                   </div>
                 )}
+                {candidate?.spokenLanguages && candidate.spokenLanguages.trim() !== "" && (
+                  <div className="flex items-center space-x-3 col-span-2">
+                    <MessageSquare className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <span className="text-gray-700">Languages: {candidate.spokenLanguages}</span>
+                  </div>
+                )}
               </div>
-              
-              {/* Show informative message about available contact info */}
-              
             </CardContent>
           </Card>
 

@@ -1,10 +1,7 @@
-/**
- * Nationality suggestions for the job seeker profile.
- * Users can also type any custom value.
- * Common UAE-market nationalities are listed first, then the rest alphabetically.
- */
+
 export const SUGGESTED_NATIONALITIES = [
-  // Most common in the UAE market
+
+  "UAE National",
   "Emirati",
   "Indian",
   "Pakistani",
@@ -18,8 +15,6 @@ export const SUGGESTED_NATIONALITIES = [
   "Syrian",
   "Saudi",
   "British",
-
-  // All other nationalities (A-Z)
   "Afghan",
   "Albanian",
   "Algerian",
@@ -199,5 +194,5 @@ export const SUGGESTED_NATIONALITIES = [
   "Zimbabwean",
 ] as const
 
-/** Nationality preference for job posts — includes "Any". */
+
 export const JOB_NATIONALITY_PREFERENCES = ["Any", ...SUGGESTED_NATIONALITIES] as const

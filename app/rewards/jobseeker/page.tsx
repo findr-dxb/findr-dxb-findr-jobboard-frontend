@@ -37,7 +37,6 @@ export default function JobSeekerRewardsPage() {
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [userPoints, setUserPoints] = useState(0)
-  const [referralPoints, setReferralPoints] = useState(0)
   const [activityPoints, setActivityPoints] = useState(0)
   const [profileCompletion, setProfileCompletion] = useState(0)
   const [referralLink, setReferralLink] = useState("")
@@ -100,40 +99,7 @@ export default function JobSeekerRewardsPage() {
       setProfileCompletion(metrics.percentage);
 
       // Calculate activity points from individual components
-      // First, fetch referral history to get hired count for placement points calculation
-      let placementPoints = 0;
-      let signupReferralPoints = 0;
       const totalReferralRewardPoints = data.data.referralRewardPoints || 0;
-
-      try {
-        // Fetch referral history to count hired referrals (job placements)
-        const referralHistoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/applications/referrals/history`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (referralHistoryResponse.ok) {
-          const referralHistoryData = await referralHistoryResponse.json();
-          const hiredCount = referralHistoryData?.stats?.hired || 0;
-          // Placement points = only job placement referrals (20 points per hire)
-          placementPoints = hiredCount * 20;
-          // Signup referral points = total - placement points
-          signupReferralPoints = Math.max(0, totalReferralRewardPoints - placementPoints);
-        } else {
-          // If we can't fetch referral history, use totalReferralRewardPoints as placement points
-          // (fallback - assumes all are placement points)
-          placementPoints = totalReferralRewardPoints;
-          signupReferralPoints = 0;
-        }
-      } catch (error) {
-        console.error('Error fetching referral history:', error);
-        // Fallback: assume all are placement points
-        placementPoints = totalReferralRewardPoints;
-        signupReferralPoints = 0;
-      }
 
       // Calculate base points
       const basePoints = 50 + metrics.percentage * 2; // Base 50 + 2 points per percentage
@@ -146,14 +112,13 @@ export default function JobSeekerRewardsPage() {
       const rmServicePoints = data.data?.rewards?.rmService || 0;
       const socialMediaBonus = data.data?.rewards?.socialMediaBonus || 0;
 
-      // Activity points = Base Points + Applications + RM Service + Social Media + Signup Referrals
-      const activityRewardPoints = calculatedBasePoints + applicationPoints + rmServicePoints + socialMediaBonus + signupReferralPoints;
+      // Activity points = Base Points + Applications + RM Service + Social Media + Referrals
+      const activityRewardPoints = calculatedBasePoints + applicationPoints + rmServicePoints + socialMediaBonus + totalReferralRewardPoints;
 
-      // Calculate total points: Activity Points + Placement Points - Deducted Points
-      const totalPoints = Math.max(0, activityRewardPoints + placementPoints - deducted);
+      // Calculate total points: Activity Points - Deducted Points
+      const totalPoints = Math.max(0, activityRewardPoints - deducted);
 
-      setReferralPoints(placementPoints);
-      setActivityPoints(activityRewardPoints);
+      setActivityPoints(totalPoints);
       setUserPoints(totalPoints);
 
       const referralCode = data.data?.referralCode || "";
@@ -290,13 +255,6 @@ export default function JobSeekerRewardsPage() {
               </div>
 
               <div className="flex flex-col gap-3 mt-3 w-full max-w-md md:hidden">
-                <div className="flex items-center justify-between bg-blue-50 rounded-xl shadow-md px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🎁</span>
-                    <span className="font-medium text-blue-900 text-sm">Placement Points</span>
-                  </div>
-                  <span className="font-bold text-blue-800 text-base">{referralPoints}</span>
-                </div>
                 <div className="flex items-center justify-between bg-emerald-50 rounded-xl shadow-md px-4 py-3">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">📝</span>
@@ -315,22 +273,17 @@ export default function JobSeekerRewardsPage() {
               </div>
 
               <div className="hidden md:flex flex-row gap-4 mt-2 w-full max-w-2xl items-stretch">
-                <div className="flex-1 bg-blue-50 rounded-xl shadow-md flex items-center px-5 py-4 min-w-0">
-                  <span className="text-2xl mr-4">🎁</span>
-                  <span className="font-medium text-blue-900 text-base flex-1">Placement Points</span>
-                  <span className="font-bold text-blue-800 text-lg ml-2">{referralPoints}</span>
-                </div>
                 <div className="flex-1 bg-emerald-50 rounded-xl shadow-md flex items-center px-5 py-4 min-w-0">
                   <span className="text-2xl mr-4">📝</span>
                   <span className="font-medium text-emerald-900 text-base flex-1">Activity Points</span>
                   <span className="font-bold text-emerald-800 text-lg ml-2">{activityPoints}</span>
                 </div>
-                {/* <Link href="/rewards/history" className="flex-1">
+                <Link href="/rewards/history" className="flex-1">
                   <button className="w-full bg-purple-50 hover:bg-purple-100 transition rounded-xl shadow-md flex items-center px-5 py-4 min-w-0 border-0 cursor-pointer text-left h-full">
                     <span className="text-2xl mr-4">📜</span>
                     <span className="font-medium text-purple-900 text-base flex-1">Reward History</span>
                   </button>
-                </Link> */}
+                </Link>
               </div>
             </div>
           </CardContent>
@@ -365,6 +318,13 @@ export default function JobSeekerRewardsPage() {
                 <span className="text-sm md:text-base">Invite a friend</span>
               </div>
               <Badge className="bg-pink-100 text-pink-800 text-xs md:text-sm px-3 py-1">+100</Badge>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-600" />
+                <span className="text-sm md:text-base">Referred friend gets hired</span>
+              </div>
+              <Badge className="bg-yellow-100 text-yellow-800 text-xs md:text-sm px-3 py-1">+1000</Badge>
             </div>
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">

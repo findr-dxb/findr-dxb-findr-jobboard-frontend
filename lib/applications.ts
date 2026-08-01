@@ -42,6 +42,7 @@ export type CandidateProfile = {
   documentsList: string[];
   rating: number;
   tier: "Icon" | "Elite" | "Pro" | "Plus" | "Prime" | string;
+  spokenLanguages?: string;
 };
 
 export const applications: Application[] = [

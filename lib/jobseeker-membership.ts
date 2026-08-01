@@ -18,13 +18,10 @@ export function parseSalary(value: unknown): number | null {
 
 export function isEmiratiNationality(nationality?: string | null): boolean {
   if (!nationality) return false
-  return String(nationality).toLowerCase().includes("emirati")
+  const n = String(nationality).toLowerCase()
+  return n.includes("emirati") || n.includes("uae national")
 }
 
-/**
- * Icon = Emirati only.
- * Else by salary: Prime ≤7k, Plus ≤15k, Pro ≤25k, Elite >25k.
- */
 export function determineJobseekerMembership(input: {
   nationality?: string | null
   salaryExpectation?: string | number | null
@@ -89,6 +86,6 @@ export const MEMBERSHIP_TIER_INFO = [
   },
   {
     name: "Icon" as const,
-    desc: "Special membership for Emirati users",
+    desc: "Special membership for Emirati / UAE National users",
   },
 ]
