@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { formatSalaryExpectation } from "@/lib/formatters"
 import { User, X, Loader2, SendHorizonal, Users, ChevronLeft, ChevronRight, MapPin, Building2, Search } from "lucide-react"
+import { ReferResponsiblyDialog } from "@/components/refer-responsibly-dialog"
+import { referralSubmittedToastContent } from "@/lib/referral-messages"
 
 const USERS_PER_PAGE = 10
 const SEARCH_DEBOUNCE_MS = 300
@@ -90,6 +92,8 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
   const [page, setPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [pagination, setPagination] = useState({ total: 0, pages: 1 })
+  const [showReferWarning, setShowReferWarning] = useState(false)
+  const [pendingReferPerson, setPendingReferPerson] = useState<NetworkPerson | null>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const { toast } = useToast()
@@ -157,7 +161,7 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [onClose])
 
-  const handleRefer = async (person: NetworkPerson) => {
+  const submitReferral = async (person: NetworkPerson) => {
     if (person.role !== "jobseeker") {
       toast({
         title: "Cannot refer",
@@ -216,10 +220,13 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      toast({
-        title: "Referral Submitted",
-        description: `${displayName} has been referred for "${job.title}" at ${job.companyName}. A referral approval link has been sent to the candidate.`,
-      })
+      toast(
+        referralSubmittedToastContent({
+          candidateName: displayName,
+          jobTitle: job.title,
+          companyName: job.companyName,
+        }),
+      )
       onClose()
     } catch (err: any) {
       const msg =
@@ -241,7 +248,32 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
     }
   }
 
+  const handleRefer = (person: NetworkPerson) => {
+    if (person.role !== "jobseeker") {
+      toast({
+        title: "Cannot refer",
+        description: "You can only refer jobseekers for jobs.",
+        variant: "destructive",
+      })
+      return
+    }
+    setPendingReferPerson(person)
+    setShowReferWarning(true)
+  }
+
   return (
+    <>
+      <ReferResponsiblyDialog
+        open={showReferWarning}
+        onOpenChange={(open) => {
+          setShowReferWarning(open)
+          if (!open) setPendingReferPerson(null)
+        }}
+        onConfirm={() => {
+          if (pendingReferPerson) submitReferral(pendingReferPerson)
+          setPendingReferPerson(null)
+        }}
+      />
     <div
       ref={modalRef}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
@@ -483,5 +515,6 @@ export function ReferFriendModal({ job, onClose }: ReferFriendModalProps) {
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }

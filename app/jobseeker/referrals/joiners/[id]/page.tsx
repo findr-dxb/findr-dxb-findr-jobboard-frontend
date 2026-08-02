@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation"
 import axios from "axios"
 
 import { Navbar } from "@/components/navbar"
+import { ReferResponsiblyDialog } from "@/components/refer-responsibly-dialog"
+import { referralSubmittedToastContent } from "@/lib/referral-messages"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -39,6 +41,8 @@ import {
   Building,
   SendHorizonal,
   DollarSign,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL
@@ -161,6 +165,8 @@ function JobPickerModal({
   const [page, setPage] = useState(1)
   const [searching, setSearching] = useState(false)
   const [applying, setApplying] = useState<string | null>(null)
+  const [showReferWarning, setShowReferWarning] = useState(false)
+  const [pendingReferJob, setPendingReferJob] = useState<Job | null>(null)
   const { toast } = useToast()
 
   const fetchJobs = useCallback(async (searchQuery: string, pageNum: number) => {
@@ -180,7 +186,7 @@ function JobPickerModal({
       const d = res.data?.data
       setJobs(d?.jobs ?? [])
       setTotal(d?.pagination?.total ?? 0)
-      setTotalPages(d?.pagination?.pages ?? 1)
+      setTotalPages(Math.max(1, d?.pagination?.pages ?? 1))
     } catch {
       setJobs([])
       setTotal(0)
@@ -188,14 +194,14 @@ function JobPickerModal({
     } finally {
       setSearching(false)
     }
-  }, [])
+  }, [profile?.email])
 
   useEffect(() => {
     const timer = setTimeout(() => fetchJobs(query, page), 400)
     return () => clearTimeout(timer)
   }, [query, page, fetchJobs])
 
-  const handleApply = async (job: Job) => {
+  const submitReferral = async (job: Job) => {
     if (job.alreadyReferred) return
 
     const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
@@ -223,10 +229,13 @@ function JobPickerModal({
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      toast({
-        title: "Referral Submitted",
-        description: `${displayName} has been referred for "${job.title}" at ${job.companyName}. A referral approval link has been sent to the candidate.`,
-      })
+      toast(
+        referralSubmittedToastContent({
+          candidateName: displayName,
+          jobTitle: job.title,
+          companyName: job.companyName,
+        }),
+      )
 
       // Mark this job as referred in the local list so the button becomes disabled
       setJobs((prev) =>
@@ -257,7 +266,25 @@ function JobPickerModal({
     }
   }
 
+  const handleApply = (job: Job) => {
+    if (job.alreadyReferred) return
+    setPendingReferJob(job)
+    setShowReferWarning(true)
+  }
+
   return (
+    <>
+      <ReferResponsiblyDialog
+        open={showReferWarning}
+        onOpenChange={(open) => {
+          setShowReferWarning(open)
+          if (!open) setPendingReferJob(null)
+        }}
+        onConfirm={() => {
+          if (pendingReferJob) submitReferral(pendingReferJob)
+          setPendingReferJob(null)
+        }}
+      />
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <Card className="w-full max-w-5xl max-h-[85vh] flex flex-col card-shadow border-0 rounded-2xl overflow-hidden">
         <CardHeader className="px-8 py-6 border-b bg-white shrink-0">
@@ -388,39 +415,54 @@ function JobPickerModal({
           )}
         </CardContent>
 
-        {!searching && totalPages > 1 && (
-          <div className="flex items-center justify-between px-8 py-4 border-t bg-gray-50 shrink-0">
+        {!searching && (
+          <div
+            className="flex items-center justify-between px-8 py-4 border-t bg-gray-50 shrink-0"
+            role="navigation"
+            aria-label="Pagination"
+          >
             <p className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-gray-800">{(page - 1) * JOBS_PER_PAGE + 1}–{Math.min(page * JOBS_PER_PAGE, total)}</span> of{" "}
-              <span className="font-semibold text-gray-800">{total}</span> jobs
+              Showing{" "}
+              <span className="font-semibold text-gray-800">
+                {total === 0
+                  ? "0"
+                  : `${(page - 1) * JOBS_PER_PAGE + 1}–${Math.min(page * JOBS_PER_PAGE, total)}`}
+              </span>{" "}
+              of <span className="font-semibold text-gray-800">{total}</span>
+              {query.trim() ? " matching " : " "}jobs
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="h-9 px-4"
+                className="h-9"
+                aria-label="Previous page"
               >
+                <ChevronLeft className="w-4 h-4 mr-1" />
                 Previous
               </Button>
-              <span className="text-sm text-gray-600 min-w-[80px] text-center">
+              <span className="text-sm text-gray-600 min-w-[100px] text-center" aria-live="polite">
                 Page {page} of {totalPages}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="h-9 px-4"
+                disabled={page === totalPages || total === 0}
+                className="h-9"
+                aria-label="Next page"
               >
                 Next
+                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
         )}
       </Card>
     </div>
+    </>
   )
 }
 
