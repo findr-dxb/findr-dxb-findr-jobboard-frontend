@@ -30,7 +30,14 @@ export default function AdminUserDetailPage() {
         setIsLoading(true)
         setError(null)
         
-        const response = await fetch(`${API_BASE_URL}/admin/users/${params.userType}/${params.id}/profile`)
+        const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        }
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`
+        }
+        const response = await fetch(`${API_BASE_URL}/admin/users/${params.userType}/${params.id}/profile`, { headers })
         const result = await response.json()
         
         if (result.success) {
@@ -138,6 +145,7 @@ export default function AdminUserDetailPage() {
       documentsList: allDocuments.slice(2).map((doc: string) => doc.split('/').pop() || "Document.pdf"),
       rating: userData.rating || 0,
       tier: calculateTier(),
+      spokenLanguages: userData.spokenLanguages || "",
     }
     
     // Additional admin data

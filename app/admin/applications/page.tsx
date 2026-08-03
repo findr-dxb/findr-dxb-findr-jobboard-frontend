@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -80,7 +80,15 @@ export default function AdminApplicationsPage() {
         status: "all",
       })
 
-      const res = await fetch(`${API_URL}/admin/applications?${params}`)
+      const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
+      const res = await fetch(`${API_URL}/admin/applications?${params}`, { headers })
       const json = await res.json()
 
       if (!res.ok || !json.success) {
@@ -95,11 +103,8 @@ export default function AdminApplicationsPage() {
     }
   }
 
-  // ---------- Frontend filtering ----------
-  // 1) Date filter first (also used for summary box counts)
   const listByDate = filterByDate(applications, period, startDate, endDate)
 
-  // 2) Then search + status box
   const filteredList = filterBySearchAndStatus(listByDate, search, statusFilter)
 
   // Summary counts
@@ -124,7 +129,15 @@ export default function AdminApplicationsPage() {
       setJobError("")
       setJobDetails(null)
 
-      const res = await fetch(`${API_URL}/admin/jobs/${jobId}`)
+      const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
+      const res = await fetch(`${API_URL}/admin/jobs/${jobId}`, { headers })
       const json = await res.json()
 
       if (!res.ok || !json.success) {

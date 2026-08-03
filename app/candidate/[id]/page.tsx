@@ -91,6 +91,7 @@ export default function PublicCandidateProfilePage() {
     documentsList: userData.documentsList || [],
     rating: userData.rating || 0,
     tier: userData.tier || "Prime",
+    spokenLanguages: userData.spokenLanguages || "",
   }
 
   return <CandidateProfileView candidate={candidate} />

@@ -1,4 +1,4 @@
-﻿ "use client"
+ "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -28,11 +28,17 @@ export default function CreateAdminPage() {
     setIsLoading(true)
 
     try {
+      const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
       const response = await fetch(`${API_BASE_URL}/admin/create-admin`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(formData),
       })
 

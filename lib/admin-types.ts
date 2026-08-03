@@ -11,6 +11,7 @@ export interface Jobseeker {
     industry: string;
     profileUrl: string;
     loginStatus?: 'active' | 'blocked'; 
+    spokenLanguages?: string;
   }
   
   export interface Employer {

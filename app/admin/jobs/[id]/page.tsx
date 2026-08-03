@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -35,7 +35,14 @@ export default function AdminJobDetailPage() {
         setIsLoading(true)
         setError(null)
         
-        const response = await fetch(`${API_BASE_URL}/admin/jobs/${params.id}`)
+        const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        }
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`
+        }
+        const response = await fetch(`${API_BASE_URL}/admin/jobs/${params.id}`, { headers })
         const result = await response.json()
         
         if (result.success) {

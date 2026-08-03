@@ -64,7 +64,7 @@ export function SuggestionComboInput({
   return (
     <div className={cn("space-y-2", className)}>
       <Label htmlFor={`${id}-input`}>{label}</Label>
-      <div ref={comboRef} className="rounded-md border border-input bg-background relative">
+      <div ref={comboRef} className={cn("rounded-md border border-input bg-background relative", suggestionsOpen && "z-[100]")}>
         {selected ? (
           <div className="flex items-center justify-between gap-2 px-3 h-11">
             <span className="text-sm truncate">{selected}</span>

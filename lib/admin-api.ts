@@ -1,10 +1,14 @@
 import { Jobseeker, Employer } from './admin-types';
 
-// Auth headers helper - Note: Admin routes don't use authentication (following existing pattern)
 const getAuthHeaders = () => {
-  return {
+  const token = typeof window !== 'undefined' ? (localStorage.getItem("findr_token") || localStorage.getItem("authToken")) : null;
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
 };
 
 // Dashboard Statistics Types

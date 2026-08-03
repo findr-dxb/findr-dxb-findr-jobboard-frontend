@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,11 +37,17 @@ export default function ManageAdminsPage() {
   const fetchAdmins = async () => {
     try {
       setIsLoading(true)
+      const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
       const response = await fetch(`${API_BASE_URL}/admin/admins`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       })
 
       const result = await response.json()
@@ -66,11 +72,17 @@ export default function ManageAdminsPage() {
   const handleDelete = async (id: string, name: string) => {
     try {
       setDeletingId(id)
+      const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
       const response = await fetch(`${API_BASE_URL}/admin/admins/${id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       })
 
       const result = await response.json()

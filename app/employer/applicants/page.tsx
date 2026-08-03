@@ -330,21 +330,16 @@ export default function AllApplicantsPage() {
           'Authorization': `Bearer ${token}`,
         }
       });
-
       toast({
         title: "Success",
         description: `Application status updated to ${formatStatus(newStatus)}.`,
       });
-      
-      // Refresh the list but keep status history (statusHistory state persists)
       fetchApplicants();
     } catch (error: any) {
-      // Remove from history if update failed using normalized ID
       if (!previousStatus) {
         const normalizedId = normalizeId(applicationId);
         setStatusHistory(prev => {
           const newHistory = { ...prev };
-          // Try to find and delete by normalized ID
           const keyToDelete = Object.keys(newHistory).find(key => 
             normalizeId(key) === normalizedId
           );
