@@ -199,10 +199,6 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
     setIsApplying(true);
     
     try {
-      // Get user profile data from localStorage
-      const userDataStr = localStorage.getItem('findr_user');
-      const userData = userDataStr ? JSON.parse(userDataStr) : null;
-      
       // Fetch fresh profile data for completion check
       console.log('🌐 Making API call to:', `${process.env.NEXT_PUBLIC_API_URL}/profile/details`);
       console.log('🔑 Using token:', token ? 'Token exists' : 'No token');
@@ -247,13 +243,13 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
       // Prepare application data with user's profile information
       const applicationData = {
         jobId: job._id,
-        expectedSalary: userData?.expectedSalary || (typeof job.salary === 'number' ? job.salary.toString() : `${job.salary?.min || 0}-${job.salary?.max || 0}`),
-        availability: userData?.availability || "Immediate",
-        coverLetter: userData?.professionalSummary || 
+        expectedSalary: userProfile?.jobPreferences?.salaryExpectation || (typeof job.salary === 'number' ? job.salary.toString() : `${job.salary?.min || 0}-${job.salary?.max || 0}`),
+        availability: userProfile?.jobPreferences?.availability || "Immediate",
+        coverLetter: userProfile?.personalInfo?.summary || 
           `I am interested in the ${job.title} position at ${job.companyName}. ` +
           `With my experience and skills, I believe I would be a valuable addition to your team. ` +
           `I am excited about this opportunity and look forward to contributing to your organization's success.`,
-        resume: userData?.resumeUrl || userData?.resume || "profile-resume.pdf",
+        resume: userProfile?.resumeDocument || "profile-resume.pdf",
       };
       
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/applications`, applicationData, {

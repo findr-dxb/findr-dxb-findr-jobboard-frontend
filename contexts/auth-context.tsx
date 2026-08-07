@@ -46,59 +46,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const checkAuthState = () => {
+    const checkAuthState = async () => {
       try {
-        // Ensure we're in browser environment
         if (typeof window === 'undefined') {
           setIsLoading(false);
           return;
         }
         
-        // Check for stored auth data (try both token formats)
-        const storedUser = localStorage.getItem("findr_user")
-        const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
-        
-        // Only set user if both user data and token exist
-        if (storedUser && token) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            // Additional validation to ensure user object is valid
-            if (parsedUser && parsedUser.id && parsedUser.email && parsedUser.type) {
-              setUser(parsedUser);
-            } else {
-              // Invalid user data, clear everything
-              console.warn('AuthContext: Invalid user data found, clearing storage');
-              localStorage.removeItem("findr_user")
-              localStorage.removeItem("findr_token")
-              localStorage.removeItem("authToken")
-              setUser(null);
-            }
-          } catch (parseError) {
-            console.error('AuthContext: Error parsing stored user:', parseError);
-            // Clear invalid stored data
-            localStorage.removeItem("findr_user")
-            localStorage.removeItem("findr_token")
-            localStorage.removeItem("authToken")
+        const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken");
+        const role = localStorage.getItem("findr_role") || localStorage.getItem("userRole");
+
+        if (token && role) {
+          if (role === 'admin') {
+            setUser({
+              id: "admin-id",
+              email: "admin@findr.ae",
+              type: "admin",
+              name: "Admin User",
+              profileImage: "/images/admin-hero.png",
+              role: "admin"
+            });
+            setIsLoading(false);
+            return;
+          }
+
+          const apiBase = process.env.NEXT_PUBLIC_API_URL;
+          const endpoint = role === 'employer'
+            ? `${apiBase}/employer/details`
+            : `${apiBase}/profile/details`;
+
+          const res = await fetch(endpoint, {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+
+          if (res.ok) {
+            const { data } = await res.json();
+            const userData: User = {
+              id: data._id,
+              email: data.companyEmail || data.email || "",
+              type: role as UserType,
+              name: role === 'employer'
+                ? (data.companyName || data.name || data.fullName || "")
+                : (data.fullName || data.name || data.companyName || ""),
+              profileImage: role === 'employer'
+                ? (data.companyLogo || `/images/${role}-hero.png`)
+                : (data.profilePicture || `/images/${role}-hero.png`),
+              points: data.points || 0,
+              profileCompletion: data.profileCompleted || 0,
+              role: "user"
+            };
+            setUser(userData);
+          } else {
+            localStorage.removeItem("findr_token");
+            localStorage.removeItem("findr_role");
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userRole");
             setUser(null);
           }
         } else {
-          // No complete auth data, ensure user is null
           setUser(null);
         }
       } catch (error) {
         console.error('AuthContext: Error in checkAuthState:', error);
         setUser(null);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     };
 
-    // Only run on client side
-    if (typeof window !== 'undefined') {
-      checkAuthState();
-    } else {
-      setIsLoading(false);
-    }
+    checkAuthState();
   }, [])
 
   const login = async (email: string, password: string, type: UserType): Promise<boolean> => {
@@ -122,8 +138,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             setUser(adminUser)
-            localStorage.setItem("findr_user", JSON.stringify(adminUser))
             localStorage.setItem("findr_token", response.token)
+            localStorage.setItem("findr_role", "admin")
             
             return true
           } else {
@@ -156,8 +172,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(userData)
-      localStorage.setItem("findr_user", JSON.stringify(userData))
       localStorage.setItem("findr_token", response.token)
+      localStorage.setItem("findr_role", type as string)
         
       return true
     } catch (error: any) {
@@ -201,8 +217,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(userData)
-      localStorage.setItem("findr_user", JSON.stringify(userData))
       localStorage.setItem("findr_token", response.token)
+      localStorage.setItem("findr_role", data.role)
       
       return true
     } catch (error: any) {
@@ -232,7 +248,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : (response.data.profilePicture || user.profileImage)
         }
         setUser(updatedUser)
-        localStorage.setItem("findr_user", JSON.stringify(updatedUser))
       }
       
       return true
@@ -255,8 +270,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Clear all localStorage items related to authentication
     try {
-      localStorage.removeItem("findr_user")
       localStorage.removeItem("findr_token")
+      localStorage.removeItem("findr_role")
       localStorage.removeItem("authToken")
       localStorage.removeItem("userRole")
       localStorage.removeItem("userId")
@@ -286,49 +301,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 100)
   }
 
-  const refreshAuth = async () => {
-    const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
-    const storedUser = localStorage.getItem("findr_user")
-    if (!token || !storedUser) return
+   const refreshAuth = async () => {
+     const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+     const role = localStorage.getItem("findr_role") || localStorage.getItem("userRole")
+     if (!token || !role) return
 
-    try {
-      const parsedUser: User = JSON.parse(storedUser)
-      const apiBase = process.env.NEXT_PUBLIC_API_URL
-      const endpoint = parsedUser.type === 'employer'
-        ? `${apiBase}/employer/details`
-        : `${apiBase}/profile/details`
+     try {
+       if (role === 'admin') {
+         setUser({
+           id: "admin-id",
+           email: "admin@findr.ae",
+           type: "admin",
+           name: "Admin User",
+           profileImage: "/images/admin-hero.png",
+           role: "admin"
+         })
+         return
+       }
 
-      const res = await fetch(endpoint, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+       const apiBase = process.env.NEXT_PUBLIC_API_URL
+       const endpoint = role === 'employer'
+         ? `${apiBase}/employer/details`
+         : `${apiBase}/profile/details`
 
-      if (res.ok) {
-        const { data } = await res.json()
-        const updatedUser: User = {
-          ...parsedUser,
-          name: parsedUser.type === 'employer'
-            ? (data.companyName || data.name || data.fullName || parsedUser.name)
-            : (data.fullName || data.name || data.companyName || parsedUser.name),
-          profileImage: parsedUser.type === 'employer'
-            ? (data.companyLogo || parsedUser.profileImage)
-            : (data.profilePicture || parsedUser.profileImage),
-        }
-        localStorage.setItem("findr_user", JSON.stringify(updatedUser))
-        setUser(updatedUser)
-      } else {
-        // API failed — fall back to what's in localStorage
-        setUser(parsedUser)
-      }
-    } catch (error) {
-      console.error('AuthContext: refreshAuth error:', error)
-      try {
-        const parsedUser = JSON.parse(localStorage.getItem("findr_user") || '{}')
-        if (parsedUser.id) setUser(parsedUser)
-      } catch (_) {
-        logout()
-      }
-    }
-  }
+       const res = await fetch(endpoint, {
+         headers: { 'Authorization': `Bearer ${token}` },
+       })
+
+       if (res.ok) {
+         const { data } = await res.json()
+         const updatedUser: User = {
+           id: data._id,
+           email: data.companyEmail || data.email || "",
+           type: role as UserType,
+           name: role === 'employer'
+             ? (data.companyName || data.name || data.fullName || "")
+             : (data.fullName || data.name || data.companyName || ""),
+           profileImage: role === 'employer'
+             ? (data.companyLogo || `/images/${role}-hero.png`)
+             : (data.profilePicture || `/images/${role}-hero.png`),
+           points: data.points || 0,
+           profileCompletion: data.profileCompleted || 0,
+           role: "user"
+         }
+         setUser(updatedUser)
+       }
+     } catch (error) {
+       console.error('AuthContext: refreshAuth error:', error)
+       logout()
+     }
+   }
 
   return (
     <AuthContext.Provider 

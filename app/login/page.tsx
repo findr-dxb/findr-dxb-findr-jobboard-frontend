@@ -71,36 +71,15 @@ export default function LoginPage() {
         return
       }
 
-      // Store token and user info in localStorage (using keys that auth context expects)
       if (data.token) {
-        // Store token with the key that auth context looks for
         localStorage.setItem("findr_token", data.token)
+        localStorage.setItem("findr_role", data.user.role)
         
-        // Store user data in the format auth context expects
-        const userData = {
-          id: data.user._id,
-          email: data.user.email,
-          type: data.user.role,
-          name: data.user.name || data.user.fullName,
-          profileImage: data.user.profilePicture || `/images/${data.user.role}-hero.png`,
-          points: data.user.points || 0,
-          profileCompletion: data.user.profileCompletion || 0
-        }
-        localStorage.setItem("findr_user", JSON.stringify(userData))
-        
-        // Keep your original storage for backward compatibility if needed
-        localStorage.setItem("authToken", data.token)
-        localStorage.setItem("userRole", data.user.role)
-        localStorage.setItem("userId", data.user._id)
-        localStorage.setItem("userName", data.user.name)
-        
-        // Store user data if remember me is checked
         if (formData.rememberMe) {
           localStorage.setItem("rememberedEmail", formData.email)
         }
       }
 
-      // Refresh the auth context to update navbar immediately
       refreshAuth();
 
         toast({
@@ -108,7 +87,6 @@ export default function LoginPage() {
           description: `Welcome back, ${data.user.name}! Redirecting to your dashboard...`,
         })
       
-      // Redirect based on role
       console.log('Login: User role:', data.user.role);
       const customRedirect = searchParams.get("redirect");
       const redirectUrl = customRedirect || (data.user.role === "jobseeker" ? "/jobseeker/dashboard" : "/employer/dashboard");
@@ -117,7 +95,6 @@ export default function LoginPage() {
       // Also store the redirect URL for manual navigation if needed
       localStorage.setItem('pendingRedirect', redirectUrl);
       
-      // Use replace instead of push to avoid router state issues
       router.replace(redirectUrl)
       
       // Fallback: Force navigation with window.location if router fails

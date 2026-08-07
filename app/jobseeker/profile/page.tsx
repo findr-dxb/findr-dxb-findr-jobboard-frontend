@@ -1053,13 +1053,6 @@ export default function JobSeekerProfilePage() {
                         body: JSON.stringify({ profilePicture: photoUrl }),
                       })
                       if (response.ok) {
-                        // Persist new photo into stored user so navbar updates immediately
-                        const stored = localStorage.getItem('findr_user')
-                        if (stored) {
-                          const parsed = JSON.parse(stored)
-                          parsed.profileImage = photoUrl
-                          localStorage.setItem('findr_user', JSON.stringify(parsed))
-                        }
                         refreshAuth()
                         notifyFindrStarsUpdated()
                         toast({ title: "Profile Photo Updated", description: "Your profile photo has been saved successfully." })

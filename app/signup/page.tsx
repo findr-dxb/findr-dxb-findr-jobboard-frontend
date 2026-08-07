@@ -224,25 +224,9 @@ function SignupForm() {
         return
       }
 
-      // Store token and user info in localStorage (using keys that auth context expects)
       if (data.token) {
         localStorage.setItem("findr_token", data.token)
-        
-        const userData = {
-          id: data.user._id,
-          email: data.user.email,
-          type: data.user.role,
-          name: data.user.name || data.user.fullName,
-          profileImage: data.user.profilePicture || `/images/${data.user.role}-hero.png`,
-          points: data.user.points || 0,
-          profileCompletion: data.user.profileCompletion || 0
-        }
-        localStorage.setItem("findr_user", JSON.stringify(userData))
-        
-        localStorage.setItem("authToken", data.token)
-        localStorage.setItem("userRole", data.user.role)
-        localStorage.setItem("userId", data.user._id)
-        localStorage.setItem("userName", data.user.name || data.user.fullName)
+        localStorage.setItem("findr_role", data.user.role)
       }
 
       toast({

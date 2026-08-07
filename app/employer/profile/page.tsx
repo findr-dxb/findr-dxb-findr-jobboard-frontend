@@ -1205,12 +1205,6 @@ export default function EmployerProfilePage() {
         });
 
         if (response.ok) {
-          const stored = localStorage.getItem('findr_user')
-          if (stored) {
-            const parsed = JSON.parse(stored)
-            parsed.profileImage = logoUrl
-            localStorage.setItem('findr_user', JSON.stringify(parsed))
-          }
           refreshAuth();
           toast({
             title: "Company Logo Uploaded",
@@ -1853,13 +1847,6 @@ export default function EmployerProfilePage() {
                         body: JSON.stringify({ companyLogo: logoUrl }),
                       })
                       if (response.ok) {
-                        // Persist new logo into stored user so navbar updates immediately
-                        const stored = localStorage.getItem('findr_user')
-                        if (stored) {
-                          const parsed = JSON.parse(stored)
-                          parsed.profileImage = logoUrl
-                          localStorage.setItem('findr_user', JSON.stringify(parsed))
-                        }
                         refreshAuth()
                         notifyFindrStarsUpdated()
                         toast({ title: "Company Logo Updated", description: "Your company logo has been saved successfully." })
