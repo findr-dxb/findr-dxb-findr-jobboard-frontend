@@ -6,10 +6,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SuggestionComboInput } from "@/components/suggestion-combo-input"
-import { IndustryComboInput } from "@/components/industry-combo-input"
+import { MultiSelectComboInput } from "@/components/multi-select-combo-input"
 import { SUGGESTED_NATIONALITIES } from "@/lib/suggested-nationalities"
 import { SUGGESTED_ROLES } from "@/lib/suggested-roles"
-import { AdminDataTable } from "@/components/admin-data-table"
+import { SUGGESTED_INDUSTRIES } from "@/lib/suggested-industries"
+import { AdminDataTable, Column } from "@/components/admin-data-table"
 import { Jobseeker } from "@/lib/admin-types"
 import { blockUser, unblockUser } from "@/lib/admin-api"
 import { useRouter } from "next/navigation"
@@ -186,7 +187,7 @@ export default function FilterSearchPage() {
     }
   }
 
-  const jobseekerColumns = [
+  const jobseekerColumns: Column<Jobseeker>[] = [
     { key: 'fullName', label: 'Full Name', sortable: true },
     { key: 'emailAddress', label: 'Email Address', sortable: true },
     { key: 'phoneNumber', label: 'Phone Number', sortable: false },
@@ -197,7 +198,18 @@ export default function FilterSearchPage() {
     { key: 'yearsOfExperience', label: 'Years of Experience', sortable: true },
     { key: 'industry', label: 'Industry', sortable: true },
     { key: 'spokenLanguages', label: 'Spoken Languages', sortable: false },
-    { key: 'loginStatus', label: 'Login Status', sortable: true },
+    {
+      key: 'loginStatus',
+      label: 'Login Status',
+      sortable: true,
+      render: (row) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          row.loginStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {row.loginStatus || 'active'}
+        </span>
+      )
+    },
   ]
 
   const renderJobseekerActions = (jobseeker: Jobseeker) => (
@@ -308,19 +320,22 @@ export default function FilterSearchPage() {
               </div>
             </div>
 
-            <IndustryComboInput
+            <MultiSelectComboInput
               id="filter-industry"
+              label="Industry"
               value={industry}
+              suggestions={SUGGESTED_INDUSTRIES}
+              placeholder="Search or type industries"
               onChange={setIndustry}
               className="w-full"
             />
 
-            <SuggestionComboInput
+            <MultiSelectComboInput
               id="filter-nationality"
               label="Nationality"
               value={nationality}
               suggestions={SUGGESTED_NATIONALITIES}
-              placeholder="Any Nationality"
+              placeholder="Any Nationalities"
               onChange={setNationality}
               className="w-full"
             />
@@ -358,22 +373,22 @@ export default function FilterSearchPage() {
               />
             </div>
 
-            <SuggestionComboInput
+            <MultiSelectComboInput
               id="filter-role"
               label="Current Role"
               value={role}
               suggestions={SUGGESTED_ROLES}
-              placeholder="Select Role"
+              placeholder="Select Roles"
               onChange={setRole}
               className="w-full"
             />
 
-            <SuggestionComboInput
+            <MultiSelectComboInput
               id="filter-spoken-languages"
               label="Spoken Languages"
               value={spokenLanguages}
               suggestions={COMMON_LANGUAGES}
-              placeholder="Any Language"
+              placeholder="Any Languages"
               onChange={setSpokenLanguages}
               className="w-full"
             />

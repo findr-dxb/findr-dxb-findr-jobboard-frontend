@@ -621,28 +621,27 @@ export default function AdminUserDetailPage() {
     )
   }
 
-  // Employer view
   const company = {
-    companyName: userData.companyName || "N/A",
+    companyName: userData.companyName || userData.name || "N/A",
     industry: userData.industry || "N/A",
     teamSize: userData.teamSize || "N/A",
     foundedYear: (userData.foundedYear?.toString?.() || "N/A"),
-    about: userData.about || "N/A",
+    about: userData.aboutCompany || userData.about || "N/A",
     location: {
       city: userData.city || "N/A",
       country: userData.country || "N/A",
-      officeAddress: userData.officeAddress || "N/A",
+      officeAddress: userData.companyLocation || userData.officeAddress || "N/A",
     },
     website: userData.website || "N/A",
     verified: Boolean(userData.verificationStatus === 'verified'),
-    logo: userData.companyLogo || "",
+    logo: userData.companyLogo || userData.profilePhoto || "",
     specialties: userData.specialties || [],
     achievements: userData.achievements || [],
     workCulture: userData.workCulture || [],
     socialLinks: userData.socialLinks || {},
-    activeJobsCount: userData.activeJobsCount || 0,
-    totalJobsPosted: userData.totalJobsPosted || 0,
-    memberSince: userData.memberSince ? new Date(userData.memberSince).toLocaleDateString() : "N/A",
+    activeJobsCount: userData.activeJobs ? userData.activeJobs.length : (userData.activeJobsCount || 0),
+    totalJobsPosted: userData.postedJobs ? userData.postedJobs.length : (userData.totalJobsPosted || 0),
+    memberSince: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A",
   }
 
   const adminReferral = userData.referredBy
@@ -657,7 +656,7 @@ export default function AdminUserDetailPage() {
   return (
     <div className="w-full bg-transparent">
       <div className="pb-4">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto">
           {/* Back Button */}
           <Button
             variant="ghost"
@@ -666,8 +665,15 @@ export default function AdminUserDetailPage() {
           >
             ← Back to Users
           </Button>
+        </div>
+      </div>
 
-          {/* Admin view for Employer's Referral */}
+      {/* Main Profile View (Shows the blue header card on very top) */}
+      <CompanyProfileView company={company} />
+
+      {/* Admin view for Employer's Referral & Admin info (rendered below profile) */}
+      <div className="pt-6 pb-8 bg-transparent">
+        <div className="max-w-7xl mx-auto space-y-6">
           <Card className="card-shadow border-0 mb-6">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center text-lg">
@@ -676,19 +682,78 @@ export default function AdminUserDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Account Created</div>
-                  <div className="font-semibold">{userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}</div>
+                  <div className="text-sm text-gray-500 mb-1">Login Email</div>
+                  <div className="font-semibold text-gray-900">{userData.email || "N/A"}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Last Updated</div>
-                  <div className="font-semibold">{userData.updatedAt ? new Date(userData.updatedAt).toLocaleDateString() : "N/A"}</div>
+                  <div className="text-sm text-gray-500 mb-1">Contact Phone</div>
+                  <div className="font-semibold text-gray-900">{userData.phoneNumber || "N/A"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Verification Status</div>
+                  <Badge variant={userData.verificationStatus === "verified" ? "default" : "secondary"}>
+                    {userData.verificationStatus || "pending"}
+                  </Badge>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Subscription Plan</div>
+                  <div className="font-semibold text-gray-900 capitalize">{userData.subscriptionPlan || "free"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Subscription Status</div>
+                  <Badge variant={userData.subscriptionStatus === "active" ? "default" : "secondary"}>
+                    {userData.subscriptionStatus || "inactive"}
+                  </Badge>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Membership Tier</div>
+                  <div className="font-semibold text-gray-900">{userData.membershipTier || "Blue"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Referral Code</div>
+                  <div className="font-semibold text-gray-900">{userData.referralCode || "N/A"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Available Points</div>
+                  <div className="font-semibold text-gray-900">{userData.points || 0}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Profile Completion</div>
+                  <div className="font-semibold text-gray-900">{userData.profileCompleted || 0}%</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Account Created</div>
+                  <div className="font-semibold text-gray-900">{userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Last Updated</div>
+                  <div className="font-semibold text-gray-900">{userData.updatedAt ? new Date(userData.updatedAt).toLocaleDateString() : "N/A"}</div>
                 </div>
               </div>
 
-              <div className="border-t pt-4 mt-2">
-                <div className="text-sm text-gray-500 mb-2 font-medium">Referred By</div>
+              {/* Contact Person Sub-section */}
+              <div className="border-t pt-4 mt-4">
+                <div className="text-sm text-gray-500 mb-3 font-semibold">Contact Person Details</div>
+                <div className="grid md:grid-cols-3 gap-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div>
+                    <div className="text-xs text-gray-500">Name</div>
+                    <div className="font-medium text-gray-900">{userData.contactPerson?.name || "N/A"}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500">Email</div>
+                    <div className="font-medium text-gray-900">{userData.contactPerson?.email || userData.companyEmail || "N/A"}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500">Phone</div>
+                    <div className="font-medium text-gray-900">{userData.contactPerson?.phone || "N/A"}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <div className="text-sm text-gray-500 mb-2 font-semibold">Referred By</div>
                 {adminReferral ? (
                   <div className="flex items-center gap-4 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100/50">
                     {adminReferral.profilePicture ? (
@@ -752,9 +817,6 @@ export default function AdminUserDetailPage() {
           </Card>
         </div>
       </div>
-      <CompanyProfileView company={company} />
     </div>
   )
 }
-
-

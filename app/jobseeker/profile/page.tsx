@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef} from "react"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -49,8 +49,10 @@ import {
   normalizeIndustryCsv,
 } from "@/components/industry-combo-input"
 import { SuggestionComboInput } from "@/components/suggestion-combo-input"
+import { MultiSelectComboInput } from "@/components/multi-select-combo-input"
 import { SUGGESTED_NATIONALITIES } from "@/lib/suggested-nationalities"
 import { SUGGESTED_ROLES } from "@/lib/suggested-roles"
+import { SUGGESTED_LANGUAGES } from "@/lib/suggested-languages"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -312,30 +314,21 @@ export default function JobSeekerProfilePage() {
           instagram: !!apiData.instagram,
         })
         
-        // Points will be calculated in the useEffect based on profile completion and deductedPoints
-        
         if (apiData.membershipTier) {
           setTier(apiData.membershipTier)
         }
         
-        // Use profileCompleted (percentage) instead of rewards.completeProfile (points)
-        // Backend stores points in rewards.completeProfile but percentage in profileCompleted
         if (apiData.profileCompleted !== undefined) {
           const percentage = parseInt(apiData.profileCompleted) || 0
-          // Ensure percentage is between 0-100, not points (250)
           if (percentage <= 100) {
             setProfileCompletion(percentage)
           } else {
-            // If it's > 100, it's likely points, so let useEffect recalculate
-            // The useEffect will calculate correctly from profileData
           }
         } else if (apiData.rewards?.completeProfile !== undefined) {
-          // Fallback: check if it's actually a percentage (<= 100) or points (> 100)
           const value = apiData.rewards.completeProfile
           if (value <= 100) {
             setProfileCompletion(value)
           }
-          // If > 100, ignore it and let useEffect recalculate
         }
       }
     } catch (error) {
@@ -353,10 +346,50 @@ export default function JobSeekerProfilePage() {
   const saveProfileData = async () => {
     try {
       setIsSaving(true)
-      const token = localStorage.getItem('authToken')
+      const token = localStorage.getItem('findr_token')
       
       if (!token) {
         throw new Error('No authentication token found')
+      }
+
+      if (!profileData.personalInfo.fullName || profileData.personalInfo.fullName.trim() === "") {
+        toast({
+          title: "Validation Error",
+          description: "Full Name is required.",
+          variant: "destructive",
+        })
+        setIsSaving(false)
+        return
+      }
+
+      if (!profileData.personalInfo.email || profileData.personalInfo.email.trim() === "") {
+        toast({
+          title: "Validation Error",
+          description: "Email Address is required.",
+          variant: "destructive",
+        })
+        setIsSaving(false)
+        return
+      }
+
+      if (!profileData.personalInfo.phone || profileData.personalInfo.phone.trim() === "") {
+        toast({
+          title: "Validation Error",
+          description: "Phone Number is required.",
+          variant: "destructive",
+        })
+        setIsSaving(false)
+        return
+      }
+
+      if (!profileData.personalInfo.location || profileData.personalInfo.location.trim() === "") {
+        toast({
+          title: "Validation Error",
+          description: "Location is required.",
+          variant: "destructive",
+        })
+        setIsSaving(false)
+        return
       }
 
       // Validate Emirates ID if provided
@@ -927,15 +960,14 @@ export default function JobSeekerProfilePage() {
                 )}
 
                 {/* Spoken Languages inside the same grid */}
-                <div className="space-y-2">
-                  <Label htmlFor="spokenLanguages">Spoken Languages</Label>
-                  <Input
-                    id="spokenLanguages"
-                    value={profileData.personalInfo.spokenLanguages || ""}
-                    onChange={(e) => handleInputChange("personalInfo", "spokenLanguages", e.target.value)}
-                    placeholder="e.g. English, Arabic, French"
-                  />
-                </div>
+                <MultiSelectComboInput
+                  id="spoken-languages"
+                  label="Spoken Languages"
+                  value={profileData.personalInfo.spokenLanguages || ""}
+                  onChange={(val) => handleInputChange("personalInfo", "spokenLanguages", val)}
+                  suggestions={SUGGESTED_LANGUAGES}
+                  placeholder="Type a language, pick from suggestions, or press Enter"
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="emiratesId">Emirates ID</Label>

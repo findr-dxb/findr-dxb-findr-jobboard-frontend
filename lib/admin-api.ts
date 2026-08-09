@@ -1,4 +1,5 @@
 import { Jobseeker, Employer } from './admin-types';
+import axios from 'axios';
 
 const getAuthHeaders = () => {
   const token = typeof window !== 'undefined' ? (localStorage.getItem("findr_token") || localStorage.getItem("authToken")) : null;
@@ -868,19 +869,15 @@ export const getSidebarBadges = async (
       if (since[key]) queryParams.set(key, since[key] as string);
     });
 
-    const response = await fetch(
-      `${API_BASE_URL}/admin/sidebar-badges?${queryParams.toString()}`,
+    const response = await axios.get(
+      `${API_BASE_URL}/admin/sidebar-badges`,
       {
-        method: "GET",
+        params: queryParams,
         headers: getAuthHeaders(),
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
+    const result = response.data;
     if (!result.success) {
       throw new Error(result.message || "Failed to fetch sidebar badges");
     }

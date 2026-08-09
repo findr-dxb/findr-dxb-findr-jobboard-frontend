@@ -4,30 +4,30 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from "lucide-react"
 
-interface Column {
+export interface Column<T> {
   key: string;
   label: string;
   sortable?: boolean;
+  render?: (row: T) => React.ReactNode;
 }
 
-interface AdminDataTableProps {
-  data: any[];
-  columns: Column[];
+interface AdminDataTableProps<T> {
+  data: T[];
+  columns: Column<T>[];
   searchable?: boolean;
   pageSize?: number;
-  actions?: (row: any) => React.ReactNode;
+  actions?: (row: T) => React.ReactNode;
 }
 
-export function AdminDataTable({ 
+export function AdminDataTable<T extends Record<string, any>>({ 
   data, 
   columns, 
   searchable = true, 
   pageSize = 10,
   actions 
-}: AdminDataTableProps) {
+}: AdminDataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
   const [sortField, setSortField] = useState<string | null>(null)
@@ -144,7 +144,7 @@ export function AdminDataTable({
                   <TableRow key={row.id || index} className="hover:bg-gray-50 transition-colors">
                     {columns.map((column) => (
                       <TableCell key={column.key} className="whitespace-nowrap py-4">
-                        {formatValue(row[column.key], column.key)}
+                        {column.render ? column.render(row) : formatValue(row[column.key], column.key)}
                       </TableCell>
                     ))}
                     {actions && (
@@ -183,7 +183,7 @@ export function AdminDataTable({
                     {column.label}:
                   </span>
                   <span className="text-sm text-gray-900 text-right min-w-0 flex-1 font-medium">
-                    {formatValue(row[column.key], column.key)}
+                    {column.render ? column.render(row) : formatValue(row[column.key], column.key)}
                   </span>
                 </div>
               ))}
