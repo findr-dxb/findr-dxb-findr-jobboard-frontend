@@ -43,6 +43,20 @@ export type CandidateProfile = {
   rating: number;
   tier: "Icon" | "Elite" | "Pro" | "Plus" | "Prime" | string;
   spokenLanguages?: string;
+  referredBy?: {
+    name: string;
+    email: string;
+    profilePicture?: string;
+    linkedin?: string;
+  } | null;
+  emirateId?: string;
+  introVideo?: string;
+  isAdminView?: boolean;
+  pointsAndRewards?: any;
+  applicationsAndSavedJobs?: any;
+  allEducation?: any[];
+  socialProfiles?: any;
+  profileCompleted?: number;
 };
 
 export const applications: Application[] = [

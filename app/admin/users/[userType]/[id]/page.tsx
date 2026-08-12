@@ -8,11 +8,7 @@ import { CompanyProfileView } from "@/components/company-profile"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  User, Mail, Phone, MapPin, Calendar, Briefcase, GraduationCap, 
-  FileText, Award, ExternalLink, Video, Image as ImageIcon, 
-  Gift, ShoppingCart, Bookmark, Clock, Shield
-} from "lucide-react"
+import { ArrowLeft, ShoppingCart, Shield, Mail, User } from "lucide-react"
 import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
@@ -120,7 +116,7 @@ export default function AdminUserDetailPage() {
       email: userData.email || "N/A",
       phone: userData.phoneNumber || "N/A",
       location: userData.location || "N/A",
-      dateOfBirth: formattedDateOfBirth,
+      dateOfBirth: userData.dateOfBirth || formattedDateOfBirth,
       nationality: userData.nationality || "N/A",
       summary: userData.professionalSummary || "N/A",
       currentRole: firstExperience.currentRole || "N/A",
@@ -146,6 +142,39 @@ export default function AdminUserDetailPage() {
       rating: userData.rating || 0,
       tier: calculateTier(),
       spokenLanguages: userData.spokenLanguages || "",
+      emirateId: userData.emirateId || "N/A",
+      referredBy: userData.referredBy
+        ? {
+            name: userData.referredBy.fullName || userData.referredBy.name || "N/A",
+            email: userData.referredBy.email || "N/A",
+            profilePicture: userData.referredBy.profilePicture || "",
+            linkedin: userData.referredBy.socialLinks?.linkedIn || "",
+          }
+        : null,
+      introVideo: userData.introVideo || "",
+      isAdminView: true,
+      profileCompleted: userData.profileCompleted || 100,
+      pointsAndRewards: {
+        points: userData.points || 0,
+        deductedPoints: userData.deductedPoints || 0,
+        rmService: userData.rmService || "Inactive",
+        rewards: userData.rewards || {},
+      },
+      applicationsAndSavedJobs: {
+        total: userData.applications?.totalApplications || 0,
+        active: userData.applications?.activeApplications || 0,
+        awaiting: userData.applications?.awaitingFeedback || 0,
+        saved: userData.savedJobs?.length || 0,
+      },
+      allEducation: userData.education || [],
+      socialProfiles: {
+        linkedIn: userData.socialLinks?.linkedIn || "",
+        instagram: userData.socialLinks?.instagram || "",
+        twitterX: userData.socialLinks?.twitterX || "",
+        linkedInConnected: userData.linkedIn || false,
+        instagramConnected: userData.instagram || false,
+        profilePicture: userData.profilePicture || "",
+      },
     }
     
     // Additional admin data
@@ -182,16 +211,17 @@ export default function AdminUserDetailPage() {
     }
 
     return (
-      <div className="w-full bg-transparent">
-        <div className="pb-4">
+      <div className="w-full bg-transparent pt-0 mt-0">
+        <div className="pt-0 pb-2">
           <div className="max-w-7xl mx-auto">
             {/* Back Button */}
             <Button
               variant="ghost"
               onClick={() => router.back()}
-              className="mb-4"
+              className="group flex items-center gap-2 text-emerald-700 hover:text-emerald-800 bg-emerald-50/50 hover:bg-emerald-50 border border-emerald-100/50 rounded-full px-4 py-1.5 text-xs font-semibold transition-all mb-2"
             >
-              ← Back to Users
+              <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+              <span>Back to Users</span>
             </Button>
           </div>
         </div>
@@ -202,333 +232,6 @@ export default function AdminUserDetailPage() {
         {/* Admin Additional Information */}
         <div className="pt-6 pb-8 bg-transparent">
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Additional Personal Information */}
-            <Card className="card-shadow border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg">
-                  <Shield className="w-4 h-4 mr-2 text-blue-600" />
-                  Additional Personal Information (Admin View)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Emirates ID</div>
-                    <div className="font-semibold">{adminData.emirateId}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Passport Number</div>
-                    <div className="font-semibold">{adminData.passportNumber}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Profile Completion</div>
-                    <div className="font-semibold">{adminData.profileCompleted}%</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Account Created</div>
-                    <div className="font-semibold">{adminData.createdAt}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Last Updated</div>
-                    <div className="font-semibold">{adminData.updatedAt}</div>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4 mt-4">
-                  <div className="text-sm text-gray-500 mb-2 font-medium">Referred By</div>
-                  {adminData.referredBy ? (
-                    <div className="flex items-center gap-4 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100/50">
-                      {adminData.referredBy.profilePicture ? (
-                        <img
-                          src={adminData.referredBy.profilePicture}
-                          alt={adminData.referredBy.name}
-                          className="w-12 h-12 rounded-full object-cover border border-emerald-200"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200 text-emerald-700 font-bold text-lg">
-                          {adminData.referredBy.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-900">
-                          {adminData.referredBy.name}
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-                          <a
-                            href={`mailto:${adminData.referredBy.email}`}
-                            className="text-sm text-gray-600 hover:underline flex items-center gap-1.5"
-                          >
-                            <Mail className="w-3.5 h-3.5 text-gray-400" />
-                            {adminData.referredBy.email}
-                          </a>
-                          {adminData.referredBy.linkedin && (
-                            <>
-                              <span className="hidden sm:inline text-gray-300">|</span>
-                              <a
-                                href={adminData.referredBy.linkedin}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5 fill-current shrink-0"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
-                                </svg>
-                                {adminData.referredBy.linkedin}
-                              </a>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-500">
-                        <User className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Self Registered</div>
-                        <div className="text-xs text-gray-500">This user registered directly without a referral code.</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* All Professional Experience */}
-            {adminData.allProfessionalExperience && adminData.allProfessionalExperience.length > 0 && (
-              <Card className="card-shadow border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <Briefcase className="w-4 h-4 mr-2 text-blue-600" />
-                    All Professional Experience ({adminData.allProfessionalExperience.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {adminData.allProfessionalExperience.map((exp: any, index: number) => (
-                      <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Role</div>
-                            <div className="font-semibold">{exp.currentRole || "N/A"}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Company</div>
-                            <div className="font-semibold">{exp.company || "N/A"}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Experience</div>
-                            <div className="font-semibold">{exp.yearsOfExperience || 0} years</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Industry</div>
-                            <div className="font-semibold">{exp.industry || "N/A"}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* All Education */}
-            {adminData.allEducation && adminData.allEducation.length > 0 && (
-              <Card className="card-shadow border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <GraduationCap className="w-4 h-4 mr-2 text-blue-600" />
-                    All Education ({adminData.allEducation.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {adminData.allEducation.map((edu: any, index: number) => (
-                      <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Degree</div>
-                            <div className="font-semibold">{edu.highestDegree || "N/A"}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Institution</div>
-                            <div className="font-semibold">{edu.institution || "N/A"}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Year of Graduation</div>
-                            <div className="font-semibold">{edu.yearOfGraduation || "N/A"}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">Grade/CGPA</div>
-                            <div className="font-semibold">{edu.gradeCgpa || "N/A"}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Social Media & Media */}
-            {(adminData.socialLinks?.linkedIn || adminData.socialLinks?.instagram || adminData.socialLinks?.twitterX || adminData.profilePicture || adminData.introVideo) && (
-              <Card className="card-shadow border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <ExternalLink className="w-4 h-4 mr-2 text-blue-600" />
-                    Social Media & Media Files
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {adminData.socialLinks?.linkedIn && (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">LinkedIn</div>
-                        <a href={adminData.socialLinks.linkedIn} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          {adminData.socialLinks.linkedIn} <ExternalLink className="w-3 h-3 inline" />
-                        </a>
-                      </div>
-                    )}
-                    {adminData.socialLinks?.instagram && (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Instagram</div>
-                        <a href={adminData.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          {adminData.socialLinks.instagram} <ExternalLink className="w-3 h-3 inline" />
-                        </a>
-                      </div>
-                    )}
-                    {adminData.socialLinks?.twitterX && (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Twitter/X</div>
-                        <a href={adminData.socialLinks.twitterX} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          {adminData.socialLinks.twitterX} <ExternalLink className="w-3 h-3 inline" />
-                        </a>
-                      </div>
-                    )}
-                    {adminData.profilePicture && (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Profile Picture</div>
-                        <a href={adminData.profilePicture} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center">
-                          <ImageIcon className="w-3 h-3 mr-1" /> View Image <ExternalLink className="w-3 h-3 ml-1" />
-                        </a>
-                      </div>
-                    )}
-                    {adminData.introVideo && (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Intro Video</div>
-                        <a href={adminData.introVideo} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center">
-                          <Video className="w-3 h-3 mr-1" /> Watch Video <ExternalLink className="w-3 h-3 ml-1" />
-                        </a>
-                      </div>
-                    )}
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">LinkedIn Connected</div>
-                      <Badge variant={adminData.linkedIn ? "default" : "secondary"}>
-                        {adminData.linkedIn ? "Yes" : "No"}
-                      </Badge>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Instagram Connected</div>
-                      <Badge variant={adminData.instagram ? "default" : "secondary"}>
-                        {adminData.instagram ? "Yes" : "No"}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Points & Rewards */}
-            <Card className="card-shadow border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg">
-                  <Gift className="w-4 h-4 mr-2 text-blue-600" />
-                  Points & Rewards
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Total Points</div>
-                    <div className="font-semibold text-lg">{adminData.points}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Deducted Points</div>
-                    <div className="font-semibold text-lg">{adminData.deductedPoints}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Referral Reward Points</div>
-                    <div className="font-semibold text-lg">{adminData.referralRewardPoints}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">RM Service Status</div>
-                    <Badge variant={adminData.rmService === "Active" ? "default" : "secondary"}>
-                      {adminData.rmService}
-                    </Badge>
-                  </div>
-                  {adminData.rewards && (
-                    <>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Profile Completion Reward</div>
-                        <div className="font-semibold">{adminData.rewards.completeProfile || 0} points</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Job Applications Reward</div>
-                        <div className="font-semibold">{adminData.rewards.applyForJobs || 0} points</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Referral Reward</div>
-                        <div className="font-semibold">{adminData.rewards.referFriend || 0} points</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Social Media Bonus</div>
-                        <div className="font-semibold">{adminData.rewards.socialMediaBonus || 0} points</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Total Reward Points</div>
-                        <div className="font-semibold text-lg">{adminData.rewards.totalPoints || 0} points</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Applications & Saved Jobs */}
-            {(adminData.applications?.totalApplications > 0 || (adminData.savedJobs && adminData.savedJobs.length > 0)) && (
-              <Card className="card-shadow border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <Bookmark className="w-4 h-4 mr-2 text-blue-600" />
-                    Applications & Saved Jobs
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Total Applications</div>
-                      <div className="font-semibold text-lg">{adminData.applications?.totalApplications || 0}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Active Applications</div>
-                      <div className="font-semibold text-lg">{adminData.applications?.activeApplications || 0}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Awaiting Feedback</div>
-                      <div className="font-semibold text-lg">{adminData.applications?.awaitingFeedback || 0}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Saved Jobs</div>
-                      <div className="font-semibold text-lg">{adminData.savedJobs?.length || 0}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Orders */}
             {adminData.orders && adminData.orders.length > 0 && (
@@ -579,36 +282,6 @@ export default function AdminUserDetailPage() {
                             </div>
                           )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* All Documents */}
-            {adminData.resumeAndDocs && adminData.resumeAndDocs.length > 0 && (
-              <Card className="card-shadow border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <FileText className="w-4 h-4 mr-2 text-blue-600" />
-                    All Documents ({adminData.resumeAndDocs.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {adminData.resumeAndDocs.map((doc: string, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center">
-                          <FileText className="w-4 h-4 mr-3 text-blue-600" />
-                          <span className="font-medium">{doc}</span>
-                        </div>
-                        <a href={doc} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="outline">
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Open
-                          </Button>
-                        </a>
                       </div>
                     ))}
                   </div>
