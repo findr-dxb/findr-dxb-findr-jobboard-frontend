@@ -144,7 +144,7 @@ export const submitJobPosting = createAsyncThunk(
           companyName: formData.company,
           location: formData.location,
           jobType: [JOB_TYPE_TO_API[formData.jobType] || "Full Time"],
-          salary: { min: salary, max: salary },
+          salary: salary,
           experienceLevel: formData.experience,
           skills: formData.skills
             .split(",")

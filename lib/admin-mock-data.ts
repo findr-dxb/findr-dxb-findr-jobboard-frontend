@@ -273,8 +273,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'TechCorp Solutions',
     location: 'New York, NY',
     jobType: 'Full-time',
-    minimumSalary: 120000,
-    maximumSalary: 180000,
+    salary: 120000,
     applicationDeadline: '2024-02-15',
     status: 'active',
     jobUrl: '/employer/active-jobs/senior-software-engineer'
@@ -285,8 +284,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'InnovateLabs',
     location: 'San Francisco, CA',
     jobType: 'Full-time',
-    minimumSalary: 130000,
-    maximumSalary: 200000,
+    salary: 130000,
     applicationDeadline: '2024-02-14',
     status: 'active',
     jobUrl: '/employer/active-jobs/product-manager'
@@ -297,8 +295,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'Global Dynamics',
     location: 'Chicago, IL',
     jobType: 'Full-time',
-    minimumSalary: 80000,
-    maximumSalary: 120000,
+    salary: 80000,
     applicationDeadline: '2024-02-13',
     status: 'active',
     jobUrl: '/employer/active-jobs/ux-designer'
@@ -309,8 +306,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'StartupHub',
     location: 'Austin, TX',
     jobType: 'Full-time',
-    minimumSalary: 100000,
-    maximumSalary: 150000,
+    salary: 100000,
     applicationDeadline: '2024-02-12',
     status: 'active',
     jobUrl: '/employer/active-jobs/data-scientist'
@@ -321,8 +317,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'Enterprise Systems',
     location: 'Seattle, WA',
     jobType: 'Full-time',
-    minimumSalary: 70000,
-    maximumSalary: 100000,
+    salary: 70000,
     applicationDeadline: '2024-02-11',
     status: 'active',
     jobUrl: '/employer/active-jobs/marketing-specialist'
@@ -333,8 +328,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'Digital Innovations',
     location: 'Boston, MA',
     jobType: 'Full-time',
-    minimumSalary: 110000,
-    maximumSalary: 160000,
+    salary: 110000,
     applicationDeadline: '2024-02-10',
     status: 'active',
     jobUrl: '/employer/active-jobs/devops-engineer'
@@ -345,8 +339,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'FutureTech',
     location: 'Denver, CO',
     jobType: 'Full-time',
-    minimumSalary: 60000,
-    maximumSalary: 90000,
+    salary: 60000,
     applicationDeadline: '2024-02-09',
     status: 'active',
     jobUrl: '/employer/active-jobs/sales-representative'
@@ -357,8 +350,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'CloudFirst',
     location: 'Miami, FL',
     jobType: 'Full-time',
-    minimumSalary: 90000,
-    maximumSalary: 130000,
+    salary: 90000,
     applicationDeadline: '2024-02-08',
     status: 'active',
     jobUrl: '/employer/active-jobs/frontend-developer'
@@ -369,8 +361,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'DataDriven Inc',
     location: 'Portland, OR',
     jobType: 'Full-time',
-    minimumSalary: 80000,
-    maximumSalary: 120000,
+    salary: 80000,
     applicationDeadline: '2024-02-07',
     status: 'active',
     jobUrl: '/employer/active-jobs/hr-manager'
@@ -381,8 +372,7 @@ export const mockActiveJobs: ActiveJob[] = [
     companyName: 'NextGen Solutions',
     location: 'Phoenix, AZ',
     jobType: 'Full-time',
-    minimumSalary: 75000,
-    maximumSalary: 110000,
+    salary: 75000,
     applicationDeadline: '2024-02-06',
     status: 'active',
     jobUrl: '/employer/active-jobs/business-analyst'

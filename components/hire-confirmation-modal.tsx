@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, Briefcase, MapPin, TrendingUp } from "lucide-react";
+import { coerceJobSalary, formatSalaryExpectation } from "@/lib/formatters";
 
 interface HireConfirmationModalProps {
   isOpen: boolean;
@@ -17,7 +18,7 @@ interface HireConfirmationModalProps {
   profilePicture?: string;
   jobTitle: string;
   location?: string;
-  expectedSalary?: number | { min?: number; max?: number };
+  expectedSalary?: number | string;
   onConfirm: (hiredDetails: { jobTitle: string; location: string; closingSalary: string }) => void;
 }
 
@@ -35,24 +36,16 @@ export function HireConfirmationModal({
   const [editedLocation, setEditedLocation] = React.useState(location || "");
   const [editedSalary, setEditedSalary] = React.useState("");
 
-  const formatInitialSalary = (salary?: number | { min?: number; max?: number }) => {
-    if (!salary) return '';
-    if (typeof salary === 'number') {
-      return salary.toString();
+  const formatInitialSalary = (salary?: number | string) => {
+    if (salary == null || salary === "") return "";
+    if (typeof salary === "string") {
+      const formatted = formatSalaryExpectation(salary, "");
+      return formatted.replace(/^AED\s/i, "").trim();
     }
-    if (typeof salary === 'object') {
-      const min = salary.min;
-      const max = salary.max;
-      if (min !== undefined && max !== undefined) {
-        return `${min} - ${max}`;
-      }
-      if (min !== undefined) return min.toString();
-      if (max !== undefined) return max.toString();
-    }
-    return '';
+    const amount = coerceJobSalary(salary);
+    return amount != null ? amount.toString() : "";
   };
 
-  // Synchronize state when modal opens or props change
   React.useEffect(() => {
     if (isOpen) {
       setEditedJobTitle(jobTitle);
@@ -78,7 +71,6 @@ export function HireConfirmationModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Candidate Details Card inside Dialog */}
         <div className="p-6 space-y-4">
           <div className="flex items-center gap-4 p-3 rounded-xl bg-white border border-emerald-100/40 shadow-sm">
             {profilePicture ? (
@@ -111,7 +103,6 @@ export function HireConfirmationModal({
             </div>
           </div>
 
-          {/* Location and Salary info */}
           <div className="grid grid-cols-1 gap-3 text-sm">
             <div className="p-3 rounded-xl bg-white border border-emerald-100/30 shadow-sm">
               <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">

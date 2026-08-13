@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Upload, Loader2, CheckCircle, XCircle, User, Mail, Phone, Calendar, MapPin, Briefcase, GraduationCap, Settings, FileText, Award } from "lucide-react"
+import { formatSalary, salaryToString } from "@/lib/formatters"
 import Link from "next/link"
 import axios from "axios"
 import { FileUpload } from "@/components/file-upload"
@@ -23,7 +24,7 @@ interface Job {
   companyName: string;
   location: string;
   jobType: string[];
-  salary: number | { min?: number; max?: number };
+  salary: number;
   requirements: string[];
   skills: string[];
   description: string;
@@ -288,9 +289,7 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
               expectedSalary:
                 applicant?.jobPreferences?.salaryExpectation != null
                   ? String(applicant.jobPreferences.salaryExpectation)
-                  : appData?.expectedSalary?.min != null && appData?.expectedSalary?.max != null
-                    ? String(Math.round((appData.expectedSalary.min + appData.expectedSalary.max) / 2))
-                    : String(appData?.expectedSalary?.min ?? appData?.expectedSalary?.max ?? ""),
+                  : salaryToString(appData?.expectedSalary, ""),
               location: applicant?.location || "",
               education: mappedEducation,
               skills: applicant?.skills?.join(', ') || "",
@@ -571,7 +570,7 @@ export default function ReferFriendPage({ params }: { params: Promise<{ jobId: s
                       {job.jobType?.join(', ') || 'Full-time'}
                     </Badge>
                     <Badge className="bg-green-100 text-green-800 border-green-200">
-                      AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary?.min || job.salary?.max || 0).toLocaleString()}
+                      {formatSalary(job.salary)}
                     </Badge>
                     <Badge variant="outline" className="bg-white text-blue-700 border-blue-300">
                       {job.experienceLevel}

@@ -1,30 +1,36 @@
-/**
- * Format salary for display (number or min/max range).
- * @param emptyFallback - String to return when salary is empty/invalid (default: "—")
- */
-export function formatSalary(
-  salary?: number | { min?: number; max?: number } | null,
-  emptyFallback = "—"
-): string {
-  if (salary == null) return emptyFallback;
-  if (typeof salary === "number") {
-    return `AED ${salary.toLocaleString()}`;
+/** Coerce job salary to a single number (handles legacy object shapes from old clients). */
+export function coerceJobSalary(salary: unknown): number | null {
+  if (typeof salary === "number" && Number.isFinite(salary)) return salary
+  if (typeof salary === "string") {
+    const parsed = parseFloat(salary.replace(/[^0-9.]/g, ""))
+    return Number.isFinite(parsed) ? parsed : null
   }
-  if (typeof salary === "object") {
-    const { min, max } = salary;
-    if (min != null && max != null) {
-      return `AED ${min.toLocaleString()} – ${max.toLocaleString()}`;
-    }
-    if (min != null) return `AED ${min.toLocaleString()}+`;
-    if (max != null) return `Up to AED ${max.toLocaleString()}`;
+  if (salary && typeof salary === "object") {
+    const o = salary as { min?: unknown; max?: unknown; amount?: unknown }
+    if (typeof o.amount === "number" && Number.isFinite(o.amount)) return o.amount
+    if (typeof o.min === "number" && Number.isFinite(o.min)) return o.min
+    if (typeof o.max === "number" && Number.isFinite(o.max)) return o.max
   }
-  return emptyFallback;
+  return null
+}
+
+/** Format a single job salary for display. */
+export function formatSalary(salary?: unknown, emptyFallback = "—"): string {
+  const amount = coerceJobSalary(salary)
+  if (amount == null) return emptyFallback
+  return `AED ${amount.toLocaleString()}`
+}
+
+/** String form for API payloads (e.g. expectedSalary on apply). */
+export function salaryToString(salary: unknown, fallback = "0"): string {
+  const amount = coerceJobSalary(salary)
+  return amount != null ? String(amount) : fallback
 }
 
 /** Display jobseeker salary expectation string from profile (may already include "AED"). */
 export function formatSalaryExpectation(value?: string | null, emptyFallback = "—"): string {
-  if (value == null || String(value).trim() === "") return emptyFallback;
-  const t = String(value).trim();
-  if (/^aed\s/i.test(t)) return t;
-  return `AED ${t}`;
+  if (value == null || String(value).trim() === "") return emptyFallback
+  const t = String(value).trim()
+  if (/^aed\s/i.test(t)) return t
+  return `AED ${t}`
 }

@@ -134,7 +134,7 @@ export default function AdminJobDetailPage() {
                       </span>
                       <span className="flex items-center">
                         <DollarSign className="w-4 h-4 mr-1" />
-                        ${jobData.minimumSalary?.toLocaleString()} - ${jobData.maximumSalary?.toLocaleString()}
+                        AED {jobData.salary?.toLocaleString() ?? "N/A"}
                       </span>
                     </div>
                   </div>

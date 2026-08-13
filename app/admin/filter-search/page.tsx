@@ -71,8 +71,7 @@ export default function FilterSearchPage() {
   const [name, setName] = useState("")
   const [industry, setIndustry] = useState("")
   const [nationality, setNationality] = useState("")
-  const [minSalary, setMinSalary] = useState("")
-  const [maxSalary, setMaxSalary] = useState("")
+  const [salary, setSalary] = useState("")
   const [location, setLocation] = useState("")
   const [role, setRole] = useState("")
   const [spokenLanguages, setSpokenLanguages] = useState("")
@@ -95,8 +94,7 @@ export default function FilterSearchPage() {
       if (name) queryParams.append("name", name)
       if (industry) queryParams.append("industry", industry)
       if (nationality) queryParams.append("nationality", nationality)
-      if (minSalary) queryParams.append("minSalary", minSalary)
-      if (maxSalary) queryParams.append("maxSalary", maxSalary)
+      if (salary) queryParams.append("salary", salary)
       if (location) queryParams.append("location", location)
       if (role) queryParams.append("role", role)
       if (spokenLanguages) queryParams.append("spokenLanguages", spokenLanguages)
@@ -140,8 +138,7 @@ export default function FilterSearchPage() {
     setName("")
     setIndustry("")
     setNationality("")
-    setMinSalary("")
-    setMaxSalary("")
+    setSalary("")
     setLocation("")
     setRole("")
     setSpokenLanguages("")
@@ -341,24 +338,15 @@ export default function FilterSearchPage() {
             />
 
             <div className="space-y-2">
-              <Label className="font-semibold text-gray-700">Salary Range (Min - Max $)</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={minSalary}
-                  onChange={(e) => setMinSalary(e.target.value)}
-                  className="bg-white border-gray-200 h-11"
-                />
-                <span className="text-gray-400 text-xs">to</span>
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={maxSalary}
-                  onChange={(e) => setMaxSalary(e.target.value)}
-                  className="bg-white border-gray-200 h-11"
-                />
-              </div>
+              <Label htmlFor="salary" className="font-semibold text-gray-700">Salary Expectation (AED)</Label>
+              <Input
+                id="salary"
+                type="number"
+                placeholder="e.g. 15000"
+                value={salary}
+                onChange={(e) => setSalary(e.target.value)}
+                className="bg-white border-gray-200 h-11"
+              />
             </div>
 
             {/* Row 2 */}

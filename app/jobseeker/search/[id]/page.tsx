@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { ProfileCompletionDialog } from "@/components/ui/profile-completion-dialog";
 import { calculateProfileCompletion, isEligibleToApply } from "@/lib/profile-utils";
+import { formatSalary, salaryToString } from "@/lib/formatters";
 
 interface Job {
   _id: string;
@@ -243,7 +244,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
       // Prepare application data with user's profile information
       const applicationData = {
         jobId: job._id,
-        expectedSalary: userProfile?.jobPreferences?.salaryExpectation || (typeof job.salary === 'number' ? job.salary.toString() : `${job.salary?.min || 0}-${job.salary?.max || 0}`),
+        expectedSalary: userProfile?.jobPreferences?.salaryExpectation || salaryToString(job.salary),
         availability: userProfile?.jobPreferences?.availability || "Immediate",
         coverLetter: userProfile?.personalInfo?.summary || 
           `I am interested in the ${job.title} position at ${job.companyName}. ` +
@@ -370,7 +371,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                   {job.salary && (
                     <span className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-1" />
-                      AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}
+                      {formatSalary(job.salary)}
                     </span>
                   )}
                   <span className="flex items-center"><Clock className="w-4 h-4 mr-1" />{formatDate(job.createdAt)}</span>

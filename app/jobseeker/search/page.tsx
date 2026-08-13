@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 import axios from "axios"
 import { ProfileCompletionDialog } from "@/components/ui/profile-completion-dialog"
 import { ReferFriendModal } from "@/components/refer-friend-modal"
+import { formatSalary, salaryToString } from "@/lib/formatters"
 
 interface Job {
   _id: string;
@@ -257,7 +258,7 @@ export default function JobSearchPage() {
       const applicationData = {
         jobId: job._id,
         // Use profile data for automatic filling
-        expectedSalary: userProfile?.expectedSalary || (typeof job.salary === 'number' ? job.salary.toString() : `${job.salary?.min || 0}-${job.salary?.max || 0}`),
+        expectedSalary: userProfile?.expectedSalary || salaryToString(job.salary),
         availability: userProfile?.availability || "Immediate",
         coverLetter: userProfile?.professionalSummary || 
           `I am interested in the ${job.title} position at ${job.companyName}. ` +
@@ -465,7 +466,7 @@ export default function JobSearchPage() {
                           )}
                           {job.salary && (
                             <div className="flex items-center">
-                              AED {typeof job.salary === 'number' ? job.salary.toLocaleString() : (job.salary.min || job.salary.max || 0).toLocaleString()}
+                              {formatSalary(job.salary)}
                             </div>
                           )}
                           <div className="flex items-center">

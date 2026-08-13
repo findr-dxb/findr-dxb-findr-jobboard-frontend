@@ -1,6 +1,7 @@
 "use client";
 import { Navbar } from "@/components/navbar";
 import { HireConfirmationModal } from "@/components/hire-confirmation-modal";
+import { formatSalary, formatSalaryExpectation } from "@/lib/formatters";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -542,7 +543,9 @@ export default function JobApplicantsPage() {
                         ) : applicant.expectedSalary ? (
                           <div className="flex items-center gap-2 text-gray-700">
                             <DollarSign className="w-4 h-4 text-green-600" />
-                            <span>Expected: AED {typeof applicant.expectedSalary === 'number' ? applicant.expectedSalary.toLocaleString() : (applicant.expectedSalary.min || applicant.expectedSalary.max || 0).toLocaleString()}</span>
+                            <span>Expected: {typeof applicant.expectedSalary === "string"
+                              ? formatSalaryExpectation(applicant.expectedSalary)
+                              : formatSalary(applicant.expectedSalary)}</span>
                           </div>
                         ) : null}
                         {applicant.availability && (

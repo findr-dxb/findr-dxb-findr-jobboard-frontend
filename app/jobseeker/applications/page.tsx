@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Calendar, MapPin, Building2, DollarSign, Briefcase, Eye, Clock } from "lucide-react";
 import { getJobseekerStatusLabel } from "@/lib/jobseeker-status-label";
+import { formatSalary } from "@/lib/formatters";
 
 interface Application {
   _id: string;
@@ -312,7 +313,7 @@ export default function ApplicationsPage() {
                       {app.jobId?.salary && (
                         <div className="flex items-center text-sm text-gray-600">
                           <DollarSign className="w-4 h-4 mr-2" />
-                          AED {typeof app.jobId.salary === 'number' ? app.jobId.salary.toLocaleString() : (app.jobId.salary.min || app.jobId.salary.max || 0).toLocaleString()}
+                          {formatSalary(app.jobId.salary)}
                         </div>
                       )}
                       {app.jobId?.jobType && app.jobId.jobType.length > 0 && (

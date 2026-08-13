@@ -73,8 +73,13 @@ export default function AdminJobsPage() {
     { key: 'companyName', label: 'Company Name', sortable: true },
     { key: 'location', label: 'Location', sortable: true },
     { key: 'jobType', label: 'Job Type', sortable: true },
-    { key: 'minimumSalary', label: 'Minimum Salary', sortable: true },
-    { key: 'maximumSalary', label: 'Maximum Salary', sortable: true },
+    { 
+      key: 'salary', 
+      label: 'Salary', 
+      sortable: true,
+      render: (job: ActiveJob) =>
+        job.salary ? `AED ${job.salary.toLocaleString()}` : "-",
+    },
     { key: 'applicationDeadline', label: 'Application Deadline', sortable: true },
     { key: 'status', label: 'Status', sortable: true },
   ]
@@ -82,17 +87,16 @@ export default function AdminJobsPage() {
   const handleExportToExcel = () => {
     const workbook = XLSX.utils.book_new()
     const worksheetData = [
-      ['Job Title', 'Company Name', 'Location', 'Job Type', 'Minimum Salary', 'Maximum Salary', 'Application Deadline', 'Status'],
+      ['Job Title', 'Company Name', 'Location', 'Job Type', 'Salary', 'Application Deadline', 'Status'],
       ...jobs.map(job => [
-        job.jobTitle,
-        job.companyName,
-        job.location,
-        job.jobType,
-        `$${job.minimumSalary.toLocaleString()}`,
-        `$${job.maximumSalary.toLocaleString()}`,
-        job.applicationDeadline,
-        job.status
-      ])
+          job.jobTitle,
+          job.companyName,
+          job.location,
+          job.jobType,
+          job.salary ? `AED ${job.salary.toLocaleString()}` : "-",
+          job.applicationDeadline,
+          job.status
+        ])
     ]
     
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)

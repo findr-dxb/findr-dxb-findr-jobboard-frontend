@@ -10,6 +10,7 @@ import { MapPin, Briefcase, DollarSign, Clock, Calendar, Building, User, FileTex
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import { formatSalary, formatSalaryExpectation } from "@/lib/formatters";
 
 interface InterviewData {
   _id: string;
@@ -297,7 +298,7 @@ export default function InterviewJobDetailPage({ params }: { params: Promise<{ j
                   {interviewData.jobDetails?.salary && (
                     <span className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-2" />
-                      AED {typeof interviewData.jobDetails.salary === 'number' ? interviewData.jobDetails.salary.toLocaleString() : (interviewData.jobDetails.salary.min || interviewData.jobDetails.salary.max || 0).toLocaleString()}
+                      {formatSalary(interviewData.jobDetails.salary)}
                     </span>
                   )}
                   <span className="flex items-center">
@@ -390,9 +391,9 @@ export default function InterviewJobDetailPage({ params }: { params: Promise<{ j
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Expected Salary</p>
                   <p className="font-medium">
-                    AED {interviewData.expectedSalary && typeof interviewData.expectedSalary === 'object' 
-                      ? (interviewData.expectedSalary.min || interviewData.expectedSalary.max || 0).toLocaleString()
-                      : (typeof interviewData.expectedSalary === 'number' ? interviewData.expectedSalary.toLocaleString() : 'Not specified')}
+                    {typeof interviewData.expectedSalary === "string"
+                      ? formatSalaryExpectation(interviewData.expectedSalary)
+                      : formatSalary(interviewData.expectedSalary, "Not specified")}
                   </p>
                 </div>
               )}

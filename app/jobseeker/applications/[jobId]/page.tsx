@@ -20,10 +20,7 @@ interface ApplicationData {
     title: string;
     companyName: string;
     location: string;
-    salary: {
-      min: number;
-      max: number;
-    };
+    salary: number;
     jobType: string[];
     description: string;
     requirements: string[];

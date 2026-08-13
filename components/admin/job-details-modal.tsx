@@ -21,18 +21,8 @@ function Field({ label, value }: { label: string; value: string | number }) {
 
 // Format salary text in a simple way
 function getSalaryText(job: any) {
-  if (job.salary) {
-    return Number(job.salary).toLocaleString()
-  }
-
-  const min = job.minimumSalary
-  const max = job.maximumSalary
-
-  if (min || max) {
-    return `${Number(min || 0).toLocaleString()} - ${Number(max || 0).toLocaleString()}`
-  }
-
-  return "-"
+  if (job.salary == null || job.salary === "") return "-"
+  return Number(job.salary).toLocaleString()
 }
 
 // Format a date, or show "-"

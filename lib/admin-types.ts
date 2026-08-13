@@ -33,8 +33,7 @@ export interface Jobseeker {
     companyName: string;
     location: string;
     jobType: string;
-    minimumSalary: number;
-    maximumSalary: number;
+    salary: number;
     applicationDeadline: string;
     status: 'active' | 'paused' | 'closed';
     jobUrl: string;

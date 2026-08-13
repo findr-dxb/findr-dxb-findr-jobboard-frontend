@@ -54,7 +54,7 @@ interface Job {
   companyName: string
   location?: string
   jobType?: string[]
-  salary?: number | { min?: number; max?: number }
+  salary?: number
 }
 
 interface ReferFriendModalProps {

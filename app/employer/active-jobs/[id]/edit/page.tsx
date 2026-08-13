@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import axios from "axios"
+import { coerceJobSalary } from "@/lib/formatters"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Edit2, MapPin, DollarSign, Calendar, Briefcase, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter, useParams } from "next/navigation"
+import axios from "axios"
 import { SuggestionComboInput } from "@/components/suggestion-combo-input"
 import { JOB_NATIONALITY_PREFERENCES } from "@/lib/suggested-nationalities"
 
@@ -60,22 +61,8 @@ export default function EditJobPage() {
         })
 
         const job = response.data.data
-        // Handle salary: if min/max exists, use min (or average if both exist), otherwise use single value
-        let salaryValue = ""
-        if (job.salary) {
-          if (job.salary.min && job.salary.max) {
-            // If both min and max exist, use min (or you could use average: (min + max) / 2)
-            salaryValue = job.salary.min.toString()
-          } else if (job.salary.min) {
-            salaryValue = job.salary.min.toString()
-          } else if (job.salary.max) {
-            salaryValue = job.salary.max.toString()
-          } else if (job.salary.amount) {
-            salaryValue = job.salary.amount.toString()
-          } else if (typeof job.salary === 'number') {
-            salaryValue = job.salary.toString()
-          }
-        }
+        const amount = coerceJobSalary(job.salary)
+        const salaryValue = amount != null ? amount.toString() : ""
         setFormData({
           jobTitle: job.title || "",
           company: job.companyName || "",
@@ -128,10 +115,7 @@ export default function EditJobPage() {
         companyName: formData.company,
         location: formData.location,
         jobType: [formData.jobType],
-        salary: {
-          min: salaryAmount,
-          max: salaryAmount,
-        },
+        salary: salaryAmount,
         experienceLevel: formData.experience,
         skills: formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill),
         description: formData.description,

@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { formatSalary } from "@/lib/formatters";
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -264,7 +265,7 @@ export default function JobDetailPage() {
                     </div>
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-2 text-green-600" />
-                      AED {typeof jobData.salary === 'number' ? jobData.salary.toLocaleString() : (jobData.salary?.min || jobData.salary?.max || 0).toLocaleString()}
+                      {formatSalary(jobData.salary)}
                     </div>
                     <div className="flex items-center">
                       <Briefcase className="w-4 h-4 mr-2 text-purple-600" />
