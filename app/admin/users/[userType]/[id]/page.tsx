@@ -8,7 +8,7 @@ import { CompanyProfileView } from "@/components/company-profile"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ShoppingCart, Shield, Mail, User } from "lucide-react"
+import { ArrowLeft, ShoppingCart, Shield, Mail, User, Phone, Smartphone, Calendar, Globe, Users, Info, Lock, Linkedin, Twitter, Facebook, BriefcaseIcon, ChevronRight, Code2, Palette, Terminal, MapPin, FolderClosed, FileText, Download, UserCheck, UserMinus, Share2, Link, Instagram, Hash } from "lucide-react"
 import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
@@ -19,6 +19,39 @@ export default function AdminUserDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userData, setUserData] = useState<any | null>(null)
+  const [showAllJobs, setShowAllJobs] = useState(false)
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "N/A";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "N/A";
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch(e) {
+      return "N/A";
+    }
+  }
+
+  const getFileInfo = (url: string, defaultName: string) => {
+    if (!url) return null;
+    try {
+      const parts = url.split('/');
+      const filename = parts[parts.length - 1] || defaultName;
+      const extParts = filename.split('.');
+      const ext = extParts.length > 1 ? extParts[extParts.length - 1].split('?')[0].toUpperCase() : 'PDF';
+      return {
+        name: defaultName,
+        url,
+        ext,
+        size: '2.4 MB'
+      };
+    } catch(e) {
+      return null;
+    }
+  }
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -315,6 +348,12 @@ export default function AdminUserDetailPage() {
     activeJobsCount: userData.activeJobs ? userData.activeJobs.length : (userData.activeJobsCount || 0),
     totalJobsPosted: userData.postedJobs ? userData.postedJobs.length : (userData.totalJobsPosted || 0),
     memberSince: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A",
+    email: userData.email || "N/A",
+    phone: userData.phoneNumber || "N/A",
+    isAdminView: true,
+    membershipTier: userData.membershipTier || "Blue",
+    verificationStatus: userData.verificationStatus || "Pending",
+    profileCompleted: userData.profileCompleted || 0,
   }
 
   const adminReferral = userData.referredBy
@@ -345,149 +384,350 @@ export default function AdminUserDetailPage() {
       <CompanyProfileView company={company} />
 
       {/* Admin view for Employer's Referral & Admin info (rendered below profile) */}
-      <div className="pt-6 pb-8 bg-transparent">
+      <div className="pt-2 pb-8 bg-transparent">
         <div className="max-w-7xl mx-auto space-y-6">
-          <Card className="card-shadow border-0 mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center text-lg">
-                <Shield className="w-4 h-4 mr-2 text-blue-600" />
-                Employer Administrative Information (Admin View)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Login Email</div>
-                  <div className="font-semibold text-gray-900">{userData.email || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Contact Phone</div>
-                  <div className="font-semibold text-gray-900">{userData.phoneNumber || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Verification Status</div>
-                  <Badge variant={userData.verificationStatus === "verified" ? "default" : "secondary"}>
-                    {userData.verificationStatus || "pending"}
-                  </Badge>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Subscription Plan</div>
-                  <div className="font-semibold text-gray-900 capitalize">{userData.subscriptionPlan || "free"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Subscription Status</div>
-                  <Badge variant={userData.subscriptionStatus === "active" ? "default" : "secondary"}>
-                    {userData.subscriptionStatus || "inactive"}
-                  </Badge>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Membership Tier</div>
-                  <div className="font-semibold text-gray-900">{userData.membershipTier || "Blue"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Referral Code</div>
-                  <div className="font-semibold text-gray-900">{userData.referralCode || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Available Points</div>
-                  <div className="font-semibold text-gray-900">{userData.points || 0}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Profile Completion</div>
-                  <div className="font-semibold text-gray-900">{userData.profileCompleted || 0}%</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Account Created</div>
-                  <div className="font-semibold text-gray-900">{userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Last Updated</div>
-                  <div className="font-semibold text-gray-900">{userData.updatedAt ? new Date(userData.updatedAt).toLocaleDateString() : "N/A"}</div>
-                </div>
-              </div>
-
-              {/* Contact Person Sub-section */}
-              <div className="border-t pt-4 mt-4">
-                <div className="text-sm text-gray-500 mb-3 font-semibold">Contact Person Details</div>
-                <div className="grid md:grid-cols-3 gap-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
-                  <div>
-                    <div className="text-xs text-gray-500">Name</div>
-                    <div className="font-medium text-gray-900">{userData.contactPerson?.name || "N/A"}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Email</div>
-                    <div className="font-medium text-gray-900">{userData.contactPerson?.email || userData.companyEmail || "N/A"}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Phone</div>
-                    <div className="font-medium text-gray-900">{userData.contactPerson?.phone || "N/A"}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t pt-4 mt-4">
-                <div className="text-sm text-gray-500 mb-2 font-semibold">Referred By</div>
-                {adminReferral ? (
-                  <div className="flex items-center gap-4 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100/50">
-                    {adminReferral.profilePicture ? (
-                      <img
-                        src={adminReferral.profilePicture}
-                        alt={adminReferral.name}
-                        className="w-12 h-12 rounded-full object-cover border border-emerald-200"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200 text-emerald-700 font-bold text-lg">
-                        {adminReferral.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900">
-                        {adminReferral.name}
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-                        <a
-                          href={`mailto:${adminReferral.email}`}
-                          className="text-sm text-gray-600 hover:underline flex items-center gap-1.5"
-                        >
-                          <Mail className="w-3.5 h-3.5 text-gray-400" />
-                          {adminReferral.email}
-                        </a>
-                        {adminReferral.linkedin && (
-                          <>
-                            <span className="hidden sm:inline text-gray-300">|</span>
-                            <a
-                              href={adminReferral.linkedin}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
-                            >
-                              <svg
-                                className="w-3.5 h-3.5 fill-current shrink-0"
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
-                              </svg>
-                              {adminReferral.linkedin}
-                            </a>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-500">
-                      <User className="w-5 h-5" />
+            {/* Administrative Overview */}
+            <Card className="card-shadow border-0 border-l-4 border-l-emerald-600 mb-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-xl font-bold text-emerald-900">
+                  <Shield className="w-5 h-5 mr-2 text-emerald-600" />
+                  Administrative Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="p-6 rounded-xl bg-blue-50/20 border border-blue-100/50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-y-5 gap-x-6">
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Login Email</div>
+                      <div className="font-semibold text-slate-800 text-sm truncate" title={userData.email}>{userData.email || "N/A"}</div>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-700">Self Registered</div>
-                      <div className="text-xs text-gray-500">This company registered directly without a referral code.</div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Subscription Plan</div>
+                      <div className="font-semibold text-slate-800 text-sm capitalize">{userData.subscriptionPlan || "Free"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Contact Phone</div>
+                      <div className="font-semibold text-slate-800 text-sm">{userData.phoneNumber || "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Subscription Status</div>
+                      <div>
+                        <Badge className="bg-blue-50 text-blue-700 border border-blue-100/50 hover:bg-blue-50 text-xs px-2.5 py-0.5 rounded font-semibold capitalize shadow-none">
+                          {userData.subscriptionStatus || "Inactive"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Verification</div>
+                      <div className="font-semibold text-slate-800 text-sm capitalize">{userData.verificationStatus || "Pending"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Available Points</div>
+                      <div>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {userData.points || 0}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Membership Tier</div>
+                      <div className="font-semibold text-slate-800 text-sm capitalize">{userData.membershipTier || "Blue"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Referral Code</div>
+                      <div className="font-semibold text-slate-800 text-sm uppercase">{userData.referralCode || "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Account Created</div>
+                      <div className="font-semibold text-slate-800 text-sm">{formatDate(userData.createdAt)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Last Updated</div>
+                      <div className="font-semibold text-slate-800 text-sm">{formatDate(userData.updatedAt)}</div>
                     </div>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Primary Account Contact */}
+            <Card className="card-shadow border-0 mb-6">
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-slate-800">{userData.contactPerson?.name || "N/A"}</h2>
+                  <p className="text-xs text-gray-500 mt-1 font-medium">Primary Account Contact</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-100 bg-white shadow-sm/50">
+                    <Mail className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span className="text-sm font-semibold text-slate-800 truncate" title={userData.contactPerson?.email || userData.companyEmail}>
+                      {userData.contactPerson?.email || userData.companyEmail || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-100 bg-white shadow-sm/50">
+                    <Smartphone className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span className="text-sm font-semibold text-slate-800 truncate">
+                      {userData.contactPerson?.phone || "N/A"}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Job Postings Card */}
+            {userData.postedJobs && userData.postedJobs.length > 0 && (
+              <Card className="card-shadow border-0 mb-6">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center text-xl font-bold text-emerald-900">
+                    <BriefcaseIcon className="w-5 h-5 mr-2 text-emerald-600" />
+                    Job Postings
+                  </CardTitle>
+                  <Badge className="bg-emerald-700 hover:bg-emerald-700 text-white font-semibold rounded-full px-3 py-0.5 text-xs shadow-none">
+                    Total: {userData.postedJobs.length}
+                  </Badge>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <div className="space-y-3">
+                    {(showAllJobs ? userData.postedJobs : userData.postedJobs.slice(0, 2)).map((job: any) => {
+                      // Dynamically pick icon
+                      const titleLower = (job.title || "").toLowerCase();
+                      let JobIcon = BriefcaseIcon;
+                      if (titleLower.includes("react") || titleLower.includes("developer") || titleLower.includes("code") || titleLower.includes("software") || titleLower.includes("engineer")) {
+                        JobIcon = Code2;
+                      } else if (titleLower.includes("designer") || titleLower.includes("ui") || titleLower.includes("ux") || titleLower.includes("creative") || titleLower.includes("art")) {
+                        JobIcon = Palette;
+                      }
+
+                      return (
+                        <div
+                          key={job._id || job.id}
+                          onClick={() => router.push(`/admin/jobs/${job._id || job.id}`)}
+                          className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-white shadow-sm/50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="w-10 h-10 rounded-lg bg-blue-50/50 border border-blue-100/10 flex items-center justify-center shrink-0">
+                              <JobIcon className="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-bold text-slate-800 truncate">{job.title || "N/A"}</h4>
+                              <p className="text-xs text-slate-500 mt-1 truncate">
+                                {job.location || "N/A"} • {Array.isArray(job.jobType) ? job.jobType.join(", ") : (job.jobType || "N/A")}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/admin/applications?jobId=${job._id || job.id}`);
+                              }}
+                              className="bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 text-xs rounded-lg border border-blue-100/50 hover:bg-blue-100/80 transition-colors cursor-pointer"
+                            >
+                              {job.applications?.length || 0} Applications
+                            </span>
+                            <ChevronRight className="w-4 h-4 text-slate-400" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {userData.postedJobs.length > 2 && (
+                    <div className="mt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAllJobs(!showAllJobs)}
+                        className="w-full border-dashed border-gray-250 hover:bg-slate-50/80 rounded-lg py-2.5 text-sm font-semibold text-slate-600 flex items-center justify-center"
+                      >
+                        {showAllJobs ? "Show Less" : `View All ${userData.postedJobs.length} Jobs`}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Headquarters Card */}
+            {(userData.companyLocation || userData.officeAddress || userData.city || userData.country) && (
+              <Card className="card-shadow border-0 mb-6">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-xl font-bold text-emerald-900">
+                    <MapPin className="w-5 h-5 mr-2 text-emerald-600" />
+                    Headquarters
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 text-sm text-slate-700 leading-relaxed font-medium">
+                  {userData.companyLocation || userData.officeAddress ? (
+                    <div>{userData.companyLocation || userData.officeAddress}</div>
+                  ) : null}
+                  {userData.city || userData.country ? (
+                    <div className="text-slate-500 mt-1">
+                      {userData.city && userData.country ? `${userData.city}, ${userData.country}` : (userData.city || userData.country)}
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Documents Card */}
+            {(() => {
+              const docsList = [];
+              if (userData.documents?.businessLicense) {
+                docsList.push(getFileInfo(userData.documents.businessLicense, "Business License"));
+              }
+              if (userData.documents?.taxRegistration) {
+                docsList.push(getFileInfo(userData.documents.taxRegistration, "Tax Registration Certificate"));
+              }
+              if (Array.isArray(userData.documents?.otherDocuments)) {
+                userData.documents.otherDocuments.forEach((doc: string, idx: number) => {
+                  if (doc) docsList.push(getFileInfo(doc, `Other Document ${idx + 1}`));
+                });
+              }
+
+              if (docsList.length === 0) return null;
+
+              return (
+                <Card className="card-shadow border-0 mb-6">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-xl font-bold text-emerald-900">
+                      <FolderClosed className="w-5 h-5 mr-2 text-emerald-600" />
+                      Documents
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <hr className="mb-4 border-gray-200" />
+                    <div className="space-y-3">
+                      {docsList.map((doc: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-white shadow-sm/50 hover:bg-slate-50/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="w-10 h-10 rounded-lg bg-blue-50/50 border border-blue-100/10 flex items-center justify-center shrink-0">
+                              <FileText className="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-bold text-slate-800 truncate" title={doc.name}>{doc.name}</h4>
+                              <p className="text-xs text-slate-500 mt-1 truncate">
+                                {doc.ext} • {doc.size}
+                              </p>
+                            </div>
+                          </div>
+                          <a
+                            href={doc.url}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-slate-450 hover:text-emerald-700 hover:bg-slate-50 rounded-lg transition-colors shrink-0"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
+            {/* Onboarding Card */}
+            <Card className="card-shadow border-0 mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center text-xl font-bold text-emerald-900">
+                  <UserCheck className="w-5 h-5 mr-2 text-emerald-600" />
+                  Onboarding
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-4">
+                <hr className="mb-4 border-gray-200" />
+                <div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Referred By</div>
+                  {adminReferral ? (
+                    <div className="flex items-center gap-2.5 text-sm font-semibold text-emerald-800">
+                      <UserMinus className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <a href={`mailto:${adminReferral.email}`} className="hover:underline">{adminReferral.name}</a>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-800">
+                      <UserMinus className="w-4 h-4 text-emerald-650 shrink-0" />
+                      <span>Self Registered</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Social Links Card */}
+            <Card className="card-shadow border-0 mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center text-xl font-bold text-emerald-900">
+                  <Share2 className="w-5 h-5 mr-2 text-emerald-600" />
+                  Social Links
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <hr className="mb-4 border-gray-200" />
+                <div className="flex items-center gap-3">
+                  {userData.website && userData.website !== "N/A" && (
+                    <a
+                      href={userData.website.startsWith("http") ? userData.website : `https://${userData.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-150 flex items-center justify-center hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 transition-colors shadow-sm"
+                      title="Website"
+                    >
+                      <Link className="w-4 h-4" />
+                    </a>
+                  )}
+                  {userData.socialLinks?.instagram && (
+                    <a
+                      href={userData.socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-full bg-pink-50 border border-pink-150 flex items-center justify-center hover:bg-pink-100 text-pink-600 hover:text-pink-800 transition-colors shadow-sm"
+                      title="Instagram"
+                    >
+                      <Instagram className="w-4 h-4" />
+                    </a>
+                  )}
+                  {userData.socialLinks?.twitter && (
+                    <a
+                      href={userData.socialLinks.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-full bg-sky-50 border border-sky-150 flex items-center justify-center hover:bg-sky-100 text-sky-500 hover:text-sky-700 transition-colors shadow-sm"
+                      title="Twitter"
+                    >
+                      <Twitter className="w-4 h-4" />
+                    </a>
+                  )}
+                  {userData.socialLinks?.linkedin && (
+                    <a
+                      href={userData.socialLinks.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-full bg-blue-50 border border-blue-150 flex items-center justify-center hover:bg-blue-100 text-blue-650 hover:text-blue-800 transition-colors shadow-sm"
+                      title="LinkedIn"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                  {userData.socialLinks?.facebook && (
+                    <a
+                      href={userData.socialLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center hover:bg-indigo-100 text-indigo-600 hover:text-indigo-800 transition-colors shadow-sm"
+                      title="Facebook"
+                    >
+                      <Facebook className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
         </div>
       </div>
     </div>
