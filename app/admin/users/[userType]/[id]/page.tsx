@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ShoppingCart, Shield, Mail, User, Phone, Smartphone, Calendar, Globe, Users, Info, Lock, Linkedin, Twitter, Facebook, BriefcaseIcon, ChevronRight, Code2, Palette, Terminal, MapPin, FolderClosed, FileText, Download, UserCheck, UserMinus, Share2, Link, Instagram, Hash } from "lucide-react"
 import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
+import axios from "axios"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -20,6 +22,9 @@ export default function AdminUserDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [userData, setUserData] = useState<any | null>(null)
   const [showAllJobs, setShowAllJobs] = useState(false)
+  const [selectedJobForApps, setSelectedJobForApps] = useState<any | null>(null)
+  const [jobApps, setJobApps] = useState<any[]>([])
+  const [isLoadingApps, setIsLoadingApps] = useState(false)
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "N/A";
@@ -53,6 +58,29 @@ export default function AdminUserDetailPage() {
     }
   }
 
+  const fetchJobApplications = async (job: any) => {
+    setSelectedJobForApps(job);
+    setIsLoadingApps(true);
+    setJobApps([]);
+    try {
+      const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken");
+      const response = await axios.get(`${API_BASE_URL}/admin/applications`, {
+        params: {
+          jobId: job._id || job.id,
+          limit: 100
+        },
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (response.data?.success && response.data?.data && Array.isArray(response.data.data.applications)) {
+        setJobApps(response.data.data.applications);
+      }
+    } catch (e) {
+      console.error("Error fetching job applications:", e);
+    } finally {
+      setIsLoadingApps(false);
+    }
+  }
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -60,23 +88,18 @@ export default function AdminUserDetailPage() {
         setError(null)
         
         const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        }
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`
-        }
-        const response = await fetch(`${API_BASE_URL}/admin/users/${params.userType}/${params.id}/profile`, { headers })
-        const result = await response.json()
+        const response = await axios.get(`${API_BASE_URL}/admin/users/${params.userType}/${params.id}/profile`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
         
-        if (result.success) {
-          setUserData(result.data)
+        if (response.data?.success) {
+          setUserData(response.data.data)
         } else {
-          setError(result.message || "Failed to load user profile")
+          setError(response.data?.message || "Failed to load user profile")
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error("Error fetching user profile:", e)
-        setError("Failed to load user details")
+        setError(e.response?.data?.message || "Failed to load user details")
       } finally {
         setIsLoading(false)
       }
@@ -521,9 +544,9 @@ export default function AdminUserDetailPage() {
                             <span 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                router.push(`/admin/applications?jobId=${job._id || job.id}`);
+                                fetchJobApplications(job);
                               }}
-                              className="bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 text-xs rounded-lg border border-blue-100/50 hover:bg-blue-100/80 transition-colors cursor-pointer"
+                              className="bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 text-xs rounded-lg border border-blue-100/50 hover:bg-blue-100/85 transition-colors cursor-pointer"
                             >
                               {job.applications?.length || 0} Applications
                             </span>
@@ -730,6 +753,116 @@ export default function AdminUserDetailPage() {
             </Card>
         </div>
       </div>
+
+      {/* Side-panel for Job Applications */}
+      <Sheet open={!!selectedJobForApps} onOpenChange={(open) => { if (!open) setSelectedJobForApps(null); }}>
+        <SheetContent className="sm:max-w-xl overflow-y-auto max-h-screen">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <BriefcaseIcon className="w-5 h-5 text-emerald-600" />
+              <span>Applications</span>
+            </SheetTitle>
+            <SheetDescription className="text-sm font-semibold text-slate-500 mt-1">
+              Job: {selectedJobForApps?.title || "N/A"}
+            </SheetDescription>
+          </SheetHeader>
+          <hr className="mb-4 border-slate-100" />
+
+          {isLoadingApps ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700" />
+              <p className="text-xs text-slate-400 mt-3 font-semibold">Loading applicants...</p>
+            </div>
+          ) : jobApps.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-slate-400 font-semibold text-sm">No applications found for this job.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {jobApps.map((app: any) => (
+                <div 
+                  key={app.id}
+                  className="p-4 rounded-xl border border-slate-100 bg-slate-50/30 flex flex-col gap-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    {/* Candidate Info */}
+                    <div className="flex items-center gap-3">
+                      {app.candidateAvatar ? (
+                        <img 
+                          src={app.candidateAvatar} 
+                          alt={app.candidate} 
+                          className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-250 flex items-center justify-center font-bold text-slate-600 text-sm shrink-0">
+                          {app.candidateInitials}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-bold text-sm text-slate-800">{app.candidate}</h4>
+                        <div className="text-xs text-slate-500 font-semibold mt-1">
+                          Applied: {app.appliedDate ? new Date(app.appliedDate).toLocaleDateString() : "N/A"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <Badge className={`capitalize font-semibold border px-2.5 py-0.5 rounded-full text-[10px] shadow-none ${
+                      app.status === "hired" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                      app.status === "rejected" || app.status === "admin_rejected" ? "bg-red-50 text-red-700 border-red-200" :
+                      app.status === "shortlisted" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                      "bg-amber-50 text-amber-700 border-amber-250"
+                    }`}>
+                      {app.status === "admin_review" ? "Unattended" : (app.status || "Pending")}
+                    </Badge>
+                  </div>
+
+                  {/* Contact details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold text-slate-600">
+                    <div className="flex items-center gap-2 truncate">
+                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <a href={`mailto:${app.email}`} className="hover:underline truncate">{app.email}</a>
+                    </div>
+                    <div className="flex items-center gap-2 truncate">
+                      <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>{app.phone}</span>
+                    </div>
+                  </div>
+
+                  {/* Action buttons (Resume and View profile) */}
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100/50">
+                    <div>
+                      {app.resume ? (
+                        <a 
+                          href={app.resume} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50/50 hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100/50 transition-colors"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>View Resume</span>
+                        </a>
+                      ) : (
+                        <span className="text-xs font-semibold text-slate-400">No Resume Uploaded</span>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedJobForApps(null);
+                        router.push(`/admin/users/jobseeker/${app.applicantId}`);
+                      }}
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 h-auto rounded-lg transition-colors cursor-pointer"
+                    >
+                      View Profile
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
