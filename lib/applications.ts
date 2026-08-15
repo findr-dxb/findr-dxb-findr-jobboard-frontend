@@ -40,6 +40,10 @@ export type CandidateProfile = {
   resumeFilename: string;
   coverLetter: string;
   documentsList: string[];
+  resumeDocument?: string;
+  resumeUrl?: string;
+  coverLetterUrl?: string;
+  documentsUrls?: string[];
   rating: number;
   tier: "Icon" | "Elite" | "Pro" | "Plus" | "Prime" | string;
   spokenLanguages?: string;

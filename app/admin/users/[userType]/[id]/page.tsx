@@ -12,12 +12,14 @@ import { ArrowLeft, ShoppingCart, Shield, Mail, User, Phone, Smartphone, Calenda
 import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import axios from "axios"
+import { useToast } from "@/hooks/use-toast"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function AdminUserDetailPage() {
   const params = useParams() as { userType: string; id: string }
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userData, setUserData] = useState<any | null>(null)
@@ -55,6 +57,60 @@ export default function AdminUserDetailPage() {
       };
     } catch(e) {
       return null;
+    }
+  }
+
+  const downloadDocument = async (url: string | undefined, fileName: string) => {
+    if (!url) {
+      toast({
+        title: "Download Error",
+        description: `${fileName} is not available for download.`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      let filename = fileName
+      const urlParts = url.split("/")
+      const lastPart = urlParts[urlParts.length - 1]
+      if (lastPart?.includes(".")) {
+        const cleanFilename = lastPart.split("?")[0]
+        if (cleanFilename) filename = cleanFilename
+      }
+
+      const response = await fetch(url, { method: "GET" })
+      if (!response.ok) throw new Error("Failed to fetch document")
+
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = blobUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(blobUrl)
+
+      toast({
+        title: "Download Started",
+        description: `Downloading ${filename}...`,
+      })
+    } catch (error) {
+      console.error("Download error:", error)
+      try {
+        window.open(url, "_blank")
+        toast({
+          title: "Opening Document",
+          description: `${fileName} opened in a new tab.`,
+        })
+      } catch {
+        toast({
+          title: "Download Error",
+          description: `Failed to download ${fileName}. Please try again.`,
+          variant: "destructive",
+        })
+      }
     }
   }
 
@@ -195,6 +251,9 @@ export default function AdminUserDetailPage() {
       resumeFilename: resumeDocument ? resumeDocument.split('/').pop() || "Resume.pdf" : "N/A",
       coverLetter: allDocuments.length > 1 ? allDocuments[1].split('/').pop() || "Cover Letter.pdf" : "N/A",
       documentsList: allDocuments.slice(2).map((doc: string) => doc.split('/').pop() || "Document.pdf"),
+      resumeDocument,
+      coverLetterUrl: allDocuments.length > 1 ? allDocuments[1] : "",
+      documentsUrls: allDocuments.slice(2),
       rating: userData.rating || 0,
       tier: calculateTier(),
       spokenLanguages: userData.spokenLanguages || "",
@@ -638,15 +697,14 @@ export default function AdminUserDetailPage() {
                               </p>
                             </div>
                           </div>
-                          <a
-                            href={doc.url}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => downloadDocument(doc.url, doc.name)}
                             className="p-2 text-slate-450 hover:text-emerald-700 hover:bg-slate-50 rounded-lg transition-colors shrink-0"
+                            title={`Download ${doc.name}`}
                           >
                             <Download className="w-4 h-4" />
-                          </a>
+                          </button>
                         </div>
                       ))}
                     </div>

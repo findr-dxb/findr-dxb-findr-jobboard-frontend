@@ -173,11 +173,6 @@ export default function JobSeekerProfilePage() {
   const [points, setPoints] = useState(0)
   const [socialFollowStatus, setSocialFollowStatus] = useState<SocialFollowStatus | undefined>(undefined)
   const [emiratesIdError, setEmiratesIdError] = useState<string>("")
-
-  // Helper function to get download URL
-  const getDownloadUrl = (url: string): string => {
-    return url;
-  }
   const [tier, setTier] = useState("Prime")
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -706,7 +701,7 @@ export default function JobSeekerProfilePage() {
       }
 
       const uploadData = await uploadResponse.json();
-      const videoUploadedUrl = uploadData.data.secure_url || uploadData.data.url;
+      const videoUploadedUrl = uploadData.data.url;
 
       // Update profile data with video URL
       setProfileData(prev => ({
@@ -1069,7 +1064,7 @@ export default function JobSeekerProfilePage() {
                   try {
                     const file = new File([blob], "profile-photo.jpg", { type: "image/jpeg" })
                     const fileData = await UploadAPI.uploadFile(file, { resourceType: 'image' })
-                    const photoUrl = fileData.secure_url || fileData.url
+                    const photoUrl = fileData.url
 
                     setProfileData(prev => ({ ...prev, profilePicture: photoUrl }))
                     setCropModalOpen(false)
@@ -1132,7 +1127,7 @@ export default function JobSeekerProfilePage() {
                   <h4 className="font-medium mb-2">Upload Pre-recorded Video:</h4>
                   <FileUpload
                     onUploadSuccess={async (fileData) => {
-                      const videoUrl = fileData.secure_url || fileData.url;
+                      const videoUrl = fileData.url;
                       setProfileData(prev => ({
                         ...prev,
                         introVideo: videoUrl
@@ -1518,23 +1513,14 @@ export default function JobSeekerProfilePage() {
                             }
 
                             try {
-                              // Get the download URL with fl_attachment flag for Cloudinary
-                              const downloadUrl = getDownloadUrl(profileData.resumeDocument);
-                              
-                              // Extract filename from URL or use default
                               let filename = 'resume';
-                              if (profileData.resumeDocument) {
-                                const urlParts = profileData.resumeDocument.split('/');
-                                const lastPart = urlParts[urlParts.length - 1];
-                                if (lastPart && lastPart.includes('.')) {
-                                  const cleanFilename = lastPart.split('?')[0].split('_')[0];
-                                  if (cleanFilename && cleanFilename.length > 0) {
-                                    filename = cleanFilename;
-                                  }
-                                }
+                              const urlParts = profileData.resumeDocument.split('/');
+                              const lastPart = urlParts[urlParts.length - 1];
+                              if (lastPart && lastPart.includes('.')) {
+                                const cleanFilename = lastPart.split('?')[0];
+                                if (cleanFilename) filename = cleanFilename;
                               }
                               
-                              // Get file extension from URL
                               const urlLower = profileData.resumeDocument.toLowerCase();
                               let extension = 'pdf';
                               if (urlLower.includes('.docx') || filename.toLowerCase().endsWith('.docx')) extension = 'docx';
@@ -1548,7 +1534,7 @@ export default function JobSeekerProfilePage() {
                               }
                               
                               // Fetch the file as a blob
-                              const response = await fetch(downloadUrl);
+                              const response = await fetch(profileData.resumeDocument);
                               if (!response.ok) {
                                 throw new Error('Failed to fetch file');
                               }
@@ -1593,7 +1579,7 @@ export default function JobSeekerProfilePage() {
                 {/* Resume Upload */}
                 <FileUpload
                   onUploadSuccess={async (fileData) => {
-                    const resumeUrl = fileData.secure_url || fileData.url;
+                    const resumeUrl = fileData.url;
                     setProfileData(prev => ({ ...prev, resumeDocument: resumeUrl, resume: true }));
                     
                     // Auto-save to database
@@ -1696,23 +1682,16 @@ export default function JobSeekerProfilePage() {
                               }
 
                               try {
-                                // Get the download URL with fl_attachment flag for Cloudinary
-                                const downloadUrl = getDownloadUrl(doc.url);
-                                
-                                // Extract filename from doc.name or URL
                                 let filename = doc.name;
                                 if (!filename.includes('.')) {
                                   const urlParts = doc.url.split('/');
                                   const lastPart = urlParts[urlParts.length - 1];
                                   if (lastPart && lastPart.includes('.')) {
-                                    const cleanFilename = lastPart.split('?')[0].split('_')[0];
-                                    if (cleanFilename && cleanFilename.length > 0) {
-                                      filename = cleanFilename;
-                                    }
+                                    const cleanFilename = lastPart.split('?')[0];
+                                    if (cleanFilename) filename = cleanFilename;
                                   }
                                 }
                                 
-                                // Get file extension from name or URL
                                 const urlLower = doc.url.toLowerCase();
                                 let extension = '';
                                 if (filename.includes('.')) {
@@ -1730,7 +1709,7 @@ export default function JobSeekerProfilePage() {
                                 }
                                 
                                 // Fetch the file as a blob
-                                const response = await fetch(downloadUrl);
+                                const response = await fetch(doc.url);
                                 if (!response.ok) {
                                   throw new Error('Failed to fetch file');
                                 }
@@ -1848,7 +1827,7 @@ export default function JobSeekerProfilePage() {
                       const newDocument = {
                         id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                         name: originalName,
-                        url: fileData.secure_url || fileData.url,
+                        url: fileData.url,
                         type: fileData.format || 'document',
                         size: fileData.bytes,
                         uploadDate: new Date().toISOString(),

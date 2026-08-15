@@ -9,7 +9,6 @@ export interface UploadedFile {
   format: string;
   resource_type: string;
   bytes: number;
-  secure_url?: string;
 }
 
 export interface UploadOptions {

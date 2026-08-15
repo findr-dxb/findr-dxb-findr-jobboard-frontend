@@ -278,21 +278,6 @@ export default function ApplicantProfilePage() {
     ).join(' ');
   };
 
-  const getDownloadUrl = (url: string): string => {
-    if (!url) return url;
-    if (url.includes('res.cloudinary.com')) {
-      const uploadIndex = url.indexOf('/upload/');
-      if (uploadIndex !== -1) {
-        const beforeUpload = url.substring(0, uploadIndex + 8);
-        const afterUpload = url.substring(uploadIndex + 8);
-        if (!afterUpload.startsWith('fl_attachment')) {
-          return `${beforeUpload}fl_attachment/${afterUpload}`;
-        }
-      }
-    }
-    return url;
-  };
-
   const handleDownloadResume = async () => {
     const resumeUrl = candidate.resumeDocument || applicantData?.resume;
     if (!resumeUrl) {
@@ -305,28 +290,15 @@ export default function ApplicantProfilePage() {
     }
 
     try {
-      // Get the download URL with fl_attachment flag for Cloudinary
-      const downloadUrl = getDownloadUrl(resumeUrl);
-      
-      // Extract filename from URL or use default
       let filename = 'candidate-resume';
       const urlLower = resumeUrl.toLowerCase();
-      
-      // Try to extract original filename from Cloudinary URL
-      if (resumeUrl.includes('res.cloudinary.com')) {
-        // Cloudinary URLs often have the filename in the path
-        const urlParts = resumeUrl.split('/');
-        const lastPart = urlParts[urlParts.length - 1];
-        if (lastPart && lastPart.includes('.')) {
-          // Remove query parameters and transformations
-          const cleanFilename = lastPart.split('?')[0].split('_')[0];
-          if (cleanFilename && cleanFilename.length > 0) {
-            filename = cleanFilename;
-          }
-        }
+      const urlParts = resumeUrl.split('/');
+      const lastPart = urlParts[urlParts.length - 1];
+      if (lastPart && lastPart.includes('.')) {
+        const cleanFilename = lastPart.split('?')[0];
+        if (cleanFilename) filename = cleanFilename;
       }
       
-      // Determine file extension
       let extension = 'pdf';
       if (urlLower.includes('.docx') || filename.toLowerCase().endsWith('.docx')) extension = 'docx';
       else if (urlLower.includes('.doc') || filename.toLowerCase().endsWith('.doc')) extension = 'doc';
@@ -339,7 +311,7 @@ export default function ApplicantProfilePage() {
       }
       
       // Fetch the file as a blob
-      const response = await fetch(downloadUrl);
+      const response = await fetch(resumeUrl);
       if (!response.ok) {
         throw new Error('Failed to fetch file');
       }

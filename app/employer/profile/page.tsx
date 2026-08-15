@@ -932,8 +932,8 @@ interface EmployerProfileData {
     instagram: string
     twitter: string
   }
-  companyLogo: string // URL from Cloudinary
-  businessLicense: string // LLC Certificate URL from Cloudinary
+  companyLogo: string
+  businessLicense: string
   verified: boolean
 }
 
@@ -1187,7 +1187,7 @@ export default function EmployerProfilePage() {
 
   const handleCompanyLogoUpload = async (fileData: any) => {
     try {
-      const logoUrl = fileData.secure_url || fileData.url;
+      const logoUrl = fileData.url;
       setProfileData(prev => ({ ...prev, companyLogo: logoUrl }));
 
       // Auto-save to database
@@ -1225,7 +1225,7 @@ export default function EmployerProfilePage() {
 
   const handleLLCCertificateUpload = async (fileData: any) => {
     try {
-      const certificateUrl = fileData.secure_url || fileData.url;
+      const certificateUrl = fileData.url;
       setProfileData(prev => ({ ...prev, businessLicense: certificateUrl }));
 
       // Auto-save to database
@@ -1831,7 +1831,7 @@ export default function EmployerProfilePage() {
                   try {
                     const file = new File([blob], "company-logo.jpg", { type: "image/jpeg" })
                     const fileData = await UploadAPI.uploadFile(file, { resourceType: 'image' })
-                    const logoUrl = fileData.secure_url || fileData.url
+                    const logoUrl = fileData.url
 
                     setProfileData(prev => ({ ...prev, companyLogo: logoUrl }))
                     setCropModalOpen(false)

@@ -274,21 +274,6 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
     });
   };
 
-  const getDownloadUrl = (url: string): string => {
-    if (!url) return url;
-    if (url.includes('res.cloudinary.com')) {
-      const uploadIndex = url.indexOf('/upload/');
-      if (uploadIndex !== -1) {
-        const beforeUpload = url.substring(0, uploadIndex + 8);
-        const afterUpload = url.substring(uploadIndex + 8);
-        if (!afterUpload.startsWith('fl_attachment')) {
-          return `${beforeUpload}fl_attachment/${afterUpload}`;
-        }
-      }
-    }
-    return url;
-  };
-
   const downloadDocument = async (url: string, fileName: string) => {
     if (!url) {
       toast({
@@ -300,26 +285,17 @@ export default function ApplicationJobDetailPage({ params }: { params: Promise<{
     }
 
     try {
-      // Get the download URL with fl_attachment flag for Cloudinary
-      const downloadUrl = getDownloadUrl(url);
-      
-      // Extract filename from URL or use provided fileName
       let filename = fileName;
-      if (url.includes('res.cloudinary.com')) {
-        const urlParts = url.split('/');
-        const lastPart = urlParts[urlParts.length - 1];
-        if (lastPart && lastPart.includes('.')) {
-          const cleanFilename = lastPart.split('?')[0].split('_')[0];
-          if (cleanFilename && cleanFilename.length > 0) {
-            filename = cleanFilename;
-          }
-        }
+      const urlParts = url.split('/');
+      const lastPart = urlParts[urlParts.length - 1];
+      if (lastPart && lastPart.includes('.')) {
+        const cleanFilename = lastPart.split('?')[0];
+        if (cleanFilename) filename = cleanFilename;
       }
       
       const token = localStorage.getItem('findr_token') || localStorage.getItem('authToken');
       
-      // Fetch the file as a blob
-      const response = await fetch(downloadUrl, {
+      const response = await fetch(url, {
         method: 'GET',
         headers: token ? {
           'Authorization': `Bearer ${token}`,
