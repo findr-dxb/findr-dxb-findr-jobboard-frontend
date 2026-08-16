@@ -893,7 +893,7 @@ import {
   User,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { TOP_200_COMPANIES, normalizeUAE } from "@/lib/utils"
+import { normalizeUAE } from "@/lib/utils"
 import { FollowUs, type SocialFollowStatus } from "@/components/follow-us"
 import { FileUpload } from "@/components/file-upload"
 import { useAuth } from "@/contexts/auth-context"
@@ -934,7 +934,6 @@ interface EmployerProfileData {
   }
   companyLogo: string
   businessLicense: string
-  verified: boolean
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
@@ -1030,7 +1029,6 @@ export default function EmployerProfilePage() {
     },
     companyLogo: "",
     businessLicense: "",
-    verified: false,
   })
 
   const [profileCompletion, setProfileCompletion] = useState(0)
@@ -1092,7 +1090,6 @@ export default function EmployerProfilePage() {
             },
             companyLogo: data.companyLogo || "",
             businessLicense: data.documents?.businessLicense || "",
-            verified: data.verificationStatus === "verified",
           })
           setPoints(data.points || 0)
           setProfileCompletion(data.profileCompleted || 0)
@@ -1165,15 +1162,7 @@ export default function EmployerProfilePage() {
     calculateCompletion()
   }, [profileData, postedJobsCount])
 
-  useEffect(() => {
-    const isTopCompany = TOP_200_COMPANIES.some(
-      (name) => name.toLowerCase() === profileData.companyInfo.companyName.trim().toLowerCase()
-    )
-    setProfileData((prev) => ({
-      ...prev,
-      verified: isTopCompany || !!prev.businessLicense,
-    }))
-  }, [profileData.companyInfo.companyName, profileData.businessLicense])
+  const isVerified = Boolean(profileData.businessLicense?.trim())
 
   const handleInputChange = (section: keyof EmployerProfileData, field: string, value: string | boolean) => {
     setProfileData((prev) => ({
@@ -1245,9 +1234,10 @@ export default function EmployerProfilePage() {
         });
 
         if (response.ok) {
+          refreshAuth()
           toast({
             title: "LLC Certificate Uploaded",
-            description: "Your LLC certificate has been saved successfully.",
+            description: "Your company is now verified.",
           });
         } else {
           throw new Error('Failed to save LLC certificate');
@@ -1407,7 +1397,7 @@ export default function EmployerProfilePage() {
                   <div>
                     <div className="flex items-center space-x-2 mb-1">
                       <h1 className="text-2xl font-bold text-emerald-900">{profileData.companyInfo.companyName}</h1>
-                      {profileData.verified ? (
+                      {isVerified ? (
                         <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">✓ Verified</Badge>
                       ) : (
                         <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">⚠️ Unverified</Badge>
@@ -1636,7 +1626,7 @@ export default function EmployerProfilePage() {
               </div>
             </CardContent>
           </Card>
-          {!profileData.verified && (
+          {!isVerified && (
             <Card className="card-shadow border-0">
               <CardHeader>
                 <CardTitle className="flex items-center text-lg">

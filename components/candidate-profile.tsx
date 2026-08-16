@@ -30,8 +30,6 @@ import {
   ClipboardList,
   SlidersHorizontal,
   Share2,
-  Link2,
-  AtSign,
   XCircle,
   Eye,
   Folder,
@@ -42,6 +40,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import type { CandidateProfile } from "@/lib/applications";
+import {
+  LinkedInBrandIcon,
+  InstagramBrandIcon,
+  TwitterBrandIcon,
+  LinkedInBrandIconMuted,
+  InstagramBrandIconMuted,
+  TwitterBrandIconMuted,
+} from "@/components/icons/social-brand-icons";
 
 function getStatusColor(status: string): string {
   switch (status) {
@@ -925,14 +931,14 @@ export function CandidateProfileView({ candidate }: { candidate: CandidateProfil
                         href={candidate.socialProfiles.linkedIn}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors"
+                        className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0A66C2] hover:bg-blue-100 transition-colors"
                         title="LinkedIn Profile"
                       >
-                        <Link2 className="w-5 h-5" />
+                        <LinkedInBrandIcon className="w-5 h-5" />
                       </a>
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 cursor-not-allowed">
-                        <Link2 className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center cursor-not-allowed">
+                        <LinkedInBrandIconMuted className="w-5 h-5" />
                       </div>
                     )}
 
@@ -941,14 +947,14 @@ export function CandidateProfileView({ candidate }: { candidate: CandidateProfil
                         href={candidate.socialProfiles.instagram}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors"
+                        className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
                         title="Instagram Profile"
                       >
-                        <AtSign className="w-5 h-5" />
+                        <InstagramBrandIcon className="w-5 h-5" />
                       </a>
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 cursor-not-allowed">
-                        <AtSign className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center cursor-not-allowed">
+                        <InstagramBrandIconMuted className="w-5 h-5" />
                       </div>
                     )}
 
@@ -957,14 +963,14 @@ export function CandidateProfileView({ candidate }: { candidate: CandidateProfil
                         href={candidate.socialProfiles.twitterX}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors"
+                        className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
                         title="Twitter Profile"
                       >
-                        <MessageSquare className="w-5 h-5" />
+                        <TwitterBrandIcon className="w-5 h-5" />
                       </a>
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 cursor-not-allowed">
-                        <MessageSquare className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center cursor-not-allowed">
+                        <TwitterBrandIconMuted className="w-5 h-5" />
                       </div>
                     )}
                   </div>

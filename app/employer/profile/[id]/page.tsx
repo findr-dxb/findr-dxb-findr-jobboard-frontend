@@ -63,7 +63,7 @@ export default function PublicCompanyProfilePage() {
       officeAddress: data.companyLocation?.officeAddress || data.officeAddress || "",
     },
     website: data.companyWebsite || data.website || "",
-    verified: Boolean(data.verificationStatus === 'verified'),
+    verified: Boolean(data.verified ?? data.documents?.businessLicense),
     logo: data.companyLogo || data.logo || "",
     specialties: data.specialties || [],
     achievements: data.achievements || [],

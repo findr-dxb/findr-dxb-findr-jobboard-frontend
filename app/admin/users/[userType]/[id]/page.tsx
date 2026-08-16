@@ -8,7 +8,13 @@ import { CompanyProfileView } from "@/components/company-profile"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ShoppingCart, Shield, Mail, User, Phone, Smartphone, Calendar, Globe, Users, Info, Lock, Linkedin, Twitter, Facebook, BriefcaseIcon, ChevronRight, Code2, Palette, Terminal, MapPin, FolderClosed, FileText, Download, UserCheck, UserMinus, Share2, Link, Instagram, Hash } from "lucide-react"
+import { ArrowLeft, ShoppingCart, Shield, Mail, User, Phone, Smartphone, Calendar, Globe, Users, Info, Lock, BriefcaseIcon, ChevronRight, Code2, Palette, Terminal, MapPin, FolderClosed, FileText, Download, UserCheck, UserMinus, Share2, Link, Hash } from "lucide-react"
+import {
+  LinkedInBrandIcon,
+  InstagramBrandIcon,
+  TwitterBrandIcon,
+  FacebookBrandIcon,
+} from "@/components/icons/social-brand-icons"
 import { determineJobseekerMembershipFromUser } from "@/lib/jobseeker-membership"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import axios from "axios"
@@ -421,7 +427,7 @@ export default function AdminUserDetailPage() {
       officeAddress: userData.companyLocation || userData.officeAddress || "N/A",
     },
     website: userData.website || "N/A",
-    verified: Boolean(userData.verificationStatus === 'verified'),
+    verified: Boolean(userData.documents?.businessLicense),
     logo: userData.companyLogo || userData.profilePhoto || "",
     specialties: userData.specialties || [],
     achievements: userData.achievements || [],
@@ -434,7 +440,7 @@ export default function AdminUserDetailPage() {
     phone: userData.phoneNumber || "N/A",
     isAdminView: true,
     membershipTier: userData.membershipTier || "Blue",
-    verificationStatus: userData.verificationStatus || "Pending",
+    verificationStatus: userData.documents?.businessLicense ? "verified" : (userData.verificationStatus || "pending"),
     profileCompleted: userData.profileCompleted || 0,
   }
 
@@ -501,7 +507,7 @@ export default function AdminUserDetailPage() {
                     </div>
                     <div>
                       <div className="text-xs text-gray-500 mb-1.5 font-medium">Verification</div>
-                      <div className="font-semibold text-slate-800 text-sm capitalize">{userData.verificationStatus || "Pending"}</div>
+                      <div className="font-semibold text-slate-800 text-sm capitalize">{userData.documents?.businessLicense ? "verified" : (userData.verificationStatus || "pending")}</div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-500 mb-1.5 font-medium">Available Points</div>
@@ -756,32 +762,10 @@ export default function AdminUserDetailPage() {
                       href={userData.website.startsWith("http") ? userData.website : `https://${userData.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-150 flex items-center justify-center hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 transition-colors shadow-sm"
+                      className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center hover:bg-emerald-100 text-emerald-600 hover:text-emerald-800 transition-colors shadow-sm"
                       title="Website"
                     >
                       <Link className="w-4 h-4" />
-                    </a>
-                  )}
-                  {userData.socialLinks?.instagram && (
-                    <a
-                      href={userData.socialLinks.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-pink-50 border border-pink-150 flex items-center justify-center hover:bg-pink-100 text-pink-600 hover:text-pink-800 transition-colors shadow-sm"
-                      title="Instagram"
-                    >
-                      <Instagram className="w-4 h-4" />
-                    </a>
-                  )}
-                  {userData.socialLinks?.twitter && (
-                    <a
-                      href={userData.socialLinks.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-sky-50 border border-sky-150 flex items-center justify-center hover:bg-sky-100 text-sky-500 hover:text-sky-700 transition-colors shadow-sm"
-                      title="Twitter"
-                    >
-                      <Twitter className="w-4 h-4" />
                     </a>
                   )}
                   {userData.socialLinks?.linkedin && (
@@ -789,10 +773,32 @@ export default function AdminUserDetailPage() {
                       href={userData.socialLinks.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-blue-50 border border-blue-150 flex items-center justify-center hover:bg-blue-100 text-blue-650 hover:text-blue-800 transition-colors shadow-sm"
+                      className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
                       title="LinkedIn"
                     >
-                      <Linkedin className="w-4 h-4" />
+                      <LinkedInBrandIcon className="w-5 h-5" />
+                    </a>
+                  )}
+                  {userData.socialLinks?.instagram && (
+                    <a
+                      href={userData.socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+                      title="Instagram"
+                    >
+                      <InstagramBrandIcon className="w-5 h-5" />
+                    </a>
+                  )}
+                  {userData.socialLinks?.twitter && (
+                    <a
+                      href={userData.socialLinks.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+                      title="Twitter"
+                    >
+                      <TwitterBrandIcon className="w-5 h-5" />
                     </a>
                   )}
                   {userData.socialLinks?.facebook && (
@@ -800,10 +806,10 @@ export default function AdminUserDetailPage() {
                       href={userData.socialLinks.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center hover:bg-indigo-100 text-indigo-600 hover:text-indigo-800 transition-colors shadow-sm"
+                      className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
                       title="Facebook"
                     >
-                      <Facebook className="w-4 h-4" />
+                      <FacebookBrandIcon className="w-5 h-5" />
                     </a>
                   )}
                 </div>
