@@ -26,7 +26,7 @@ export function AdminDataTable<T extends Record<string, any>>({
   columns, 
   searchable = true, 
   pageSize = 10,
-  actions 
+  actions,
 }: AdminDataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
@@ -105,7 +105,10 @@ export function AdminDataTable<T extends Record<string, any>>({
             <Input
               placeholder="Search..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setCurrentPage(1)
+              }}
               className="pl-8"
             />
           </div>

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { AdminDataTable } from "@/components/admin-data-table"
 import { getJobs, updateJobStatus, type ActiveJob, type JobsApiResponse } from "@/lib/admin-api"
 import { useRouter } from "next/navigation"
-import { Eye, Pause, X, Download, RefreshCw } from "lucide-react"
+import { Eye, Pause, X, Download, RefreshCw, Search } from "lucide-react"
 import * as XLSX from 'xlsx'
 import { toast } from "sonner"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
@@ -24,6 +25,8 @@ import {
 export default function AdminJobsPage() {
   const router = useRouter()
   const [jobs, setJobs] = useState<ActiveJob[]>([])
+  const [searchInput, setSearchInput] = useState("")
+  const [activeSearch, setActiveSearch] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pagination, setPagination] = useState({
@@ -36,7 +39,7 @@ export default function AdminJobsPage() {
   })
 
   // Fetch jobs data
-  const fetchJobs = async (page: number = 1) => {
+  const fetchJobs = async (page: number = 1, search: string = activeSearch) => {
     try {
       setIsLoading(true)
       setError(null)
@@ -44,9 +47,10 @@ export default function AdminJobsPage() {
       const response = await getJobs({
         page,
         limit: 10,
+        search,
         sortBy: 'createdAt',
         sortOrder: 'desc',
-        status: 'all' // Get all jobs including active, paused, closed
+        status: 'all'
       })
 
       setJobs(response.jobs)
@@ -59,13 +63,24 @@ export default function AdminJobsPage() {
     }
   }
 
-  // Load data when component mounts
   useEffect(() => {
-    fetchJobs()
+    fetchJobs(1, "")
   }, [])
 
+  const handleSearch = () => {
+    const query = searchInput.trim()
+    setActiveSearch(query)
+    fetchJobs(1, query)
+  }
+
+  const handleClearSearch = () => {
+    setSearchInput("")
+    setActiveSearch("")
+    fetchJobs(1, "")
+  }
+
   const handleRefresh = () => {
-    fetchJobs(pagination.currentPage)
+    fetchJobs(pagination.currentPage, activeSearch)
   }
 
   const columns = [
@@ -252,6 +267,35 @@ export default function AdminJobsPage() {
         </div>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+        <div className="relative flex-1 sm:max-w-md">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search all jobs by title, company, location..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="pl-8"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSearch} disabled={isLoading}>
+            Search
+          </Button>
+          {activeSearch && (
+            <Button variant="outline" onClick={handleClearSearch} disabled={isLoading}>
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {activeSearch && (
+        <p className="text-sm text-gray-600">
+          Showing results for: <span className="font-medium text-gray-900">&quot;{activeSearch}&quot;</span>
+        </p>
+      )}
+
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <LoadingSpinner size={32} />
@@ -263,6 +307,7 @@ export default function AdminJobsPage() {
             data={jobs}
             columns={columns}
             actions={renderActions}
+            searchable={false}
           />
 
           {/* Pagination Controls */}
@@ -277,7 +322,7 @@ export default function AdminJobsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchJobs(pagination.currentPage - 1)}
+                  onClick={() => fetchJobs(pagination.currentPage - 1, activeSearch)}
                   disabled={!pagination.hasPrevPage || isLoading}
                 >
                   Previous
@@ -288,7 +333,7 @@ export default function AdminJobsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchJobs(pagination.currentPage + 1)}
+                  onClick={() => fetchJobs(pagination.currentPage + 1, activeSearch)}
                   disabled={!pagination.hasNextPage || isLoading}
                 >
                   Next

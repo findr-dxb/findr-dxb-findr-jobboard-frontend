@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { AdminDataTable } from "@/components/admin-data-table"
 import { Jobseeker, Employer } from "@/lib/admin-types"
-import { blockUser, unblockUser, getUsersByType, type UsersApiResponse } from "@/lib/admin-api"
+import { blockUser, unblockUser, getUsersByType } from "@/lib/admin-api"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Eye, Download, Ban, RefreshCw } from "lucide-react"
+import { Eye, Download, Ban, RefreshCw, Search } from "lucide-react"
 import * as XLSX from 'xlsx'
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import {
@@ -21,43 +22,44 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+const defaultPagination = {
+  currentPage: 1,
+  totalPages: 0,
+  totalCount: 0,
+  hasNextPage: false,
+  hasPrevPage: false,
+  limit: 10,
+}
+
 export default function AdminUsersPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<'jobseekers' | 'employers'>('jobseekers')
+  const [searchInput, setSearchInput] = useState("")
+  const [activeSearch, setActiveSearch] = useState("")
   const [jobseekers, setJobseekers] = useState<Jobseeker[]>([])
   const [employers, setEmployers] = useState<Employer[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [jobseekerPagination, setJobseekerPagination] = useState({
-    currentPage: 1,
-    totalPages: 0,
-    totalCount: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-    limit: 10
-  })
-  const [employerPagination, setEmployerPagination] = useState({
-    currentPage: 1,
-    totalPages: 0,
-    totalCount: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-    limit: 10
-  })
+  const [jobseekerPagination, setJobseekerPagination] = useState(defaultPagination)
+  const [employerPagination, setEmployerPagination] = useState(defaultPagination)
   const hasInitialFetch = useRef(false)
 
-  // Fetch users data based on active tab
-  const fetchUsers = async (userType: 'jobseeker' | 'employer', page: number = 1) => {
+  const fetchUsers = async (
+    userType: 'jobseeker' | 'employer',
+    page: number = 1,
+    search: string = activeSearch
+  ) => {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const response = await getUsersByType(userType, {
         page,
         limit: 10,
+        search,
         sortBy: 'createdAt',
-        sortOrder: 'desc'
+        sortOrder: 'desc',
       })
 
       if (userType === 'jobseeker') {
@@ -75,9 +77,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  // Pre-fetch both counts on initial mount so counts are available for both tabs
   useEffect(() => {
-    // Initialize tab from query (?tab=employers|jobseekers)
     const initialTab = searchParams?.get('tab') === 'employers' ? 'employers' : 'jobseekers'
     setActiveTab(initialTab)
 
@@ -87,20 +87,9 @@ export default function AdminUsersPage() {
 
       try {
         setIsLoading(true)
-        // Fetch both jobseekers and employers on initial load
         const [jobseekerResponse, employerResponse] = await Promise.all([
-          getUsersByType('jobseeker', {
-            page: 1,
-            limit: 10,
-            sortBy: 'createdAt',
-            sortOrder: 'desc'
-          }),
-          getUsersByType('employer', {
-            page: 1,
-            limit: 10,
-            sortBy: 'createdAt',
-            sortOrder: 'desc'
-          })
+          getUsersByType('jobseeker', { page: 1, limit: 10, search: "", sortBy: 'createdAt', sortOrder: 'desc' }),
+          getUsersByType('employer', { page: 1, limit: 10, search: "", sortBy: 'createdAt', sortOrder: 'desc' }),
         ])
 
         setJobseekers(jobseekerResponse.users as Jobseeker[])
@@ -115,31 +104,35 @@ export default function AdminUsersPage() {
       }
     }
 
-    // Only fetch on initial mount
     fetchInitialCounts()
-  }, []) // Empty dependency array - only run on mount
+  }, [])
 
-  // Load data when tab changes (but skip on initial mount since we fetch both above)
-  useEffect(() => {
-    if (!hasInitialFetch.current) return // Skip if initial fetch hasn't completed yet
-    
+  const handleSearch = () => {
+    const query = searchInput.trim()
+    setActiveSearch(query)
     const userType = activeTab === 'jobseekers' ? 'jobseeker' : 'employer'
-    fetchUsers(userType)
-  }, [activeTab])
+    fetchUsers(userType, 1, query)
+  }
+
+  const handleClearSearch = () => {
+    setSearchInput("")
+    setActiveSearch("")
+    const userType = activeTab === 'jobseekers' ? 'jobseeker' : 'employer'
+    fetchUsers(userType, 1, "")
+  }
 
   const handleRefresh = () => {
     const userType = activeTab === 'jobseekers' ? 'jobseeker' : 'employer'
     const currentPagination = activeTab === 'jobseekers' ? jobseekerPagination : employerPagination
-    fetchUsers(userType, currentPagination.currentPage)
+    fetchUsers(userType, currentPagination.currentPage, activeSearch)
   }
 
   const handleTabChange = (tab: 'jobseekers' | 'employers') => {
     setActiveTab(tab)
-    if (tab === 'jobseekers') {
-      setJobseekerPagination(prev => ({ ...prev, currentPage: 1 })) // Reset to first page
-    } else {
-      setEmployerPagination(prev => ({ ...prev, currentPage: 1 })) // Reset to first page
-    }
+    setSearchInput("")
+    setActiveSearch("")
+    const userType = tab === 'jobseekers' ? 'jobseeker' : 'employer'
+    fetchUsers(userType, 1, "")
   }
 
   const jobseekerColumns = [
@@ -169,16 +162,16 @@ export default function AdminUsersPage() {
   const handleExportToExcel = () => {
     const data = activeTab === 'jobseekers' ? jobseekers : employers
     const columns = activeTab === 'jobseekers' ? jobseekerColumns : employerColumns
-    
+
     const workbook = XLSX.utils.book_new()
     const worksheetData = [
       columns.map(col => col.label),
       ...data.map(row => columns.map(col => (row as any)[col.key]))
     ]
-    
+
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
     XLSX.utils.book_append_sheet(workbook, worksheet, activeTab === 'jobseekers' ? 'Jobseekers' : 'Employers')
-    
+
     const filename = `${activeTab === 'jobseekers' ? 'Jobseekers' : 'Employers'}_${new Date().toISOString().split('T')[0]}.xlsx`
     XLSX.writeFile(workbook, filename)
   }
@@ -190,33 +183,25 @@ export default function AdminUsersPage() {
 
   const handleBlockUser = async (userId: string, userType: 'jobseeker' | 'employer') => {
     try {
-      // Call the API to block the user
-      const success = await blockUser(userId, userType);
-      
+      const success = await blockUser(userId, userType)
       if (success) {
-        // Refresh the data to get the updated status from the server
         const currentPagination = userType === 'jobseeker' ? jobseekerPagination : employerPagination
-        await fetchUsers(userType, currentPagination.currentPage);
+        await fetchUsers(userType, currentPagination.currentPage, activeSearch)
       }
     } catch (error) {
-      console.error('Failed to block user:', error);
-      // In a real app, you might want to show a toast notification here
+      console.error('Failed to block user:', error)
     }
   }
 
   const handleUnblockUser = async (userId: string, userType: 'jobseeker' | 'employer') => {
     try {
-      // Call the API to unblock the user
-      const success = await unblockUser(userId, userType);
-      
+      const success = await unblockUser(userId, userType)
       if (success) {
-        // Refresh the data to get the updated status from the server
         const currentPagination = userType === 'jobseeker' ? jobseekerPagination : employerPagination
-        await fetchUsers(userType, currentPagination.currentPage);
+        await fetchUsers(userType, currentPagination.currentPage, activeSearch)
       }
     } catch (error) {
-      console.error('Failed to unblock user:', error);
-      // In a real app, you might want to show a toast notification here
+      console.error('Failed to unblock user:', error)
     }
   }
 
@@ -239,11 +224,7 @@ export default function AdminUsersPage() {
       {jobseeker.loginStatus !== 'blocked' ? (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="flex items-center gap-1"
-            >
+            <Button variant="destructive" size="sm" className="flex items-center gap-1">
               <Ban className="w-3 h-3" />
               Block
             </Button>
@@ -257,10 +238,7 @@ export default function AdminUsersPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => handleBlockUser(jobseeker.id, 'jobseeker')}
-                className="bg-red-600 hover:bg-red-700"
-              >
+              <AlertDialogAction onClick={() => handleBlockUser(jobseeker.id, 'jobseeker')} className="bg-red-600 hover:bg-red-700">
                 Yes, Block User
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -269,11 +247,7 @@ export default function AdminUsersPage() {
       ) : (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50"
-            >
+            <Button variant="outline" size="sm" className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50">
               <RefreshCw className="w-3 h-3" />
               Unblock
             </Button>
@@ -287,10 +261,7 @@ export default function AdminUsersPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => handleUnblockUser(jobseeker.id, 'jobseeker')}
-                className="bg-green-600 hover:bg-green-700"
-              >
+              <AlertDialogAction onClick={() => handleUnblockUser(jobseeker.id, 'jobseeker')} className="bg-green-600 hover:bg-green-700">
                 Yes, Unblock User
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -319,11 +290,7 @@ export default function AdminUsersPage() {
       {employer.loginStatus !== 'blocked' ? (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="flex items-center gap-1"
-            >
+            <Button variant="destructive" size="sm" className="flex items-center gap-1">
               <Ban className="w-3 h-3" />
               Block
             </Button>
@@ -337,10 +304,7 @@ export default function AdminUsersPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => handleBlockUser(employer.id, 'employer')}
-                className="bg-red-600 hover:bg-red-700"
-              >
+              <AlertDialogAction onClick={() => handleBlockUser(employer.id, 'employer')} className="bg-red-600 hover:bg-red-700">
                 Yes, Block User
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -349,11 +313,7 @@ export default function AdminUsersPage() {
       ) : (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50"
-            >
+            <Button variant="outline" size="sm" className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50">
               <RefreshCw className="w-3 h-3" />
               Unblock
             </Button>
@@ -367,10 +327,7 @@ export default function AdminUsersPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => handleUnblockUser(employer.id, 'employer')}
-                className="bg-green-600 hover:bg-green-700"
-              >
+              <AlertDialogAction onClick={() => handleUnblockUser(employer.id, 'employer')} className="bg-green-600 hover:bg-green-700">
                 Yes, Unblock User
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -379,6 +336,9 @@ export default function AdminUsersPage() {
       )}
     </div>
   )
+
+  const pagination = activeTab === 'jobseekers' ? jobseekerPagination : employerPagination
+  const userType = activeTab === 'jobseekers' ? 'jobseeker' : 'employer'
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -393,22 +353,11 @@ export default function AdminUsersPage() {
           )}
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={handleRefresh}
-            disabled={isLoading}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
+          <Button onClick={handleRefresh} disabled={isLoading} variant="outline" size="sm" className="flex items-center gap-2">
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button
-            onClick={handleExportToExcel}
-            variant="outline"
-            className="flex items-center gap-2 w-full sm:w-auto"
-            disabled={isLoading}
-          >
+          <Button onClick={handleExportToExcel} variant="outline" className="flex items-center gap-2 w-full sm:w-auto" disabled={isLoading}>
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export to Excel</span>
             <span className="sm:hidden">Export</span>
@@ -417,23 +366,42 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-gray-100 p-1 rounded-lg w-full sm:w-fit">
-        <Button
-          variant={activeTab === 'jobseekers' ? 'default' : 'ghost'}
-          onClick={() => handleTabChange('jobseekers')}
-          className="px-4 w-full sm:w-auto"
-          disabled={isLoading}
-        >
+        <Button variant={activeTab === 'jobseekers' ? 'default' : 'ghost'} onClick={() => handleTabChange('jobseekers')} className="px-4 w-full sm:w-auto" disabled={isLoading}>
           Jobseekers ({jobseekerPagination.totalCount > 0 ? jobseekerPagination.totalCount : jobseekers.length})
         </Button>
-        <Button
-          variant={activeTab === 'employers' ? 'default' : 'ghost'}
-          onClick={() => handleTabChange('employers')}
-          className="px-4 w-full sm:w-auto"
-          disabled={isLoading}
-        >
+        <Button variant={activeTab === 'employers' ? 'default' : 'ghost'} onClick={() => handleTabChange('employers')} className="px-4 w-full sm:w-auto" disabled={isLoading}>
           Employers ({employerPagination.totalCount > 0 ? employerPagination.totalCount : employers.length})
         </Button>
       </div>
+
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+        <div className="relative flex-1 sm:max-w-md">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search all users by name, email, phone..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="pl-8"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSearch} disabled={isLoading}>
+            Search
+          </Button>
+          {activeSearch && (
+            <Button variant="outline" onClick={handleClearSearch} disabled={isLoading}>
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {activeSearch && (
+        <p className="text-sm text-gray-600">
+          Showing results for: <span className="font-medium text-gray-900">&quot;{activeSearch}&quot;</span>
+        </p>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
@@ -443,59 +411,41 @@ export default function AdminUsersPage() {
       ) : (
         <>
           {activeTab === 'jobseekers' ? (
-            <AdminDataTable
-              data={jobseekers}
-              columns={jobseekerColumns}
-              actions={renderJobseekerActions}
-            />
+            <AdminDataTable data={jobseekers} columns={jobseekerColumns} actions={renderJobseekerActions} searchable={false} />
           ) : (
-            <AdminDataTable
-              data={employers}
-              columns={employerColumns}
-              actions={renderEmployerActions}
-            />
+            <AdminDataTable data={employers} columns={employerColumns} actions={renderEmployerActions} searchable={false} />
           )}
 
-          {/* Pagination Controls */}
-          {(() => {
-            const pagination = activeTab === 'jobseekers' ? jobseekerPagination : employerPagination
-            return pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-700">
-                  Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to{' '}
-                  {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of{' '}
-                  {pagination.totalCount} results
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const userType = activeTab === 'jobseekers' ? 'jobseeker' : 'employer'
-                      fetchUsers(userType, pagination.currentPage - 1)
-                    }}
-                    disabled={!pagination.hasPrevPage || isLoading}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm text-gray-600">
-                    Page {pagination.currentPage} of {pagination.totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const userType = activeTab === 'jobseekers' ? 'jobseeker' : 'employer'
-                      fetchUsers(userType, pagination.currentPage + 1)
-                    }}
-                    disabled={!pagination.hasNextPage || isLoading}
-                  >
-                    Next
-                  </Button>
-                </div>
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to{' '}
+                {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of{' '}
+                {pagination.totalCount} results
               </div>
-            )
-          })()}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchUsers(userType, pagination.currentPage - 1, activeSearch)}
+                  disabled={!pagination.hasPrevPage || isLoading}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-600">
+                  Page {pagination.currentPage} of {pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchUsers(userType, pagination.currentPage + 1, activeSearch)}
+                  disabled={!pagination.hasNextPage || isLoading}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
