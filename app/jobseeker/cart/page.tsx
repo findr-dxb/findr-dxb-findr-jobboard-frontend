@@ -59,15 +59,12 @@ export default function CartPage() {
 
         const data = await response.json()
         if (data.success && data.data) {
-          // Prefer server points when available
           const apiPoints = (typeof data.data.points === 'number' ? data.data.points : (data.data.rewards?.totalPoints ?? null))
           const deducted = data.data?.deductedPoints || 0
           if (apiPoints !== null) {
             setUserPoints(Math.max(0, apiPoints - deducted))
           } else {
-            // Fallback to local calculation
-            const calc = calculateProfilePoints(data.data)
-            setUserPoints(calc)
+            setUserPoints(calculateProfilePoints(data.data))
           }
         }
     } catch (error) {
@@ -312,15 +309,11 @@ export default function CartPage() {
         if (data.success && data.data) {
           const apiPoints = (typeof data.data.points === 'number' ? data.data.points : (data.data.rewards?.totalPoints ?? null))
           const deducted = data.data?.deductedPoints || 0
-          if (apiPoints !== null) {
-            setUserPoints(Math.max(0, apiPoints - deducted))
-          } else {
-            const calc = calculateProfilePoints(data.data)
-            setUserPoints(calc)
-          }
+          const available = apiPoints !== null ? Math.max(0, apiPoints - deducted) : calculateProfilePoints(data.data)
+          setUserPoints(available)
           toast({
             title: "Points Refreshed",
-            description: `Your current balance is ${apiPoints !== null ? Math.max(0, apiPoints - deducted) : userPoints} points.`,
+            description: `Your current balance is ${available} points.`,
           })
         }
       }

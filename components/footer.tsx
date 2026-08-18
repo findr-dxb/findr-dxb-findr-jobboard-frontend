@@ -87,15 +87,25 @@ export function Footer() {
           <div className="space-y-6">
             <BilingualHeading english="Connect With Us" arabic="تواصل معنا" />
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-emerald-400 transition-all social-hover">
+              <a
+                href="https://www.linkedin.com/company/findr-dxb/posts/?feedView=all"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-emerald-400 transition-all social-hover"
+                aria-label="Findr on LinkedIn"
+              >
                 <Linkedin className="w-6 h-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-emerald-400 transition-all social-hover">
+              <a
+                href="https://www.instagram.com/findrdxb?igsh=azRib3c5Z2p6dGU=&igsi=azRib3c5Z2p6dGU="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-emerald-400 transition-all social-hover"
+                aria-label="Findr on Instagram"
+              >
                 <Instagram className="w-6 h-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-emerald-400 transition-all social-hover">
-                <MessageCircle className="w-6 h-6" />
-              </a>
+              
             </div>
             <div className="space-y-2">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4">

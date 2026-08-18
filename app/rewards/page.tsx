@@ -1,265 +1,218 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Gift, Star, Trophy, Crown, CheckCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import {
+  Gift,
+  UserCheck,
+  FileText,
+  Trophy,
+  ArrowRight,
+  Users,
+  Briefcase,
+  Sparkles,
+  Wallet,
+} from "lucide-react"
 
-const rewardTiers = [
-  {
-    name: "Bronze",
-    points: 0,
-    icon: Star,
-    color: "text-amber-600",
-    bgColor: "bg-amber-50",
-    borderColor: "border-amber-200",
-  },
-  {
-    name: "Silver",
-    points: 100,
-    icon: Trophy,
-    color: "text-gray-600",
-    bgColor: "bg-gray-50",
-    borderColor: "border-gray-200",
-  },
-  {
-    name: "Gold",
-    points: 250,
-    icon: Crown,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-50",
-    borderColor: "border-yellow-200",
-  },
+const earnActions = [
+  { icon: UserCheck, label: "Complete your profile", points: "+250", color: "bg-emerald-100 text-emerald-800" },
+  { icon: Users, label: "Invite a friend to Findr", points: "+100", color: "bg-pink-100 text-pink-800" },
+  { icon: FileText, label: "Refer a friend for a job", points: "+20 / job", color: "bg-blue-100 text-blue-800" },
+  { icon: Trophy, label: "Referred friend gets hired", points: "+1000", color: "bg-yellow-100 text-yellow-800" },
+  { icon: Sparkles, label: "Purchase a premium RM service", points: "+100", color: "bg-purple-100 text-purple-800" },
 ]
 
-const rewards = [
+const spendOptions = [
   {
-    id: 1,
-    title: "20% off Resume Builder",
-    description: "Professional resume creation service",
-    discount: 20,
-    pointsRequired: 50,
-    category: "Resume Services",
+    title: "RM Basic Service",
+    description: "Job applications, email handling, and profile support from a Relationship Manager.",
+    cost: "800 points",
+    href: "/jobseeker/premium",
   },
   {
-    id: 2,
-    title: "30% off Visa Consultation",
-    description: "Expert guidance on visa requirements",
-    discount: 30,
-    pointsRequired: 75,
-    category: "Visa Services",
-  },
-  {
-    id: 3,
-    title: "25% off Mobility Support",
-    description: "Relocation and settling assistance",
-    discount: 25,
-    pointsRequired: 100,
-    category: "Mobility Services",
-  },
-  {
-    id: 4,
-    title: "Free Career Consultation",
-    description: "1-hour session with career expert",
-    discount: 100,
-    pointsRequired: 150,
-    category: "Consultation",
-  },
-  {
-    id: 5,
-    title: "15% off HR Services",
-    description: "For employers - HR consultation discount",
-    discount: 15,
-    pointsRequired: 80,
-    category: "HR Services",
-  },
-  {
-    id: 6,
-    title: "Premium Job Alerts",
-    description: "Get notified of exclusive job opportunities",
-    discount: 100,
-    pointsRequired: 120,
-    category: "Premium Features",
+    title: "RM Elite Service",
+    description: "Priority interviews, dedicated support, and placement help until you are hired.",
+    cost: "1,100 points",
+    href: "/jobseeker/premium",
   },
 ]
 
 export default function RewardsPage() {
-  const [userPoints] = useState(150) // Mock user points
-  const { toast } = useToast()
+  const router = useRouter()
+  const [role, setRole] = useState<"jobseeker" | "employer" | null>(null)
+  const [userPoints, setUserPoints] = useState<number | null>(null)
 
-  const getCurrentTier = () => {
-    return rewardTiers.reduce((prev, current) => (userPoints >= current.points ? current : prev))
-  }
+  useEffect(() => {
+    const token = localStorage.getItem("findr_token") || localStorage.getItem("authToken")
+    if (!token) return
 
-  const getNextTier = () => {
-    return rewardTiers.find((tier) => tier.points > userPoints)
-  }
-
-  const handleRedeem = (reward: (typeof rewards)[0]) => {
-    if (userPoints >= reward.pointsRequired) {
-      toast({
-        title: "Reward Redeemed!",
-        description: `You've successfully redeemed ${reward.title}. Check your email for details.`,
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!json?.success || !json.data) return
+        const userRole = json.data.role === "employer" ? "employer" : "jobseeker"
+        setRole(userRole)
+        if (userRole === "jobseeker") {
+          const deducted = json.data.deductedPoints || 0
+          const stored = typeof json.data.points === "number" ? json.data.points : json.data.rewards?.totalPoints || 0
+          setUserPoints(Math.max(0, stored - deducted))
+        } else {
+          setUserPoints(typeof json.data.points === "number" ? json.data.points : 0)
+        }
       })
-    } else {
-      toast({
-        title: "Insufficient Points",
-        description: `You need ${reward.pointsRequired - userPoints} more points to redeem this reward.`,
-        variant: "destructive",
-      })
-    }
-  }
+      .catch(() => {})
+  }, [])
 
-  const currentTier = getCurrentTier()
-  const nextTier = getNextTier()
-  const progressToNext = nextTier
-    ? ((userPoints - currentTier.points) / (nextTier.points - currentTier.points)) * 100
-    : 100
+  const dashboardHref = role === "employer" ? "/rewards/employer" : "/rewards/jobseeker"
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="gradient-text">Rewards</span> Program
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Earn points for every action you take and unlock exclusive benefits and discounts
-          </p>
-        </div>
-
-        {/* Points Overview */}
-        <Card className="mb-12 border-2 border-emerald-200">
-          <CardHeader className="text-center">
-            <div className="flex items-center justify-center space-x-4 mb-4">
-              <div
-                className={`w-16 h-16 ${currentTier.bgColor} ${currentTier.borderColor} border-2 rounded-full flex items-center justify-center`}
-              >
-                <currentTier.icon className={`w-8 h-8 ${currentTier.color}`} />
+      <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
+        <Card className="border-0 shadow-lg rounded-2xl bg-gradient-to-br from-[#eaf3ff] to-white overflow-hidden">
+          <CardContent className="p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-md shrink-0">
+                <Trophy className="w-10 h-10 text-yellow-500" />
               </div>
               <div>
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {currentTier.name} Member
-                </Badge>
+                <h1 className="text-3xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+                  Findr Rewards
+                </h1>
+                <p className="text-gray-600 mt-2 max-w-xl">
+                  Earn points for profile activity, invites, and job referrals. Redeem them on premium RM services, or earn cash when a referred candidate is hired.
+                </p>
               </div>
             </div>
-            <CardTitle className="text-3xl gradient-text">{userPoints} Points</CardTitle>
-            <CardDescription className="text-lg">
-              {nextTier ? `${nextTier.points - userPoints} points to ${nextTier.name}` : "Maximum tier reached!"}
+
+            <div className="bg-white rounded-xl shadow-md px-6 py-5 min-w-[180px] border border-blue-50 text-center">
+              {userPoints === null ? (
+                <>
+                  <p className="text-xs uppercase tracking-wider text-gray-500 font-medium">Get started</p>
+                  <p className="text-lg font-bold text-blue-950 mt-1">Sign in to see points</p>
+                  <Button className="mt-3 gradient-bg text-white" onClick={() => router.push("/login")}>
+                    Login
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs uppercase tracking-wider text-gray-500 font-medium">Your balance</p>
+                  <p className="text-4xl font-black text-blue-950 mt-1">{userPoints}</p>
+                  <p className="text-blue-600 font-semibold text-xs mt-1">Available points</p>
+                  <Button className="mt-3 gradient-bg text-white" onClick={() => router.push(dashboardHref)}>
+                    Open rewards
+                  </Button>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-shadow border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center text-lg">
+              <Gift className="w-5 h-5 mr-2 text-emerald-600" />
+              How to earn points
+            </CardTitle>
+            <CardDescription>Current jobseeker rewards on Findr</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+            {earnActions.map((item) => (
+              <div key={item.label} className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <item.icon className="w-5 h-5 text-emerald-600" />
+                  <span className="text-sm md:text-base">{item.label}</span>
+                </div>
+                <Badge className={`${item.color} text-xs md:text-sm px-3 py-1`}>{item.points}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="card-shadow border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center text-lg">
+              <Wallet className="w-5 h-5 mr-2 text-emerald-600" />
+              Redeem points
+            </CardTitle>
+            <CardDescription>Use points on Premium RM Services. 1 point = 1 AED toward the package.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-2 gap-6">
+            {spendOptions.map((option) => (
+              <div key={option.title} className="rounded-xl border border-emerald-100 bg-white p-5 flex flex-col">
+                <h3 className="font-bold text-lg text-slate-900">{option.title}</h3>
+                <p className="text-sm text-gray-600 mt-2 flex-1">{option.description}</p>
+                <div className="flex items-center justify-between mt-4">
+                  <Badge className="bg-emerald-100 text-emerald-800">{option.cost}</Badge>
+                  <Button variant="outline" size="sm" onClick={() => router.push(option.href)}>
+                    View service
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="card-shadow border-0 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-emerald-400 to-blue-400 text-white text-center p-6">
+            <CardTitle className="text-2xl font-bold">Earn up to 10,000 AED</CardTitle>
+            <CardDescription className="text-white/90 text-base">
+              Refer someone to a job. If they get hired, you earn a cash reward.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {nextTier && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>{currentTier.name}</span>
-                  <span>{nextTier.name}</span>
-                </div>
-                <Progress value={progressToNext} className="h-3" />
-              </div>
-            )}
+          <CardContent className="p-6 text-center">
+            <p className="text-gray-700 mb-4">
+              Points are for platform rewards. Cash is paid separately when your referred candidate is hired.
+            </p>
+            <Link href="/rewards/jobseeker/earn-money">
+              <Badge className="bg-emerald-600 text-white px-4 py-2 text-base cursor-pointer">Learn more</Badge>
+            </Link>
           </CardContent>
         </Card>
 
-        {/* How to Earn Points */}
-        <Card className="mb-12">
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center">
-              <Gift className="w-6 h-6 mr-2 text-emerald-600" />
-              How to Earn Points
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="font-medium">Complete Profile</div>
-                  <div className="text-sm text-gray-600">+50 points</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="font-medium">Upload Resume</div>
-                  <div className="text-sm text-gray-600">+25 points</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="font-medium">Apply for Job</div>
-                  <div className="text-sm text-gray-600">+10 points</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="font-medium">Refer a Friend</div>
-                  <div className="text-sm text-gray-600">+30 points</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="font-medium">Get Hired</div>
-                  <div className="text-sm text-gray-600">+100 points</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="font-medium">Leave Review</div>
-                  <div className="text-sm text-gray-600">+15 points</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Available Rewards */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-6">Available Rewards</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rewards.map((reward) => (
-              <Card key={reward.id} className="border-2 hover:border-emerald-200 transition-colors">
-                <CardHeader>
-                  <div className="flex justify-between items-start mb-2">
-                    <Badge variant="outline">{reward.category}</Badge>
-                    <Badge variant="secondary" className="gradient-bg text-white">
-                      {reward.discount}% OFF
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-lg">{reward.title}</CardTitle>
-                  <CardDescription>{reward.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">{reward.pointsRequired} points</span>
-                    </div>
-                    <Button
-                      onClick={() => handleRedeem(reward)}
-                      disabled={userPoints < reward.pointsRequired}
-                      className={userPoints >= reward.pointsRequired ? "gradient-bg text-white" : ""}
-                    >
-                      {userPoints >= reward.pointsRequired ? "Redeem Now" : "Need More Points"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="card-shadow border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-emerald-600" />
+                Jobseekers
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Track points, share your invite link, and redeem RM packages from your rewards dashboard.
+              </p>
+              <Button className="w-full gradient-bg text-white" onClick={() => router.push("/rewards/jobseeker")}>
+                Jobseeker rewards
+              </Button>
+            </CardContent>
+          </Card>
+          <Card className="card-shadow border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-600" />
+                Employers
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Earn points by completing your company profile and posting jobs. Tiers follow company size.
+              </p>
+              <Button variant="outline" className="w-full" onClick={() => router.push("/rewards/employer")}>
+                Employer rewards
+              </Button>
+            </CardContent>
+          </Card>
         </div>
-
-        
       </div>
     </div>
   )

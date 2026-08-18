@@ -94,32 +94,20 @@ export default function JobSeekerRewardsPage() {
       const data = await response.json();
       setUserProfile(data.data);
 
-      const deducted = data.data?.deductedPoints || 0;
-      const metrics = calculateProfileMetrics(data.data);
-      setProfileCompletion(metrics.percentage);
+      const deducted = data.data?.deductedPoints || 0
+      const metrics = calculateProfileMetrics(data.data)
+      setProfileCompletion(metrics.percentage)
 
-      // Calculate activity points from individual components
-      const totalReferralRewardPoints = data.data.referralRewardPoints || 0;
+      const totalReferralRewardPoints = data.data.referralRewardPoints || 0
+      const basePoints = 50 + metrics.percentage * 2
+      const applicationPoints = data.data?.rewards?.applyForJobs || 0
+      const rmServicePoints = data.data?.rewards?.rmService || 0
+      const socialMediaBonus = data.data?.rewards?.socialMediaBonus || 0
+      const activityRewardPoints = basePoints + applicationPoints + rmServicePoints + socialMediaBonus + totalReferralRewardPoints
+      const totalPoints = Math.max(0, activityRewardPoints - deducted)
 
-      // Calculate base points
-      const basePoints = 50 + metrics.percentage * 2; // Base 50 + 2 points per percentage
-
-      // Use base points directly without multiplier
-      const calculatedBasePoints = basePoints;
-
-      // Add other points (applications, RM service, social media, referrals)
-      const applicationPoints = data.data?.rewards?.applyForJobs || 0;
-      const rmServicePoints = data.data?.rewards?.rmService || 0;
-      const socialMediaBonus = data.data?.rewards?.socialMediaBonus || 0;
-
-      // Activity points = Base Points + Applications + RM Service + Social Media + Referrals
-      const activityRewardPoints = calculatedBasePoints + applicationPoints + rmServicePoints + socialMediaBonus + totalReferralRewardPoints;
-
-      // Calculate total points: Activity Points - Deducted Points
-      const totalPoints = Math.max(0, activityRewardPoints - deducted);
-
-      setActivityPoints(totalPoints);
-      setUserPoints(totalPoints);
+      setActivityPoints(totalPoints)
+      setUserPoints(totalPoints)
 
       const referralCode = data.data?.referralCode || "";
       if (referralCode) {

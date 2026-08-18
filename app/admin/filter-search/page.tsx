@@ -71,7 +71,8 @@ export default function FilterSearchPage() {
   const [name, setName] = useState("")
   const [industry, setIndustry] = useState("")
   const [nationality, setNationality] = useState("")
-  const [salary, setSalary] = useState("")
+  const [minSalary, setMinSalary] = useState("")
+  const [maxSalary, setMaxSalary] = useState("")
   const [location, setLocation] = useState("")
   const [role, setRole] = useState("")
   const [spokenLanguages, setSpokenLanguages] = useState("")
@@ -94,7 +95,8 @@ export default function FilterSearchPage() {
       if (name) queryParams.append("name", name)
       if (industry) queryParams.append("industry", industry)
       if (nationality) queryParams.append("nationality", nationality)
-      if (salary) queryParams.append("salary", salary)
+      if (minSalary) queryParams.append("minSalary", minSalary)
+      if (maxSalary) queryParams.append("maxSalary", maxSalary)
       if (location) queryParams.append("location", location)
       if (role) queryParams.append("role", role)
       if (spokenLanguages) queryParams.append("spokenLanguages", spokenLanguages)
@@ -131,6 +133,12 @@ export default function FilterSearchPage() {
   }
 
   const handleApplyFilters = () => {
+    const min = minSalary.trim() ? Number(minSalary) : null
+    const max = maxSalary.trim() ? Number(maxSalary) : null
+    if (min !== null && max !== null && min > max) {
+      setError("Minimum salary cannot be greater than maximum salary")
+      return
+    }
     fetchSearchResults(1)
   }
 
@@ -138,7 +146,9 @@ export default function FilterSearchPage() {
     setName("")
     setIndustry("")
     setNationality("")
-    setSalary("")
+    setMinSalary("")
+    setMaxSalary("")
+    setError(null)
     setLocation("")
     setRole("")
     setSpokenLanguages("")
@@ -338,15 +348,27 @@ export default function FilterSearchPage() {
             />
 
             <div className="space-y-2">
-              <Label htmlFor="salary" className="font-semibold text-gray-700">Salary Expectation (AED)</Label>
-              <Input
-                id="salary"
-                type="number"
-                placeholder="e.g. 15000"
-                value={salary}
-                onChange={(e) => setSalary(e.target.value)}
-                className="bg-white border-gray-200 h-11"
-              />
+              <Label className="font-semibold text-gray-700">Salary Range (AED)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="minSalary"
+                  type="number"
+                  min="0"
+                  placeholder="Min"
+                  value={minSalary}
+                  onChange={(e) => setMinSalary(e.target.value)}
+                  className="bg-white border-gray-200 h-11"
+                />
+                <Input
+                  id="maxSalary"
+                  type="number"
+                  min="0"
+                  placeholder="Max"
+                  value={maxSalary}
+                  onChange={(e) => setMaxSalary(e.target.value)}
+                  className="bg-white border-gray-200 h-11"
+                />
+              </div>
             </div>
 
             {/* Row 2 */}

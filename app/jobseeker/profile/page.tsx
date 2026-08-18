@@ -114,6 +114,8 @@ interface ProfileData {
   rewards?: {
     applyForJobs?: number
     rmService?: number
+    socialMediaBonus?: number
+    referFriend?: number
     totalPoints?: number
   }
 }
@@ -302,6 +304,13 @@ export default function JobSeekerProfilePage() {
             twitter: apiData.socialLinks?.twitterX || "",
           },
           deductedPoints: apiData.deductedPoints || 0,
+          rewards: {
+            applyForJobs: apiData.rewards?.applyForJobs || 0,
+            rmService: apiData.rewards?.rmService || 0,
+            socialMediaBonus: apiData.rewards?.socialMediaBonus || 0,
+            referFriend: apiData.rewards?.referFriend || 0,
+            totalPoints: apiData.rewards?.totalPoints || 0,
+          },
         }))
 
         setSocialFollowStatus({
@@ -1965,7 +1974,6 @@ export default function JobSeekerProfilePage() {
           <FollowUs
             initialFollowStatus={socialFollowStatus}
             onPointsEarned={(platform, earnedPoints) => {
-              // Recalculate points with the new earned points
               const newCalculatedPoints = 50 + profileCompletion * 2 + earnedPoints
               const deductedPoints = profileData.deductedPoints || 0
               const availablePoints = Math.max(0, newCalculatedPoints - deductedPoints)

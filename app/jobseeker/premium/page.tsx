@@ -72,10 +72,8 @@ export default function PremiumServicesPage() {
             // Backend stores total points including all components (base, applications, RM service, social media, referrals)
             // We just need to subtract deducted points to get available points
             const deducted = data.data?.deductedPoints || 0
-            const dbPoints = typeof data.data.points === 'number' ? data.data.points : 0
-            const availablePoints = Math.max(0, dbPoints - deducted)
-            
-            setUserPoints(availablePoints)
+            const dbPoints = typeof data.data.points === "number" ? data.data.points : (data.data.rewards?.totalPoints || 0)
+            setUserPoints(Math.max(0, dbPoints - deducted))
           }
         }
       } catch (error) {
