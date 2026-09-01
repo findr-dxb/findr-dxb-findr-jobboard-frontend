@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User, Briefcase, Eye, EyeOff, KeyRound } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/auth-context"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -30,7 +31,7 @@ function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  
+
   // OTP Verification States
   const [isVerifying, setIsVerifying] = useState(false)
   const [verificationOtp, setVerificationOtp] = useState("")
@@ -41,6 +42,7 @@ function SignupForm() {
   const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { refreshAuth } = useAuth()
 
   useEffect(() => {
     const refCode = searchParams?.get('ref');
@@ -72,7 +74,7 @@ function SignupForm() {
   const handleOtpChange = (val: string, idx: number) => {
     const cleanVal = val.replace(/\D/g, "")
     const newValues = [...otpValues]
-    
+
     if (cleanVal.length > 1) {
       const pastedDigits = cleanVal.slice(0, 4).split("")
       const updatedValues = ["", "", "", ""]
@@ -81,7 +83,7 @@ function SignupForm() {
       })
       setOtpValues(updatedValues)
       setVerificationOtp(updatedValues.join(""))
-      
+
       const focusIdx = Math.min(pastedDigits.length - 1, 3)
       const targetInput = document.getElementById(`otp-input-${focusIdx}`)
       targetInput?.focus()
@@ -172,7 +174,7 @@ function SignupForm() {
         title: "Verification Code Sent!",
         description: "Please check your email for the 4-digit code.",
       })
-      
+
       setIsVerifying(true)
       setResendCountdown(30)
 
@@ -229,15 +231,15 @@ function SignupForm() {
         localStorage.setItem("findr_role", data.user.role)
       }
 
+      await refreshAuth()
+
       toast({
         title: "Email Verified!",
         description: "Your account is verified. Logging you in...",
       })
 
-      setTimeout(() => {
-        const redirectUrl = formData.accountType === "jobseeker" ? "/jobseeker/dashboard" : "/employer/dashboard";
-        router.replace(redirectUrl)
-      }, 1500)
+      const redirectUrl = formData.accountType === "jobseeker" ? "/jobseeker/dashboard" : "/employer/dashboard"
+      router.replace(redirectUrl)
 
     } catch (error) {
       console.error("Verification error:", error)
@@ -340,9 +342,9 @@ function SignupForm() {
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={otpLoading || verificationOtp.length !== 4} 
+                <Button
+                  type="submit"
+                  disabled={otpLoading || verificationOtp.length !== 4}
                   className="w-full h-11 gradient-bg text-white font-semibold rounded-xl card-shadow hover:opacity-95 active:scale-[0.98] transition-all"
                 >
                   {otpLoading ? "Verifying..." : "Verify & Activate Account"}
@@ -512,7 +514,7 @@ function SignupForm() {
                   placeholder="Enter referral code"
                   className="h-11"
                 />
-                
+
               </div>
 
               <div className="flex items-center space-x-2">

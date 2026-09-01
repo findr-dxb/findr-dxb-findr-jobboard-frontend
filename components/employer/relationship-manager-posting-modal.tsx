@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { AlertCircle, Loader2, Mail, Phone, User, X } from "lucide-react"
+import { AlertCircle, Loader2, Mail, Phone, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 const API_BASE_URL =
@@ -18,10 +18,10 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL
 
 const RM_PROFILE = {
-  name: "Sarah Ahmed",
-  title: "Senior Account Executive",
-  email: "sarah.ahmed@findr.ae",
-  phone: "+971 4 555 0192",
+  name: "Shruti Singh",
+  title: "Relationship Manager",
+  email: "shruti.singh@findr.ae",
+  phone: "+971545515125",
   phoneLabel: "Dubai Contact",
 }
 
@@ -135,8 +135,12 @@ export function RelationshipManagerPostingModal({
 
         <form onSubmit={handleSubmit} className="p-4 space-y-3 bg-white">
           <div className="text-center">
-            <div className="mx-auto w-16 h-16 rounded-full border-2 border-emerald-200 bg-emerald-50 flex items-center justify-center overflow-hidden mb-2">
-              <User className="w-8 h-8 text-emerald-600" />
+            <div className="mx-auto w-16 h-16 rounded-full border-2 border-emerald-200 overflow-hidden mb-2">
+              <img
+                src="/shruti.jpeg"
+                alt={RM_PROFILE.name}
+                className="w-full h-full object-cover"
+              />
             </div>
             <h3 className="text-lg font-bold text-gray-900">{RM_PROFILE.name}</h3>
             <p className="text-sm font-medium text-emerald-700">{RM_PROFILE.title}</p>
