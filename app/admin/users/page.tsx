@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AdminDataTable } from "@/components/admin-data-table"
 import { Jobseeker, Employer } from "@/lib/admin-types"
-import { blockUser, unblockUser, getUsersByType } from "@/lib/admin-api"
+import { blockUser, unblockUser, getUsersByType, getUsersForExport } from "@/lib/admin-api"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, Download, Ban, RefreshCw, Search } from "lucide-react"
 import * as XLSX from 'xlsx'
@@ -40,6 +40,7 @@ export default function AdminUsersPage() {
   const [jobseekers, setJobseekers] = useState<Jobseeker[]>([])
   const [employers, setEmployers] = useState<Employer[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isExporting, setIsExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [jobseekerPagination, setJobseekerPagination] = useState(defaultPagination)
   const [employerPagination, setEmployerPagination] = useState(defaultPagination)
@@ -159,21 +160,37 @@ export default function AdminUsersPage() {
     { key: 'loginStatus', label: 'Login Status', sortable: true },
   ]
 
-  const handleExportToExcel = () => {
-    const data = activeTab === 'jobseekers' ? jobseekers : employers
+  const handleExportToExcel = async () => {
+    const userType = activeTab === 'jobseekers' ? 'jobseeker' : 'employer'
     const columns = activeTab === 'jobseekers' ? jobseekerColumns : employerColumns
+    const sheetName = activeTab === 'jobseekers' ? 'Jobseekers' : 'Employers'
 
-    const workbook = XLSX.utils.book_new()
-    const worksheetData = [
-      columns.map(col => col.label),
-      ...data.map(row => columns.map(col => (row as any)[col.key]))
-    ]
+    try {
+      setIsExporting(true)
+      setError(null)
 
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
-    XLSX.utils.book_append_sheet(workbook, worksheet, activeTab === 'jobseekers' ? 'Jobseekers' : 'Employers')
+      const { users } = await getUsersForExport(userType)
+      const worksheetData = [
+        columns.map((column) => column.label),
+        ...users.map((user) => {
+          const row = user as unknown as Record<string, string | number | null | undefined>
+          return columns.map((column) => row[column.key] ?? '')
+        }),
+      ]
+      const workbook = XLSX.utils.book_new()
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
 
-    const filename = `${activeTab === 'jobseekers' ? 'Jobseekers' : 'Employers'}_${new Date().toISOString().split('T')[0]}.xlsx`
-    XLSX.writeFile(workbook, filename)
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
+      XLSX.writeFile(
+        workbook,
+        `${sheetName}_${new Date().toISOString().split('T')[0]}.xlsx`
+      )
+    } catch (err) {
+      console.error(`Error exporting ${userType} data:`, err)
+      setError(`Failed to export ${userType} data`)
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   const handleKnowMore = (item: Jobseeker | Employer) => {
@@ -357,10 +374,10 @@ export default function AdminUsersPage() {
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button onClick={handleExportToExcel} variant="outline" className="flex items-center gap-2 w-full sm:w-auto" disabled={isLoading}>
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Export to Excel</span>
-            <span className="sm:hidden">Export</span>
+          <Button onClick={handleExportToExcel} variant="outline" className="flex items-center gap-2 w-full sm:w-auto" disabled={isLoading || isExporting}>
+            {isExporting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            <span className="hidden sm:inline">{isExporting ? 'Exporting all users...' : 'Export to Excel'}</span>
+            <span className="sm:hidden">{isExporting ? 'Exporting...' : 'Export'}</span>
           </Button>
         </div>
       </div>

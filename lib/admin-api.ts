@@ -160,6 +160,11 @@ export interface UsersApiParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface UsersExportApiResponse {
+  users: Jobseeker[] | Employer[];
+  totalCount: number;
+}
+
 // API Base URL - adjust according to your backend setup
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -276,6 +281,22 @@ export const getUsersByType = async (
   } else {
     return getEmployers(params);
   }
+};
+
+export const getUsersForExport = async (
+  userType: 'jobseeker' | 'employer'
+): Promise<UsersExportApiResponse> => {
+  const response = await fetch(`${API_BASE_URL}/admin/users/${userType}/export`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+
+  const result = await response.json().catch(() => null);
+  if (!response.ok || !result?.success) {
+    throw new Error(result?.message || `Failed to export ${userType} users`);
+  }
+
+  return result.data;
 };
 
 // Jobs API Types and Functions
